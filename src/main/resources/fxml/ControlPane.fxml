@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane minWidth="1400" prefWidth="1655" minHeight="23.0" prefHeight="27.0"
+            xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="uz.tenzorsoft.scaleapplication.ui.ControlPane">
+
+  <HBox spacing="20" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="10">
+    <HBox spacing="10" alignment="CENTER_LEFT">
+      <DatePicker fx:id="startDate" prefHeight="25.0" prefWidth="120" promptText="Start date"/>
+      <Label text=">>>"/>
+      <DatePicker fx:id="endDate" prefHeight="25.0" prefWidth="120" promptText="End date"/>
+      <Button mnemonicParsing="false" onMouseClicked="#getFilteredData" text="Filter"/>
+    </HBox>
+
+    <Region HBox.hgrow="ALWAYS"/>
+
+    <Label alignment="CENTER" blendMode="DARKEN" contentDisplay="CENTER"
+           style="-fx-background-color: white; -fx-padding: 5px 0 0 0;" text="Boshqaruv paneli">
+      <font>
+        <Font size="17.0"/>
+      </font>
+    </Label>
+
+    <Region HBox.hgrow="ALWAYS"/>
+
+    <HBox spacing="10" alignment="CENTER">
+      <Button fx:id="deleteButton" disable="true" style="-fx-background-color: #f44336;" visible="false">
+        <graphic>
+          <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+            <image>
+              <Image url="@../images/delete.png"/>
+            </image>
+          </ImageView>
+        </graphic>
+        <cursor>
+          <Cursor fx:constant="HAND"/>
+        </cursor>
+      </Button>
+
+      <Button fx:id="editButton" prefHeight="30.0"
+              style="-fx-background-color: #2196F3; -fx-text-fill: white;">
+        <text>Raqamni o'zgartirish</text>
+        <cursor>
+          <Cursor fx:constant="HAND"/>
+        </cursor>
+      </Button>
+
+      <Button fx:id="issueCheckButton" prefHeight="30.0"
+              style="-fx-background-color: #2196F3; -fx-text-fill: white;">
+        <text>Chek Chiqarish</text>
+        <cursor>
+          <Cursor fx:constant="HAND"/>
+        </cursor>
+      </Button>
+
+      <Button fx:id="button3" disable="true" prefHeight="30.0"
+              style="-fx-background-color: #2196F3; -fx-text-fill: white;" text="Massani o'lchash"
+              onMouseClicked="#rescaleTruckWeigh">
+        <cursor>
+          <Cursor fx:constant="HAND"/>
+        </cursor>
+      </Button>
+    </HBox>
+
+    <Region HBox.hgrow="ALWAYS" minWidth="20" prefWidth="150"/>
+
+    <!-- Oxirgi HBox ekranning o‘ng tomoniga yopishgan va 10px margin bilan -->
+    <HBox spacing="10" alignment="CENTER_RIGHT" AnchorPane.rightAnchor="10">
+      <ComboBox fx:id="productCombobox" stylesheets="@../static/combobox_style.css"/>
+      <Button fx:id="connectButton" mnemonicParsing="false" onMouseClicked="#connectToController"
+              styleClass="connect-button" stylesheets="@../static/button.css" text="Connect">
+        <cursor>
+          <Cursor fx:constant="HAND"/>
+        </cursor>
+      </Button>
+    </HBox>
+
+  </HBox>
+
+</AnchorPane>

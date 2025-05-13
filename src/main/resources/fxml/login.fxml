@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="200.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/17.0.13"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="uz.tenzorsoft.scaleapplication.ui.LoginController" onKeyPressed="#handleKeyPress">
+
+    <TextField fx:id="phoneNumberField" layoutX="50.0" layoutY="40.0" prefHeight="30.0" prefWidth="200.0"
+               promptText="Phone Number"/>
+
+    <PasswordField fx:id="passwordField" layoutX="50.0" layoutY="80.0" prefHeight="30.0" prefWidth="200.0"
+                   promptText="Password"/>
+
+    <Button fx:id="loginButton" layoutX="150.0" layoutY="130.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="80.0"
+            text="Login" onAction="#handleLogin"/>
+
+    <Button fx:id="closeButton" layoutX="50.0" layoutY="130.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="80.0"
+            text="Close" onAction="#handleClose"/>
+
+</AnchorPane>

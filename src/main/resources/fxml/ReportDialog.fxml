@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.TextArea?>
+<AnchorPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uz.tenzorsoft.scaleapplication.ui.ReportDialogController" style="-fx-background-color: #f8f9fa; -fx-padding: 30;">
+  <children>
+    <VBox spacing="20" alignment="CENTER" style="-fx-background-color: #ffffff; -fx-border-color: #dcdcdc; -fx-border-width: 1; -fx-padding: 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 12, 0.5, 0, 0); -fx-background-radius: 10; -fx-border-radius: 10;" AnchorPane.leftAnchor="50" AnchorPane.rightAnchor="50" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50">
+      <Label text="Hisobotlar" style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #333333;"/>
+      <HBox spacing="15" alignment="CENTER">
+        <Label text="Boshlanish sana:" style="-fx-font-size: 14; -fx-text-fill: #333333;"/>
+        <DatePicker fx:id="fromDatePicker" prefWidth="220"/>
+        <Button text="Tozalash" onAction="#clearStartDate" style="-fx-background-color: #ff6b6b; -fx-text-fill: white; -fx-font-size: 12; -fx-font-weight: bold; -fx-padding: 5 15;"/>
+      </HBox>
+      <HBox spacing="15" alignment="CENTER">
+        <Label text="Tugash sana:" style="-fx-font-size: 14; -fx-text-fill: #333333;"/>
+        <DatePicker fx:id="toDatePicker" prefWidth="220"/>
+        <Button text="Tozalash" onAction="#clearEndDate" style="-fx-background-color: #ff6b6b; -fx-text-fill: white; -fx-font-size: 12; -fx-font-weight: bold; -fx-padding: 5 15;"/>
+      </HBox>
+      <HBox spacing="20" alignment="CENTER">
+        <Button text="Hisobot yaratish" onAction="#generateReport" style="-fx-background-color: #4caf50; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold; -fx-padding: 10 20;"/>
+        <Button text="Chop etish" onAction="#printOptions" style="-fx-background-color: #2196f3; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold; -fx-padding: 10 20;"/>
+      </HBox>
+      <TextArea fx:id="reportTextArea" VBox.vgrow="ALWAYS" wrapText="true" style="-fx-border-color: #dcdcdc; -fx-font-family: 'Arial'; -fx-font-size: 16; -fx-text-fill: #333333; -fx-background-color: #f8f9fa; -fx-padding: 10;" editable="false"/>
+      <!-- Add a status label -->
+      <Label fx:id="statusLabel" text="" style="-fx-font-size: 14; -fx-text-fill: green; -fx-font-weight: bold;" alignment="CENTER"/>
+    </VBox>
+  </children>
+</AnchorPane>
+
+
+
+

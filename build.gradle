@@ -1,0 +1,80 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.springframework.boot' version '3.3.5'
+    id 'io.spring.dependency-management' version '1.1.6'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
+}
+
+group = 'uz.tenzorsoft'
+version = '1.1.5'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    implementation 'org.openjfx:javafx-controls:17.0.6'
+    implementation 'org.openjfx:javafx-fxml:17.0.6'
+    implementation 'org.openjfx:javafx-base:17.0.6'
+    implementation 'org.openjfx:javafx-graphics:17.0.6'
+
+
+    implementation 'org.controlsfx:controlsfx:11.2.1'
+
+    implementation 'org.xerial:sqlite-jdbc:3.47.0.0'
+    implementation 'org.hibernate.orm:hibernate-community-dialects:6.2.2.Final'
+
+    implementation 'com.ghgande:j2mod:3.2.1'
+
+    implementation 'com.pi4j:pi4j-core:2.7.0'
+    implementation 'com.pi4j:pi4j-plugin-gpiod:2.7.0'
+    implementation 'com.pi4j:pi4j-plugin-raspberrypi:2.7.0'
+
+
+    implementation 'ws.schild:jave-all-deps:2.4.0'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    runtimeOnly 'org.postgresql:postgresql'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'com.fazecast:jSerialComm:2.9.0'
+
+    implementation 'org.apache.pdfbox:pdfbox:2.0.29'
+
+    implementation 'org.apache.poi:poi:5.2.3' // For basic Excel support
+    implementation 'org.apache.poi:poi-ooxml:5.2.3' // For advanced Excel support (XLSX)
+
+    implementation 'com.fazecast:jSerialComm:2.9.3'
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+application {
+    mainClass = 'uz.tenzorsoft.scaleapplication.ScaleApplication' // Update with your main class name
+}
+
+// Configure JavaFX modules
+javafx {
+    version = '17.0.6'
+    modules = ['javafx.controls', 'javafx.fxml']
+}

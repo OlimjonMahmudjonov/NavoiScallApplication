@@ -1,0 +1,6 @@
+package uz.tenzorsoft.scaleapplication.domain.enumerators;
+
+public enum AttachStatus {
+    ENTRANCE_PHOTO, EXIT_PHOTO, ENTRANCE_CARGO_PHOTO, EXIT_CARGO_PHOTO,
+    MANUAL_ENTRANCE_PHOTO, MANUAL_EXIT_PHOTO, MANUAL_ENTRANCE_CARGO_PHOTO, MANUAL_EXIT_CARGO_PHOTO
+}

@@ -1,0 +1,27 @@
+.connect-button {
+    -fx-background-color: linear-gradient(#24ff03, #21a301);
+    -fx-background-radius: 5;
+    -fx-background-insets: 0;
+    -fx-text-fill: white;
+}
+
+.connect-button:hover {
+    -fx-background-color: linear-gradient(#18b800, #156c00);
+    -fx-background-radius: 5;
+    -fx-background-insets: 0;
+    -fx-text-fill: white;
+}
+
+.connect-button-disconnected {
+    -fx-background-color: linear-gradient(#ff0000, #a30000);
+    -fx-background-radius: 5;
+    -fx-background-insets: 0;
+    -fx-text-fill: white;
+}
+
+.connect-button-disconnected:hover {
+    -fx-background-color: linear-gradient(#d00000, #7a0000);
+    -fx-background-radius: 5;
+    -fx-background-insets: 0;
+    -fx-text-fill: white;
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+
+
+
+<TableView fx:id="tableData" editable="true" prefHeight="694.0" minWidth="700" prefWidth="1180.0"
+           style="-fx-background-color: #f0f0f0;"
+           xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="uz.tenzorsoft.scaleapplication.ui.TableController">
+  <columns>
+    <TableColumn fx:id="id" minWidth="40.0" prefWidth="60.0" resizable="false" text="No" style="-fx-alignment: CENTER;" />
+
+    <TableColumn maxWidth="5000.0" minWidth="250.0" prefWidth="350.0" text="Kirish">
+      <columns>
+        <TableColumn fx:id="enteredTruckNumber" prefWidth="100.0" text="Moshina" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="enteredDate" prefWidth="100.0" resizable="false" text="Sana" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="enteredTime" prefWidth="70.0" resizable="false" text="Vaqt" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="enteredWeight" prefWidth="90.0" resizable="false" text="Massa (kg)" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="enteredOnDuty" prefWidth="100.0" resizable="false" text="Navbatchi" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="enteredActionStatus" prefWidth="100.0" resizable="false" text="Status" style="-fx-alignment: CENTER;" />
+      </columns>
+    </TableColumn>
+
+    <TableColumn maxWidth="5000.0" prefWidth="350.0" text="Chiqish">
+      <columns>
+        <TableColumn fx:id="exitedTruckNumber" prefWidth="100.0" resizable="false" text="Moshina" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="exitedDate" prefWidth="100.0" resizable="false" text="Sana" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="exitedTime" prefWidth="70.0" resizable="false" text="Vaqt" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="exitedWeight" prefWidth="90.0" resizable="false" text="Massa (kg)" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="exitedActionStatus" prefWidth="100.0" resizable="false" text="Status" style="-fx-alignment: CENTER;" />
+      </columns>
+    </TableColumn>
+
+    <TableColumn fx:id="minWeight" prefWidth="90.0" resizable="false" text="Tara" style="-fx-alignment: CENTER;" />
+    <TableColumn fx:id="maxWeight" prefWidth="90.0" resizable="false" text="Brutto" style="-fx-alignment: CENTER;" />
+
+    <TableColumn prefWidth="100.0" text="Netto">
+      <columns>
+        <TableColumn fx:id="dropWeight" prefWidth="90.0" resizable="false" text="Kirim" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="pickupWeight" prefWidth="90.0" resizable="false" text="Chiqim" style="-fx-alignment: CENTER;" />
+      </columns>
+    </TableColumn>
+
+    <TableColumn fx:id="productType" prefWidth="100.0" text="Mahsulot" style="-fx-alignment: CENTER;" />
+  </columns>
+</TableView>

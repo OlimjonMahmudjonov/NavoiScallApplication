@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<Tab closable="false" text="Kamera" xmlns="http://javafx.com/javafx">
+
+  <content>
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+      <children>
+        <Pane layoutX="26.0" layoutY="135.0" prefHeight="256.0" prefWidth="422.0">
+          <children>
+            <Pane layoutX="9.0" layoutY="28.0" prefHeight="222.0" prefWidth="398.0"
+                  style="-fx-background-color: #e6f5e8; -fx-border-color: black;"/>
+            <Label layoutX="169.0" layoutY="4.0" prefHeight="20.0" prefWidth="65.0" text="1-kamera"
+                   textAlignment="CENTER">
+              <font>
+                <Font size="14.0"/>
+              </font>
+            </Label>
+          </children>
+        </Pane>
+        <Pane layoutX="469.0" layoutY="135.0" prefHeight="256.0" prefWidth="422.0">
+          <children>
+            <Pane layoutX="9.0" layoutY="28.0" prefHeight="222.0" prefWidth="398.0"
+                  style="-fx-background-color: #e6f5e8; -fx-border-color: black;"/>
+            <Label layoutX="169.0" layoutY="4.0" prefHeight="20.0" prefWidth="65.0" text="2-kamera"
+                   textAlignment="CENTER">
+              <font>
+                <Font size="14.0"/>
+              </font>
+            </Label>
+          </children>
+        </Pane>
+        <Pane layoutX="915.0" layoutY="135.0" prefHeight="256.0" prefWidth="422.0">
+          <children>
+            <Pane layoutX="9.0" layoutY="28.0" prefHeight="222.0" prefWidth="398.0"
+                  style="-fx-background-color: #e6f5e8; -fx-border-color: black;"/>
+            <Label layoutX="169.0" layoutY="4.0" prefHeight="20.0" prefWidth="65.0" text="3-kamera"
+                   textAlignment="CENTER">
+              <font>
+                <Font size="14.0"/>
+              </font>
+            </Label>
+          </children>
+        </Pane>
+        <Pane layoutX="491.0" layoutY="402.0" prefHeight="244.0" prefWidth="378.0">
+          <children>
+            <Label layoutX="110.0" layoutY="14.0" text="Tarozi massasi">
+              <font>
+                <Font size="25.0"/>
+              </font>
+            </Label>
+            <TextField alignment="CENTER" editable="false" layoutX="6.0" layoutY="50.0" prefHeight="171.0"
+                       prefWidth="366.0" text="123456 kg">
+              <font>
+                <Font size="64.0"/>
+              </font>
+            </TextField>
+          </children>
+        </Pane>
+      </children>
+    </AnchorPane>
+  </content>
+
+</Tab>

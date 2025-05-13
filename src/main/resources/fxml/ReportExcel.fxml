@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1" fx:controller="uz.tenzorsoft.scaleapplication.ui.ReportExcelController"
+      alignment="CENTER" spacing="20" style="-fx-padding: 20; -fx-background-color: #ffffff; -fx-border-color: #d3d3d3; -fx-border-radius: 10; -fx-background-radius: 10;">
+  <children>
+    <Label text="Tanlangan sanalar bo'yicha ma'lumotlarni Excelga eksport qilmoqchimisiz?"
+           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" wrapText="true" />
+    <HBox alignment="CENTER" spacing="15">
+      <Button fx:id="confirmButton" text="Tasdiqlash"
+              style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 10 20;"
+              onAction="#confirm" />
+      <Button fx:id="cancelButton" text="Bekor qilish"
+              style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-padding: 10 20;"
+              onAction="#cancel" />
+    </HBox>
+  </children>
+</VBox>
+

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="uz.tenzorsoft.scaleapplication.ui.ScaleController"
+           prefHeight="100.0" prefWidth="250.0">
+    <TextField fx:id="scaleWeigh" alignment="CENTER" editable="false" minHeight="80.0" prefHeight="100.0" prefWidth="237.0"
+               text="000 kg">
+        <font>
+            <Font size="40.0"/>
+        </font>
+    </TextField>
+</StackPane>

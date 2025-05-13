@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<GridPane xmlns="http://javafx.com/javafx/23.0.1"
+          xmlns:fx="http://javafx.com/fxml/1"
+          fx:id="rootPane"
+          prefWidth="420.0" prefHeight="250.0"
+          fx:controller="uz.tenzorsoft.scaleapplication.ui.ImageController"
+          vgap="5" hgap="5"
+          alignment="CENTER"
+          style="-fx-border-color: #000; -fx-border-style: solid; -fx-padding: 5;">
+
+  <columnConstraints>
+    <ColumnConstraints hgrow="ALWAYS" percentWidth="50" minWidth="100"/>
+    <ColumnConstraints hgrow="ALWAYS" percentWidth="50" minWidth="100"/>
+  </columnConstraints>
+
+  <rowConstraints>
+    <RowConstraints vgrow="ALWAYS" percentHeight="50" minHeight="100"/>
+    <RowConstraints vgrow="ALWAYS" percentHeight="50" minHeight="100"/>
+  </rowConstraints>
+
+  <StackPane GridPane.rowIndex="0" GridPane.columnIndex="0" alignment="CENTER"
+             style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
+    <ImageView fx:id="imageView1" preserveRatio="true"
+               fitWidth="230" fitHeight="130"/>
+  </StackPane>
+
+  <StackPane GridPane.rowIndex="0" GridPane.columnIndex="1" alignment="CENTER"
+             style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
+    <ImageView fx:id="imageView2" preserveRatio="true"
+               fitWidth="230" fitHeight="130"/>
+  </StackPane>
+
+  <!-- 2-qatordagi rasmlar -->
+  <StackPane GridPane.rowIndex="1" GridPane.columnIndex="0" alignment="CENTER"
+             style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
+    <ImageView fx:id="imageView3" preserveRatio="true"
+               fitWidth="230" fitHeight="130"/>
+  </StackPane>
+
+  <StackPane GridPane.rowIndex="1" GridPane.columnIndex="1" alignment="CENTER"
+             style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
+    <ImageView fx:id="imageView4" preserveRatio="true"
+               fitWidth="230" fitHeight="130"/>
+  </StackPane>
+
+</GridPane>

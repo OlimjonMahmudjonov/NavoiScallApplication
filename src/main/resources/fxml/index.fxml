@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.PasswordField?>
+<AnchorPane maxHeight="623.0" maxWidth="947.0" minHeight="621.0" minWidth="945.0" prefHeight="622.0" prefWidth="946.0"
+            xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="uz.tenzorsoft.scaleapplication.ui.LoginController" fx:id="anchorPane" onKeyPressed="#handleKeyPress">
+    <children>
+        <BorderPane prefHeight="200.0" prefWidth="200.0">
+            <right>
+                <VBox prefHeight="622.0" prefWidth="622.0" BorderPane.alignment="CENTER">
+                    <ImageView fitHeight="622.0" fitWidth="622.0" pickOnBounds="true" preserveRatio="true">
+                        <Image url="@../images/coal-distribution.png"/>
+                    </ImageView>
+                </VBox>
+            </right>
+            <left>
+                <VBox prefHeight="622.0" prefWidth="326.0" BorderPane.alignment="CENTER">
+                    <Pane prefHeight="126.0" prefWidth="382.0">
+                        <ImageView fitHeight="32.0" fitWidth="36.0" layoutX="33.0" layoutY="47.0" pickOnBounds="true"
+                                   preserveRatio="true">
+                            <Image url="@../images/mycoal-logo.png"/>
+                        </ImageView>
+                        <Label layoutX="75.0" layoutY="52.0" text="My Coal">
+                            <font>
+                                <Font name="Arial" size="20.0"/>
+                            </font>
+                            <!-- Bind font size -->
+                        </Label>
+                    </Pane>
+                    <Pane prefHeight="497.0" prefWidth="394.0">
+                        <TextField fx:id="phoneNumberField" layoutX="28.0" layoutY="195.0" prefHeight="25.0" prefWidth="270.0"
+                                   promptText="Phone number (912345678)">
+                            <cursor>
+                                <Cursor fx:constant="TEXT"/>
+                            </cursor>
+                        </TextField>
+                        <PasswordField fx:id="passwordField" layoutX="28.0" layoutY="237.0" prefHeight="25.0"
+                                   prefWidth="270.0" promptText="password">
+                            <cursor>
+                                <Cursor fx:constant="TEXT"/>
+                            </cursor>
+                        </PasswordField>
+                        <Button layoutX="28.0" layoutY="288.0" mnemonicParsing="false" prefHeight="25.0"
+                                prefWidth="162.0" style="-fx-background-color: #0d6efd;" text="Login" textFill="#e4eefe"
+                                onAction="#handleLogin">
+                            <cursor>
+                                <Cursor fx:constant="HAND"/>
+                            </cursor>
+                        </Button>
+                        <Text layoutX="28.0" layoutY="86.0" strokeType="OUTSIDE" strokeWidth="0.0"
+                              text="Welcome Scale Application" wrappingWidth="248.1307373046875">
+                            <font>
+                                <Font name="Arial Bold" size="32.0"/>
+                            </font>
+                        </Text>
+                        <Text layoutX="28.0" layoutY="173.0" strokeType="OUTSIDE" strokeWidth="0.0"
+                              text="Sign in to your account">
+                            <font>
+                                <Font size="20.0"/>
+                            </font>
+                        </Text>
+                        <Text fill="#0400ff" layoutX="28.0" layoutY="335.0" strokeType="OUTSIDE" strokeWidth="0.0"
+                              text="Forgot password?" underline="true">
+                            <cursor>
+                                <Cursor fx:constant="HAND"/>
+                            </cursor>
+                        </Text>
+                    </Pane>
+                </VBox>
+            </left>
+        </BorderPane>
+    </children>
+</AnchorPane>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+
+<MenuBar xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uz.tenzorsoft.scaleapplication.ui.MenuBarController">
+  <menus>
+    <Menu mnemonicParsing="false" text="File">
+      <items>
+        <MenuItem mnemonicParsing="false" text="Close"/>
+      </items>
+    </Menu>
+    <Menu mnemonicParsing="false" text="Sozlamalar">
+      <items>
+        <MenuItem mnemonicParsing="false" text="Ma'lumotlar bazasi" onAction="#onDatabaseMenuSelected"/>
+        <MenuItem mnemonicParsing="false" text="Kamera" onAction="#onCameraMenuSelected"/>
+        <MenuItem mnemonicParsing="false" text="Controller" onAction="#onControllerMenuSelected"/>
+        <MenuItem mnemonicParsing="false" text="Shlagbaum" onAction="#onShlagbaumMenuSelected"/>
+        <MenuItem mnemonicParsing="false" text="Tarozi" onAction="#onTaroziMenuSelected"/>
+        <MenuItem mnemonicParsing="false" text="Chiqish vaqti" onAction="#onExitTimeMenuSelected"/>
+        <MenuItem mnemonicParsing="false" text="Printer" onAction="#onPrinterMenuSelected"/>
+        <MenuItem mnemonicParsing="false" text="Export Data Id" onAction="#onExportDataMenuSelected"/>
+      </items>
+    </Menu>
+    <Menu mnemonicParsing="false" text="Yordam">
+      <items>
+        <MenuItem mnemonicParsing="false" text="Platforma haqida" onAction="#onAboutMenuSelected"/>
+        <MenuItem mnemonicParsing="false" text="Yo'riqnoma" onAction="#onInstructionSelected"/>
+      </items>
+    </Menu>
+    <Menu mnemonicParsing="false" text="Hisobot">
+      <items>
+        <MenuItem fx:id="hisobotMenuItem" mnemonicParsing="false" text="Hisobot" onAction="#onHisobotMenuSelected"/>
+        <MenuItem fx:id="hisobotExcelMenuItem" mnemonicParsing="false" text="Excelga chop etish" onAction="#onHisobotExcelMenuSelected"/>
+      </items>
+    </Menu>
+  </menus>
+</MenuBar>
