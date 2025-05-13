@@ -6,6 +6,7 @@ import uz.tenzorsoft.scaleapplication.domain.entity.UserEntity;
 import uz.tenzorsoft.scaleapplication.domain.response.TruckResponse;
 
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.*;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_GREEN_LIGHT_EXIT_2;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,8 +53,8 @@ public class Instances<T> {
     public static final Map<Integer, DigitalOutput> outputPins = new HashMap<>();
     public static final Map<Integer, DigitalInput> inputPins = new HashMap<>();
 
-    public static final int[] CONTROL_PINS = {RASP_GREEN_LIGHT_1, RASP_GREEN_LIGHT_2, RASP_OPEN_GATE_1, RASP_CLOSE_GATE_1, RASP_OPEN_GATE_2, RASP_CLOSE_GATE_2};
-    public static final int[] STATUS_PINS = {RASP_SENSOR_1, RASP_SENSOR_2, RASP_SENSOR_3};
+    public static final int[] CONTROL_PINS = {RASP_GREEN_LIGHT_1, RASP_GREEN_LIGHT_2, RASP_OPEN_GATE_1, RASP_CLOSE_GATE_1, RASP_OPEN_GATE_2, RASP_CLOSE_GATE_2,RASP_GREEN_LIGHT_EXIT_1, RASP_GREEN_LIGHT_EXIT_2, RASP_OPEN_GATE_EXIT_1, RASP_CLOSE_GATE_EXIT_1, RASP_OPEN_GATE_EXIT_2, RASP_CLOSE_GATE_EXIT_2};
+    public static final int[] STATUS_PINS = {RASP_SENSOR_1, RASP_SENSOR_2, RASP_SENSOR_3,RASP_SENSOR_EXIT_1, RASP_SENSOR_EXIT_2, RASP_SENSOR_EXIT_3};
 
     public static Configurations configurations;
 

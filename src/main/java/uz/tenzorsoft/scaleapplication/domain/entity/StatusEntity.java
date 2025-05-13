@@ -25,12 +25,17 @@ public class StatusEntity {
     private boolean controller = false;
     private boolean gate1 = false;
     private boolean gate2 = false;
+    private boolean gateExit1 = false;
+    private boolean gateExit2 = false;
     private boolean camera1 = false;
     private boolean camera2 = false;
     private boolean camera3 = false;
     private boolean sensor1 = false;
     private boolean sensor2 = false;
     private boolean sensor3 = false;
+    private boolean sensorExit1 = false;
+    private boolean sensorExit2 = false;
+    private boolean sensorExit3 = false;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

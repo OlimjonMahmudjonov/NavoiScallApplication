@@ -43,9 +43,9 @@ public class ScaleSystem {
     public static final Integer RASP_CLOSE_GATE_EXIT_1 = 24;
     public static final Integer RASP_OPEN_GATE_EXIT_2 = 25;
     public static final Integer RASP_CLOSE_GATE_EXIT_2 = 12;
-    public static final Integer RASP_SENSOR_EXIT_1 = 17;
-    public static final Integer RASP_SENSOR_EXIT_2 = 27;
-    public static final Integer RASP_SENSOR_EXIT_3 = 22;
+    public static final Integer RASP_SENSOR_EXIT_1 = 30;
+    public static final Integer RASP_SENSOR_EXIT_2 = 31;
+    public static final Integer RASP_SENSOR_EXIT_3 = 32;
 
     public static final Integer COIL_GREEN_LIGHT_EXIT_1 = 0;
     public static final Integer COIL_RED_LIGHT_EXIT_2 = 0;

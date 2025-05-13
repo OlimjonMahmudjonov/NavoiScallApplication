@@ -26,6 +26,7 @@ public class Configurations implements Serializable {
     private Integer scaleTimeout;
     private Integer exitTimeout;
     private String scalePort;
+    private String scaleExitPort;
     private String printerName;
 
     private String databaseName;

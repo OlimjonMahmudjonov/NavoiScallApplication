@@ -87,6 +87,7 @@ public class ConfigUtilsService {
         config.setCloseGate2Timeout(8000);
         config.setScaleTimeout(3000);
         config.setScalePort("COM3");
+        config.setScaleExitPort("COM2");
         config.setExitTimeout(3); // 3 minut
         config.setMycoalScaleId(0L); // 3 minut
         config.setScaleWebId(0L); // 3 minut
@@ -109,6 +110,7 @@ public class ConfigUtilsService {
         Settings.CLOSE_GATE2_TIMEOUT = config.getCloseGate2Timeout() == null ? defaultConfig.getCloseGate2Timeout() : config.getCloseGate2Timeout();
         Settings.SCALE_TIMEOUT = config.getScaleTimeout() == null ? defaultConfig.getScaleTimeout() : config.getScaleTimeout();
         Settings.SCALE_PORT = config.getScalePort() == null ? defaultConfig.getScalePort() : config.getScalePort();
+        Settings.SCALE_EXIT_PORT = config.getScalePort() == null ? defaultConfig.getScalePort() : config.getScalePort();
         Settings.EXIT_TIMEOUT = config.getExitTimeout() == null ? defaultConfig.getExitTimeout() : config.getExitTimeout();
         Settings.PRINTER_NAME = config.getPrinterName() == null ? defaultConfig.getPrinterName() : config.getPrinterName();
         Settings.DATABASE_NAME = config.getDatabaseName() == null ? defaultConfig.getDatabaseName() : config.getDatabaseName();

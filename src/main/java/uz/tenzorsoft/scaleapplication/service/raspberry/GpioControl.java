@@ -52,7 +52,10 @@ public class GpioControl {
         Map<Integer, Consumer<Boolean>> pinToSensorMap = Map.of(
                 17, (status) -> sensor1Connection = status,
                 22, (status) -> sensor2Connection = status,
-                27, (status) -> sensor3Connection = status
+                27, (status) -> sensor3Connection = status,
+                30, (status) -> sensorExit1Connection = status,
+                31, (status) -> sensorExit2Connection = status,
+                32, (status) -> sensorExit3Connection = status
         );
 
         for (int pin : STATUS_PINS) {
@@ -142,6 +145,11 @@ public class GpioControl {
         sensor3Connection = false;
         gate1Connection = false;
         gate2Connection = false;
+        sensorExit1Connection = false;
+        sensorExit2Connection = false;
+        sensorExit3Connection = false;
+        gateExit1Connection = false;
+        gateExit2Connection = false;
 //        if (pi4jOut != null) pi4jOut.shutdown();
 //        if (pi4jIn != null) pi4jIn.shutdown();
     }
@@ -188,6 +196,9 @@ public class GpioControl {
                     case 17 -> sensor1Connection = input.isHigh();
                     case 22 -> sensor2Connection = input.isHigh();
                     case 27 -> sensor3Connection = input.isHigh();
+                    case 30 -> sensorExit1Connection = input.isHigh();
+                    case 31 -> sensorExit2Connection = input.isHigh();
+                    case 32 -> sensorExit3Connection = input.isHigh();
                 }
             }
         }

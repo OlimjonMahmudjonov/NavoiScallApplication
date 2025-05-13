@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutorService;
 import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
 import static uz.tenzorsoft.scaleapplication.domain.Settings.*;
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.*;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.COIL_CLOSE_GATE_EXIT_2;
 
 
 @Component
@@ -26,7 +27,7 @@ public class ConnectionsController implements BaseController {
     private final ControllerService controllerService;
     private final LogService logService;
     @FXML
-    private ImageView controller, camera1, camera2, camera3, gate1, gate2, sensor1, sensor2, sensor3;
+    private ImageView controller, camera1, camera2, camera3, gate1, gate2, sensor1, sensor2, sensor3, gateExit1, gateExit2, sensorExit1, sensorExit2, sensorExit3;
 
     public void initialize() {
         controller.setImage(redLight);
@@ -44,12 +45,18 @@ public class ConnectionsController implements BaseController {
         executors.execute(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    if (!isTesting &&  !isRaspberryUsing) {
+                    if (!isTesting && !isRaspberryUsing) {
                         gate1Connection = controllerService.checkConnection(COIL_CLOSE_GATE_1);
                         gate2Connection = controllerService.checkConnection(COIL_CLOSE_GATE_2);
                         sensor1Connection = controllerService.checkConnection(COIL_SENSOR_1);
                         sensor2Connection = controllerService.checkConnection(COIL_SENSOR_2);
                         sensor3Connection = controllerService.checkConnection(COIL_SENSOR_3);
+
+                        gateExit1Connection = controllerService.checkConnection(COIL_CLOSE_GATE_EXIT_1);
+                        gateExit2Connection = controllerService.checkConnection(COIL_CLOSE_GATE_EXIT_2);
+                        sensorExit1Connection = controllerService.checkConnection(COIL_SENSOR_EXIT_1);
+                        sensorExit2Connection = controllerService.checkConnection(COIL_SENSOR_EXIT_2);
+                        sensorExit3Connection = controllerService.checkConnection(COIL_SENSOR_EXIT_3);
                     }
                     camera1Connection = controllerService.checkConnection(CAMERA_1);
 //                    System.out.println("camera1Connection: " + camera1Connection);
@@ -78,6 +85,10 @@ public class ConnectionsController implements BaseController {
                     sensor2.setImage(sensor2Connection ? greenLight : redLight);
                     sensor3.setImage(sensor3Connection ? greenLight : redLight);
 
+                    sensorExit1.setImage(sensorExit1Connection ? greenLight : redLight);
+                    sensorExit2.setImage(sensorExit2Connection ? greenLight : redLight);
+                    sensorExit3.setImage(sensorExit3Connection ? greenLight : redLight);
+
                     camera1.setImage(camera1Connection ? greenLight : redLight);
                     camera2.setImage(camera2Connection ? greenLight : redLight);
                     camera3.setImage(camera3Connection ? greenLight : redLight);
@@ -85,9 +96,13 @@ public class ConnectionsController implements BaseController {
                     controller.setImage(isConnected ? greenLight : redLight);
                     gate1.setImage(gate1Connection ? greenLight : redLight);
                     gate2.setImage(gate2Connection ? greenLight : redLight);
+
+                    gateExit1.setImage(gateExit1Connection ? greenLight : redLight);
+                    gateExit2.setImage(gateExit2Connection ? greenLight : redLight);
                     Thread.sleep(500);
                 } catch (Exception e) {
                     logService.save(new LogEntity(5L, Instances.truckNumber, e.getMessage()));
+                    logService.save(new LogEntity(5L, Instances.truckExitNumber, e.getMessage()));
                     e.printStackTrace();
                 }
             }

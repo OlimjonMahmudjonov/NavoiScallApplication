@@ -37,6 +37,23 @@ public class RaspberryService {
         return true;
     }
 
+    public boolean openExitGate1() throws Exception {
+        if (!isConnected) {
+            throw new RuntimeException("Raspberryga ulanmagan");
+        }
+
+        sendCommand(RASP_GREEN_LIGHT_EXIT_1, PinState.HIGH);
+        sendCommand(RASP_OPEN_GATE_EXIT_1, PinState.HIGH);
+
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.schedule(() -> {
+            sendCommand(RASP_OPEN_GATE_EXIT_1, PinState.LOW);
+            scheduler.shutdown();
+        }, 500, TimeUnit.MILLISECONDS);
+
+        return true;
+    }
+
     public boolean openGate1(int truckPosition) throws Exception {
         if (!isConnected) {
             throw new RuntimeException("Raspberryga ulanmagan");
@@ -56,6 +73,23 @@ public class RaspberryService {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.schedule(() -> {
             sendCommand(RASP_CLOSE_GATE_1, PinState.LOW);
+            scheduler.shutdown();
+        }, 500, TimeUnit.MILLISECONDS);
+
+        return true;
+    }
+
+    public boolean closeExitGate1() throws Exception {
+        if (!isConnected) {
+            throw new RuntimeException("Raspberryga ulanmagan");
+        }
+
+        sendCommand(RASP_GREEN_LIGHT_EXIT_1, PinState.LOW);
+        sendCommand(RASP_CLOSE_GATE_EXIT_1, PinState.HIGH);
+
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.schedule(() -> {
+            sendCommand(RASP_CLOSE_GATE_EXIT_1, PinState.LOW);
             scheduler.shutdown();
         }, 500, TimeUnit.MILLISECONDS);
 
@@ -115,6 +149,20 @@ public class RaspberryService {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.schedule(() -> {
             sendCommand(RASP_CLOSE_GATE_2, PinState.LOW);
+            scheduler.shutdown();
+        }, 500, TimeUnit.MILLISECONDS);
+        return true;
+    }
+
+    public boolean closeExitGate2() throws Exception {
+        if (!isConnected) {
+            throw new RuntimeException("Raspberryga ulanmagan");
+        }
+        sendCommand(RASP_GREEN_LIGHT_EXIT_2, PinState.LOW);
+        sendCommand(RASP_CLOSE_GATE_EXIT_2, PinState.HIGH);
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.schedule(() -> {
+            sendCommand(RASP_CLOSE_GATE_EXIT_2, PinState.LOW);
             scheduler.shutdown();
         }, 500, TimeUnit.MILLISECONDS);
         return true;

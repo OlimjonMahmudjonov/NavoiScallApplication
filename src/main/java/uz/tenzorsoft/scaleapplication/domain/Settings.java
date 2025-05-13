@@ -20,6 +20,7 @@ public class Settings {
     public static Integer SCALE_TIMEOUT;
     public static Integer EXIT_TIMEOUT;
     public static String SCALE_PORT;
+    public static String SCALE_EXIT_PORT;
     public static String PRINTER_NAME;
 
     public static String DATABASE_NAME;

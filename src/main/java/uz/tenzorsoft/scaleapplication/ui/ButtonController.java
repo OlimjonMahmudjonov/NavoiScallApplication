@@ -93,6 +93,23 @@ public class ButtonController implements BaseController {
         return false;
     }
 
+    public boolean openExitGate1() {
+        try {
+            if (!isTesting) {
+                if (isRaspberryUsing) {
+                    raspberryService.openExitGate1();
+                } else controllerService.openExitGate1();
+                gateExit1Connection = false;
+                commandComment = "Finished";
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            logService.save(new LogEntity(5L, truckExitNumber, "00017: (" + getClass().getName() + ") " + e.getMessage()));
+            showAlert(Alert.AlertType.ERROR, "Xatolik", e.getMessage());
+        }
+        return false;
+    }
+
     public boolean openGate1(int truckPosition) {
         try {
             if (!isTesting) {
@@ -195,22 +212,23 @@ public class ButtonController implements BaseController {
         }
         return false;
     }
+
     public boolean closeExitGate1() {
         try {
             firstExitGateEntranceTime = 0;
             if (!isTesting) {
                 if (isRaspberryUsing) {
                     System.out.println("Closing Gate 1 ....");
-                    raspberryService.closeGate1();
-                } else controllerService.closeGate1();
+                    raspberryService.closeExitGate1();
+                } else controllerService.closeExitGate1();
                 commandComment = "Finished";
-                gate1Connection = true;
+                gateExit1Connection = true;
             }
         } catch (Exception e) {
             commandComment = e.getMessage();
             System.err.println(e.getMessage());
-            logService.save(new LogEntity(5L, truckNumber, "00024: (" + getClass().getName() + ") " + e.getMessage()));
-            if (truckNumber.length() >= 3) {
+            logService.save(new LogEntity(5L, truckExitNumber, "00024: (" + getClass().getName() + ") " + e.getMessage()));
+            if (truckExitNumber.length() >= 3) {
                 showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
             }
         }
@@ -270,7 +288,7 @@ public class ButtonController implements BaseController {
         } catch (Exception e) {
             commandComment = e.getMessage();
             System.err.println(e.getMessage());
-            logService.save(new LogEntity(5L, truckNumber, "00025: (" + getClass().getName() + ") " + e.getMessage()));
+            logService.save(new LogEntity(5L, truckExitNumber, "00025: (" + getClass().getName() + ") " + e.getMessage()));
         }
         return false;
     }
@@ -394,6 +412,27 @@ public class ButtonController implements BaseController {
         return false;
     }
 
+    public boolean closeExitGate2() {
+        try {
+            secondExitGateEntranceTime = 0;
+            if (!isTesting) {
+                if (isRaspberryUsing) {
+                    raspberryService.closeExitGate2();
+                } else controllerService.closeExitGate2();
+                commandComment = "Finished";
+                gateExit2Connection = true;
+            }
+        } catch (Exception e) {
+            commandComment = e.getMessage();
+            System.err.println(e.getMessage());
+            logService.save(new LogEntity(5L, truckExitNumber, "00027: (" + getClass().getName() + ") " + e.getMessage()));
+            if (truckExitNumber.length() >= 3) {
+                showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
+            }
+        }
+        return false;
+    }
+
     public void connect() {
         try {
             if (isRaspberryUsing) {
@@ -402,6 +441,9 @@ public class ButtonController implements BaseController {
                 isConnected = isAvailableToConnect;
                 closeGate1();
                 closeGate2();
+
+                closeExitGate1();
+                closeExitGate2();
                 return;
             }
             controllerService.connect();
@@ -516,7 +558,7 @@ public class ButtonController implements BaseController {
         try {
             if (isTesting) return (int) ((Math.random() * 10) + 100);
 
-            return isRaspberryUsing ? getTruckWeightRaspberry() : getTruckWeightWindows();
+            return isRaspberryUsing ? getTruckWeightRaspberryExit() : getTruckWeightWindowsExit();
 
         } catch (RuntimeException e) {
             throw new RuntimeException(e);

@@ -18,7 +18,7 @@ public class ScaleController {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     @FXML
-    private TextField scaleWeigh;
+    private TextField scaleWeigh, scaleExitWeight;
 
 
     public void initialize() {
@@ -33,9 +33,13 @@ public class ScaleController {
     public void showScale() {
         scheduler.scheduleAtFixedRate(() -> {
             double weigh = buttonController.getTruckWeigh();
+            double exitWeigh = buttonController.getTruckExitWeigh();
             Platform.runLater(() -> {
                 String displayText = weigh > 0 ? weigh + " kg" : "0.0 kg";
                 scaleWeigh.setText(displayText);
+
+                String displayExitText = exitWeigh > 0 ? exitWeigh + " kg" : "0.0 kg";
+                scaleExitWeight.setText(displayExitText);
             });
         }, 0, 500, TimeUnit.MILLISECONDS);
     }

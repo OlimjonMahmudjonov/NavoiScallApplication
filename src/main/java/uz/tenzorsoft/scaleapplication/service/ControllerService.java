@@ -46,6 +46,16 @@ public class ControllerService {
         return true;
     }
 
+    public boolean openExitGate1() throws ModbusException {
+        if (!isConnected) {
+            throw new ModbusException("Not connected to controller");
+        }
+        writeCoil(COIL_GREEN_LIGHT_EXIT_1, true);
+        writeCoil(COIL_OPEN_GATE_EXIT_1, true);
+        writeCoil(COIL_CLOSE_GATE_EXIT_1, false);
+        return true;
+    }
+
     public boolean openGate1(int truckPosition) throws ModbusException {
         if (!isConnected) {
             throw new ModbusException("Controllerga ulanmagan");
@@ -62,6 +72,15 @@ public class ControllerService {
         writeCoil(COIL_GREEN_LIGHT_1, false);
         writeCoil(COIL_OPEN_GATE_1, false);
         writeCoil(COIL_CLOSE_GATE_1, true);
+        return true;
+    }
+    public boolean closeExitGate1() throws ModbusException {
+        if (!isConnected) {
+            throw new ModbusException("Controllerga ulanmagan");
+        }
+        writeCoil(COIL_GREEN_LIGHT_EXIT_1, false);
+        writeCoil(COIL_OPEN_GATE_EXIT_1, false);
+        writeCoil(COIL_CLOSE_GATE_EXIT_1, true);
         return true;
     }
 
@@ -111,6 +130,16 @@ public class ControllerService {
         writeCoil(COIL_GREEN_LIGHT_2, false);
         writeCoil(COIL_OPEN_GATE_2, false);
         writeCoil(COIL_CLOSE_GATE_2, true);
+        return true;
+    }
+
+    public boolean closeExitGate2() throws ModbusException {
+        if (!isConnected) {
+            throw new ModbusException("Controllerga ulanmagan");
+        }
+        writeCoil(COIL_GREEN_LIGHT_EXIT_2, false);
+        writeCoil(COIL_OPEN_GATE_EXIT_2, false);
+        writeCoil(COIL_CLOSE_GATE_EXIT_2, true);
         return true;
     }
 

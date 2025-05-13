@@ -45,9 +45,11 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.SCALE_EXIT_PORT;
 import static uz.tenzorsoft.scaleapplication.domain.Settings.SCALE_PORT;
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_CLOSE_GATE_1;
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.scalePort;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.scaleExitPort;
 
 @Component
 @RequiredArgsConstructor
@@ -180,6 +182,7 @@ public class MainController implements BaseController {
         }
         try {
             scalePort = new Settings(SCALE_PORT).getSerialPort();
+            scaleExitPort = new Settings(SCALE_EXIT_PORT).getSerialPort();
             webSocketClient.connect(Instances.WEBSOCKET_URL);
         } catch (Exception e) {
             //showAlert(Alert.AlertType.ERROR, "Xatolik", e.getMessage());
@@ -207,20 +210,37 @@ public class MainController implements BaseController {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
             scheduler.schedule(() -> {
-                System.out.println("1 chi darvozani ochish.");
+                System.out.println("1 chi kirish darvozani ochish.");
                 buttonController.openGate1();
 
-                System.out.println("2 chi darvozani ochish.");
+                System.out.println("2 chi kirish darvozani ochish.");
                 buttonController.openGate2();
 
-                System.out.println("1 chi darvozani yopish.");
+                System.out.println("1 chi chiqish darvozani ochish.");
+                buttonController.openExitGate1();
+
+                System.out.println("2 chi chiqish darvozani ochish.");
+                buttonController.openExitGate2();
+
+                System.out.println("1 chi kirish darvozani yopish.");
                 scheduler.schedule(() -> {
                     buttonController.closeGate1();
                 }, 4, TimeUnit.SECONDS);
 
-                System.out.println("2 chi darvozani yopish.");
+                System.out.println("2 chi kirish darvozani yopish.");
                 scheduler.schedule(() -> {
                     buttonController.closeGate2();
+                    scheduler.shutdown();
+                }, 4, TimeUnit.SECONDS);
+
+                System.out.println("1 chi chiqish darvozani yopish.");
+                scheduler.schedule(() -> {
+                    buttonController.closeExitGate1();
+                }, 4, TimeUnit.SECONDS);
+
+                System.out.println("2 chi chiqish yopish.");
+                scheduler.schedule(() -> {
+                    buttonController.closeExitGate2();
                     scheduler.shutdown();
                 }, 4, TimeUnit.SECONDS);
                 System.out.println("Tugadi");
@@ -228,7 +248,7 @@ public class MainController implements BaseController {
             }, 5000, TimeUnit.MILLISECONDS);
         }
 
-
+//shu yerda qolgandim
         controlPane.controlConnectButton();
         System.out.println("All tasks are submitted!");
     }

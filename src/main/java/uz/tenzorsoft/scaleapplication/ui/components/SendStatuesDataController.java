@@ -35,6 +35,13 @@ public class SendStatuesDataController {
                             || lastStatuses.isSensor2() != sensor2Connection
                             || lastStatuses.isSensor3() != sensor3Connection
 
+                            || lastStatuses.isGateExit1() != gateExit1Connection
+                            || lastStatuses.isGateExit2() != gateExit2Connection
+
+                            || lastStatuses.isSensorExit1() != sensorExit1Connection
+                            || lastStatuses.isSensorExit2() != sensorExit2Connection
+                            || lastStatuses.isSensorExit3() != sensorExit3Connection
+
                             || lastStatuses.isCamera1() != camera1Connection
                             || lastStatuses.isCamera2() != camera2Connection
                             || lastStatuses.isCamera3() != camera3Connection
@@ -46,8 +53,14 @@ public class SendStatuesDataController {
                         lastStatuses.setGate1(gate1Connection);
                         lastStatuses.setGate2(gate2Connection);
 
+                        lastStatuses.setGateExit1(gateExit1Connection);
+                        lastStatuses.setGateExit2(gateExit2Connection);
+
                         status.setGate1(gate1Connection);
                         status.setGate2(gate2Connection);
+
+                        status.setGateExit1(gateExit1Connection);
+                        status.setGateExit2(gateExit2Connection);
 
                         lastStatuses.setCamera1(camera1Connection);
                         lastStatuses.setCamera2(camera2Connection);
@@ -64,6 +77,14 @@ public class SendStatuesDataController {
                         status.setSensor1(sensor1Connection);
                         status.setSensor2(sensor2Connection);
                         status.setSensor3(sensor3Connection);
+
+                        lastStatuses.setSensorExit1(sensorExit1Connection);
+                        lastStatuses.setSensorExit2(sensorExit2Connection);
+                        lastStatuses.setSensorExit3(sensorExit3Connection);
+
+                        status.setSensorExit1(sensorExit1Connection);
+                        status.setSensorExit2(sensorExit2Connection);
+                        status.setSensorExit3(sensorExit3Connection);
 
                         statusRepository.save(status);
 
