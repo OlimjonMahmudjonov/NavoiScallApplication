@@ -12,14 +12,17 @@
     </Menu>
     <Menu mnemonicParsing="false" text="Sozlamalar">
       <items>
-        <MenuItem mnemonicParsing="false" text="Ma'lumotlar bazasi" onAction="#onDatabaseMenuSelected"/>
-        <MenuItem mnemonicParsing="false" text="Kamera" onAction="#onCameraMenuSelected"/>
-        <MenuItem mnemonicParsing="false" text="Controller" onAction="#onControllerMenuSelected"/>
-        <MenuItem mnemonicParsing="false" text="Shlagbaum" onAction="#onShlagbaumMenuSelected"/>
-        <MenuItem mnemonicParsing="false" text="Tarozi" onAction="#onTaroziMenuSelected"/>
-        <MenuItem mnemonicParsing="false" text="Chiqish vaqti" onAction="#onExitTimeMenuSelected"/>
-        <MenuItem mnemonicParsing="false" text="Printer" onAction="#onPrinterMenuSelected"/>
-        <MenuItem mnemonicParsing="false" text="Export Data Id" onAction="#onExportDataMenuSelected"/>
+        <MenuItem mnemonicParsing="false" text="Tizim sozlamalari" onAction="#settingsTabs"/>
+        <MenuItem mnemonicParsing="false" text="Parolni almashtirish" onAction="#onCameraMenuSelected"/>
+
+<!--        <MenuItem mnemonicParsing="false" text="Ma'lumotlar bazasi" onAction="#onDatabaseMenuSelected"/>-->
+<!--        <MenuItem mnemonicParsing="false" text="Kamera" onAction="#onCameraMenuSelected"/>-->
+<!--        <MenuItem mnemonicParsing="false" text="Controller" onAction="#onControllerMenuSelected"/>-->
+<!--        <MenuItem mnemonicParsing="false" text="Shlagbaum" onAction="#onShlagbaumMenuSelected"/>-->
+<!--        <MenuItem mnemonicParsing="false" text="Tarozi" onAction="#onTaroziMenuSelected"/>-->
+<!--        <MenuItem mnemonicParsing="false" text="Chiqish vaqti" onAction="#onExitTimeMenuSelected"/>-->
+<!--        <MenuItem mnemonicParsing="false" text="Printer" onAction="#onPrinterMenuSelected"/>-->
+<!--        <MenuItem mnemonicParsing="false" text="Export Data Id" onAction="#onExportDataMenuSelected"/>-->
       </items>
     </Menu>
     <Menu mnemonicParsing="false" text="Yordam">

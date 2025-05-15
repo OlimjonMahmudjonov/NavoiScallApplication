@@ -14,6 +14,9 @@ public class Settings {
     public static Integer CLOSE_GATE1_TIMEOUT;
     public static Integer CLOSE_GATE2_TIMEOUT;
 
+    public static Integer CLOSE_GATE1_EXIT_TIMEOUT;
+    public static Integer CLOSE_GATE2_EXIT_TIMEOUT;
+
     public static Long MYCOAL_SCALE_ID;
     public static Long SCALE_WEB_ID;
 
@@ -29,6 +32,7 @@ public class Settings {
     public static String CAMERA_1;
     public static String CAMERA_2;
     public static String CAMERA_3;
+    public static String CAMERA_4;
     public static boolean IS_RASPBERRY_USING;
 
     private SerialPort serialPort;

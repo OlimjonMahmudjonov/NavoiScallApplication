@@ -27,7 +27,7 @@ public class ConnectionsController implements BaseController {
     private final ControllerService controllerService;
     private final LogService logService;
     @FXML
-    private ImageView controller, camera1, camera2, camera3, gate1, gate2, sensor1, sensor2, sensor3, gateExit1, gateExit2, sensorExit1, sensorExit2, sensorExit3;
+    private ImageView controller, camera1, camera2, camera3, camera4, gate1, gate2, sensor1, sensor2, sensor3, gateExit1, gateExit2, sensorExit1, sensorExit2, sensorExit3;
 
     public void initialize() {
         controller.setImage(redLight);
@@ -63,6 +63,7 @@ public class ConnectionsController implements BaseController {
                     camera2Connection = controllerService.checkConnection(CAMERA_2);
 //                    System.out.println("camera2Connection: " + camera2Connection);
                     camera3Connection = controllerService.checkConnection(CAMERA_3);
+                    camera4Connection = controllerService.checkConnection(CAMERA_4);
 //                    System.out.println("camera3Connection: " + camera3Connection);
                     isConnectedToInternet = controllerService.checkInternetConnection(GOOGLE_DNS);
                     Thread.sleep(500);
@@ -92,6 +93,7 @@ public class ConnectionsController implements BaseController {
                     camera1.setImage(camera1Connection ? greenLight : redLight);
                     camera2.setImage(camera2Connection ? greenLight : redLight);
                     camera3.setImage(camera3Connection ? greenLight : redLight);
+                    camera4.setImage(camera4Connection ? greenLight : redLight);
 
                     controller.setImage(isConnected ? greenLight : redLight);
                     gate1.setImage(gate1Connection ? greenLight : redLight);

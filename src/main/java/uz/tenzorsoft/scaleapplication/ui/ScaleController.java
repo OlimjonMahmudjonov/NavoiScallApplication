@@ -22,10 +22,16 @@ public class ScaleController {
 
 
     public void initialize() {
-        scaleWeigh.setDisable(true);
-        scaleWeigh.setText("000 kg");
-        Runtime.getRuntime().addShutdownHook(new Thread(buttonController::closePort)); // Portni tozalash
-
+        if (scaleWeigh != null) {
+            scaleWeigh.setDisable(true);
+            scaleWeigh.setText("000 kg");
+            Runtime.getRuntime().addShutdownHook(new Thread(buttonController::closePort));
+        }
+        if (scaleExitWeight != null) {
+            scaleExitWeight.setDisable(true);
+            scaleExitWeight.setText("000 kg");
+            Runtime.getRuntime().addShutdownHook(new Thread(buttonController::closePort2)); // Portni tozalash
+        }
 
     }
 

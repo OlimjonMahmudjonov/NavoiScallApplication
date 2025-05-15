@@ -20,6 +20,9 @@ public class Configurations implements Serializable {
     private Integer closeGate1Timeout;
     private Integer closeGate2Timeout;
 
+    private Integer closeGateExit1Timeout;
+    private Integer closeGateExit2Timeout;
+
     private Long mycoalScaleId;
     private Long scaleWebId;
 
@@ -35,6 +38,7 @@ public class Configurations implements Serializable {
     private String camera1;
     private String camera2;
     private String camera3;
+    private String camera4;
 
     private Integer raspberryUsing = 0;
 }

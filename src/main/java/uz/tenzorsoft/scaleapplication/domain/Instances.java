@@ -32,6 +32,7 @@ public class Instances<T> {
     public static boolean camera1Connection = false;
     public static boolean camera2Connection = false;
     public static boolean camera3Connection = false;
+    public static boolean camera4Connection = false;
     public static boolean sensor1Connection = false;
     public static boolean sensor2Connection = false;
     public static boolean sensor3Connection = false;

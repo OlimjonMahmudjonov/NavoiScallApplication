@@ -37,15 +37,15 @@ public class ScaleSystem {
     public static final Integer COIL_SENSOR_3 = 17;
     public static final String GOOGLE_DNS = "8.8.8.8";
 
-    public static final Integer RASP_GREEN_LIGHT_EXIT_1 = 21;
-    public static final Integer RASP_GREEN_LIGHT_EXIT_2 = 20;
-    public static final Integer RASP_OPEN_GATE_EXIT_1 = 23;
-    public static final Integer RASP_CLOSE_GATE_EXIT_1 = 24;
-    public static final Integer RASP_OPEN_GATE_EXIT_2 = 25;
-    public static final Integer RASP_CLOSE_GATE_EXIT_2 = 12;
-    public static final Integer RASP_SENSOR_EXIT_1 = 30;
-    public static final Integer RASP_SENSOR_EXIT_2 = 31;
-    public static final Integer RASP_SENSOR_EXIT_3 = 32;
+    public static final Integer RASP_GREEN_LIGHT_EXIT_1 = 5;
+    public static final Integer RASP_GREEN_LIGHT_EXIT_2 = 6;
+    public static final Integer RASP_OPEN_GATE_EXIT_1 = 2;
+    public static final Integer RASP_CLOSE_GATE_EXIT_1 = 3;
+    public static final Integer RASP_OPEN_GATE_EXIT_2 = 19;
+    public static final Integer RASP_CLOSE_GATE_EXIT_2 = 26;
+    public static final Integer RASP_SENSOR_EXIT_1 = 14;
+    public static final Integer RASP_SENSOR_EXIT_2 = 15;
+    public static final Integer RASP_SENSOR_EXIT_3 = 18;
 
     public static final Integer COIL_GREEN_LIGHT_EXIT_1 = 0;
     public static final Integer COIL_RED_LIGHT_EXIT_2 = 0;

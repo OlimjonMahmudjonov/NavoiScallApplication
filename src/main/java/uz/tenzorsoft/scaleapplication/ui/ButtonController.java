@@ -700,5 +700,12 @@ public class ButtonController implements BaseController {
         }
     }
 
+    public void closePort2() {
+        if (scaleExitPort.isOpen() && scaleExitPort != null) {
+            scaleExitPort.closePort();
+            System.out.println("Port closed");
+        }
+    }
+
 
 }

@@ -119,6 +119,7 @@ public class ConfigUtilsService {
         Settings.CAMERA_1 = config.getCamera1() == null ? defaultConfig.getCamera1() : config.getCamera1();
         Settings.CAMERA_2 = config.getCamera2() == null ? defaultConfig.getCamera2() : config.getCamera2();
         Settings.CAMERA_3 = config.getCamera3() == null ? defaultConfig.getCamera3() : config.getCamera3();
+        Settings.CAMERA_4 = config.getCamera4() == null ? defaultConfig.getCamera4() : config.getCamera4();
         Settings.MYCOAL_SCALE_ID = config.getMycoalScaleId() == null ? defaultConfig.getMycoalScaleId() : config.getMycoalScaleId();
         Settings.SCALE_WEB_ID = config.getScaleWebId() == null ? defaultConfig.getScaleWebId() : config.getScaleWebId();
         Settings.IS_RASPBERRY_USING = config.getRaspberryUsing() == 1;

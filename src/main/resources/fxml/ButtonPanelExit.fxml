@@ -27,7 +27,7 @@
     <RowConstraints vgrow="ALWAYS"/> <!-- 2-shlagbaum -->
   </rowConstraints>
 
-  <Text text="Qo'lda boshqarish (Kirish)" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2"
+  <Text text="Qo'lda boshqarish (Chiqish)" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2"
         textAlignment="CENTER" GridPane.halignment="CENTER">
     <font>
       <Font size="16.0"/>

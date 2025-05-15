@@ -3,48 +3,47 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
-<GridPane xmlns="http://javafx.com/javafx/23.0.1"
-          xmlns:fx="http://javafx.com/fxml/1"
-          fx:id="rootPane"
-          prefWidth="420.0" prefHeight="250.0"
-          fx:controller="uz.tenzorsoft.scaleapplication.ui.ImageController"
-          vgap="5" hgap="5"
-          alignment="CENTER"
-          style="-fx-border-color: #000; -fx-border-style: solid; -fx-padding: 5;">
+<AnchorPane xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:id="rootPane"
+            fx:controller="uz.tenzorsoft.scaleapplication.ui.ImageController">
+    <!--          vgap="5" hgap="5"-->
+    <!--          alignment="CENTER"-->
+    <!--          style="-fx-border-color: #000; -fx-border-style: solid; -fx-padding: 5;"-->
 
-  <columnConstraints>
-    <ColumnConstraints hgrow="ALWAYS" percentWidth="50" minWidth="100"/>
-    <ColumnConstraints hgrow="ALWAYS" percentWidth="50" minWidth="100"/>
-  </columnConstraints>
+    <!--  <columnConstraints>-->
+    <!--    <ColumnConstraints hgrow="ALWAYS" percentWidth="50" minWidth="100"/>-->
+    <!--    <ColumnConstraints hgrow="ALWAYS" percentWidth="50" minWidth="100"/>-->
+    <!--  </columnConstraints>-->
 
-  <rowConstraints>
-    <RowConstraints vgrow="ALWAYS" percentHeight="50" minHeight="100"/>
-    <RowConstraints vgrow="ALWAYS" percentHeight="50" minHeight="100"/>
-  </rowConstraints>
+    <!--  <rowConstraints>-->
+    <!--    <RowConstraints vgrow="ALWAYS" percentHeight="50" minHeight="100"/>-->
+    <!--    <RowConstraints vgrow="ALWAYS" percentHeight="50" minHeight="100"/>-->
+    <!--  </rowConstraints>-->
 
-  <StackPane GridPane.rowIndex="0" GridPane.columnIndex="0" alignment="CENTER"
-             style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
-    <ImageView fx:id="imageView1" preserveRatio="true"
-               fitWidth="230" fitHeight="130"/>
-  </StackPane>
+    <HBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="0">
+        <VBox>
+            <StackPane alignment="CENTER" style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
+                <ImageView fx:id="imageView1" preserveRatio="true"
+                           fitWidth="180" fitHeight="70"/>
+            </StackPane>
 
-  <StackPane GridPane.rowIndex="0" GridPane.columnIndex="1" alignment="CENTER"
-             style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
-    <ImageView fx:id="imageView2" preserveRatio="true"
-               fitWidth="230" fitHeight="130"/>
-  </StackPane>
+            <StackPane alignment="CENTER" style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
+                <ImageView fx:id="imageView2" preserveRatio="true"
+                           fitWidth="180" fitHeight="70"/>
+            </StackPane>
+        </VBox>
+        <VBox>
+            <!-- 2-qatordagi rasmlar -->
+            <StackPane alignment="CENTER" style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
+                <ImageView fx:id="imageView3" preserveRatio="true"
+                           fitWidth="180" fitHeight="70"/>
+            </StackPane>
 
-  <!-- 2-qatordagi rasmlar -->
-  <StackPane GridPane.rowIndex="1" GridPane.columnIndex="0" alignment="CENTER"
-             style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
-    <ImageView fx:id="imageView3" preserveRatio="true"
-               fitWidth="230" fitHeight="130"/>
-  </StackPane>
-
-  <StackPane GridPane.rowIndex="1" GridPane.columnIndex="1" alignment="CENTER"
-             style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
-    <ImageView fx:id="imageView4" preserveRatio="true"
-               fitWidth="230" fitHeight="130"/>
-  </StackPane>
-
-</GridPane>
+            <StackPane alignment="CENTER" style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
+                <ImageView fx:id="imageView4" preserveRatio="true"
+                           fitWidth="180" fitHeight="70"/>
+            </StackPane>
+        </VBox>
+    </HBox>
+</AnchorPane>

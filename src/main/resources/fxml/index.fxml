@@ -18,23 +18,22 @@
             <right>
                 <VBox prefHeight="622.0" prefWidth="622.0" BorderPane.alignment="CENTER">
                     <ImageView fitHeight="622.0" fitWidth="622.0" pickOnBounds="true" preserveRatio="true">
-                        <Image url="@../images/coal-distribution.png"/>
+                        <Image url="@../images/navoiyAzot.png"/>
                     </ImageView>
                 </VBox>
             </right>
             <left>
                 <VBox prefHeight="622.0" prefWidth="326.0" BorderPane.alignment="CENTER">
                     <Pane prefHeight="126.0" prefWidth="382.0">
-                        <ImageView fitHeight="32.0" fitWidth="36.0" layoutX="33.0" layoutY="47.0" pickOnBounds="true"
+                        <ImageView fitHeight="40.0" fitWidth="44.0" layoutX="33.0" layoutY="47.0" pickOnBounds="true"
                                    preserveRatio="true">
-                            <Image url="@../images/mycoal-logo.png"/>
+                            <Image url="@../images/navoiyAzotLogo.png"/>
                         </ImageView>
-                        <Label layoutX="75.0" layoutY="52.0" text="My Coal">
-                            <font>
-                                <Font name="Arial" size="20.0"/>
-                            </font>
-                            <!-- Bind font size -->
-                        </Label>
+                        <VBox layoutX="85.0" layoutY="47.0" spacing="-2">
+                            <Label text="Navoiy Azot" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+                            <Label text="Weigh Bridge software" style="-fx-font-size: 12px; -fx-font-weight: normal;" />
+                        </VBox>
+
                     </Pane>
                     <Pane prefHeight="497.0" prefWidth="394.0">
                         <TextField fx:id="phoneNumberField" layoutX="28.0" layoutY="195.0" prefHeight="25.0" prefWidth="270.0"

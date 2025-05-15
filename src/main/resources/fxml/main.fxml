@@ -8,40 +8,46 @@
 <AnchorPane prefHeight="815.0" prefWidth="1395.0" xmlns="http://javafx.com/javafx/23.0.1"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="uz.tenzorsoft.scaleapplication.ui.MainController">
 
-  <fx:include source="MenuBar.fxml"/>
+    <fx:include source="MenuBar.fxml"/>
 
-  <TabPane AnchorPane.topAnchor="25.0" AnchorPane.leftAnchor="0.0"
-           AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0">
-    <Tab closable="false" text="Bosh sahifa">
-      <VBox spacing="10.0">
-        <HBox spacing="10" HBox.hgrow="ALWAYS">
-          <fx:include source="ControlPane.fxml" HBox.hgrow="ALWAYS"/>
-        </HBox>
+    <TabPane AnchorPane.topAnchor="25.0" AnchorPane.leftAnchor="0.0"
+             AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0">
+        <Tab closable="false" text="Bosh sahifa">
+            <VBox spacing="10.0">
+                <AnchorPane>
+                    <VBox AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" spacing="10" HBox.hgrow="ALWAYS">
+                        <fx:include AnchorPane.rightAnchor="0" source="ControlPane.fxml" HBox.hgrow="ALWAYS"/>
+                        <HBox AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" spacing="50"
+                              alignment="BOTTOM_CENTER">
+                            <fx:include source="Scale.fxml" VBox.vgrow="ALWAYS"/>
+                            <Pane AnchorPane.leftAnchor="0" fx:id="scaleAutomationPane" layoutX="1043.0" layoutY="467.0"
+                                  prefHeight="43.0" prefWidth="222.0" VBox.vgrow="ALWAYS"/>
+                            <fx:include source="ScaleExit.fxml" VBox.vgrow="ALWAYS"/>
+                        </HBox>
+                    </VBox>
+                </AnchorPane>
 
-        <HBox spacing="20.0" VBox.vgrow="ALWAYS">
-          <ScrollPane fitToHeight="true" fitToWidth="true" HBox.hgrow="ALWAYS">
-            <fx:include source="TableView.fxml"/>
-          </ScrollPane>
+                <VBox VBox.vgrow="ALWAYS">
+                    <AnchorPane>
+                        <HBox AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="0">
+                            <fx:include source="GridView.fxml"/>
+                            <fx:include source="ButtonPanel.fxml" VBox.vgrow="ALWAYS"/>
 
-          <VBox spacing="10.0" minWidth="320" prefWidth="360" HBox.hgrow="ALWAYS" style="-fx-padding: 0 10 0 0;">
+                            <fx:include source="ImageView.fxml" VBox.vgrow="ALWAYS"/>
 
-            <fx:include source="GridView.fxml" VBox.vgrow="ALWAYS"/>
-            <fx:include source="Scale.fxml" VBox.vgrow="ALWAYS"/>
-            <fx:include source="ButtonPanel.fxml" VBox.vgrow="ALWAYS"/>
+                            <fx:include source="ButtonPanelExit.fxml" VBox.vgrow="ALWAYS"/>
+                            <fx:include source="GridExitView.fxml" VBox.vgrow="ALWAYS"/>
+                        </HBox>
+                    </AnchorPane>
+                    <ScrollPane fitToHeight="true" fitToWidth="true" HBox.hgrow="ALWAYS">
+                        <fx:include source="TableView.fxml"/>
+                    </ScrollPane>
+                </VBox>
+            </VBox>
+        </Tab>
 
-            <Pane fx:id="scaleAutomationPane" layoutX="1043.0" layoutY="467.0"
-                  prefHeight="43.0" prefWidth="222.0" VBox.vgrow="ALWAYS"/>
-
-            <fx:include source="ImageView.fxml" VBox.vgrow="ALWAYS"/>
-
-          </VBox>
-
-        </HBox>
-      </VBox>
-    </Tab>
-
-    <fx:include source="CameraView.fxml"/>
-    <fx:include source="UserView.fxml"/>
-    <fx:include source="TestTab.fxml"/>
-  </TabPane>
+        <fx:include source="CameraView.fxml"/>
+        <fx:include source="UserView.fxml"/>
+        <fx:include source="TestTab.fxml"/>
+    </TabPane>
 </AnchorPane>

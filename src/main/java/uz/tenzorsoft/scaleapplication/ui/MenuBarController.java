@@ -6,13 +6,17 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -32,7 +36,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
@@ -51,6 +54,97 @@ public class MenuBarController implements BaseController {
     private final ControlPane controlPane;
     @Autowired
     private TableController tableController;
+
+    private Node incoms() {
+        AnchorPane camera = showCameraPopup();
+        Node node = showShlagbaumPopup();
+        Node node1 = showTaroziPopup();
+        return new AnchorPane(new VBox(5, camera, node, node1));
+    }
+
+    private Node outs() {
+        AnchorPane camera = showCameraPopupOut();
+        Node node = showShlagbaumPopupOut();
+        Node node1 = showTaroziPopupOut();
+        return new AnchorPane(new VBox(5, camera, node, node1));
+    }
+
+    @FXML
+    private void settingsTabs() {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Sozlamalar");
+
+        TabPane tabPane = new TabPane();
+
+        Button saveButton = new Button("Saqlash");
+        Button cancelButton = new Button("Bekor qilish");
+        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
+        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
+
+        Tab inCamera = new Tab("Kirish");
+//        showCameraPopup();
+        inCamera.setContent(incoms());
+        inCamera.setClosable(false);
+
+        Tab outCamera = new Tab("Chiqish");
+        outCamera.setContent(outs());
+        outCamera.setClosable(false);
+
+//        Tab inGate = new Tab("Kirish shlagbaum");
+//        inGate.setContent(showShlagbaumPopup());
+//        inGate.setClosable(false);
+//
+//        Tab outGate = new Tab("Chiqish shlagbaum");
+//        outGate.setContent(showShlagbaumPopupOut());
+//        outGate.setClosable(false);
+//
+//        Tab inScale = new Tab("Kiruvchi tarozi");
+//        inScale.setContent(showTaroziPopup());
+//        inScale.setClosable(false);
+//
+//        Tab outScale = new Tab("Chiquvchi tarozi");
+        Tab printer = new Tab("Printer");
+        printer.setContent(showPrinterPopup());
+        printer.setClosable(false);
+        Tab controller = new Tab("Controller");
+        controller.setContent(showControllerPopup());
+        controller.setClosable(false);
+
+        tabPane.getTabs().add(inCamera);
+        tabPane.getTabs().add(outCamera);
+//        tabPane.getTabs().add(inGate);
+//        tabPane.getTabs().add(outGate);
+//        tabPane.getTabs().add(inScale);
+//        tabPane.getTabs().add(outScale);
+        tabPane.getTabs().add(printer);
+        tabPane.getTabs().add(controller);
+
+        HBox hBox = new HBox(10, saveButton, cancelButton);
+        AnchorPane anchorPane = new AnchorPane(tabPane, hBox);
+        AnchorPane.setBottomAnchor(hBox, 10.0);
+        AnchorPane.setRightAnchor(hBox, 10.0);
+
+        AnchorPane.setBottomAnchor(tabPane, 40.0);
+
+        Scene popupScene = new Scene(anchorPane);
+        popupStage.setScene(popupScene);
+        popupStage.setResizable(false);
+        popupStage.show();
+    }
+
+
+    private static Node anchorSet(Node node, Double left, Double top, Double right, Double bottom) {
+        if (left != null)
+            AnchorPane.setLeftAnchor(node, left);
+        if (left != null)
+            AnchorPane.setTopAnchor(node, top);
+        if (left != null)
+            AnchorPane.setRightAnchor(node, right);
+        if (left != null)
+            AnchorPane.setBottomAnchor(node, bottom);
+        return node;
+    }
 
     @FXML
     private void onDatabaseMenuSelected() {
@@ -76,10 +170,12 @@ public class MenuBarController implements BaseController {
     private void onTaroziMenuSelected() {
         showTaroziPopup();
     }
+
     @FXML
     private void onExportDataMenuSelected() {
         showExportData();
     }
+
     @FXML
     private void onExitTimeMenuSelected() {
         showExitTimePopup();
@@ -257,77 +353,154 @@ public class MenuBarController implements BaseController {
     }
 
 
-    private void showCameraPopup() {
+    private AnchorPane showCameraPopup() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
-        popupStage.setTitle("Kamera Sozlamalari");
 
         // Kirish Kamerasi
-        Label camera1Label = new Label("1-kamera (Kirish kamerasi) IP manzili:");
+        Label camera = new Label("Camera");
+
+        Label camera1Label = new Label("1-kamera kirish IP manzili:");
         TextField camera1Field = new TextField(CAMERA_1);
+        camera1Field.setPrefWidth(80);
+
+        Label rezervCam = new Label("Rezerv kamera:");
+        TextField cameraRezervField = new TextField();
+        cameraRezervField.setPrefWidth(80);
 
         // Yuk Kamerasi
-        Label camera2Label = new Label("2-kamera (Yuk kamerasi) IP manzili:");
+        Label camera2Label = new Label("2-kamera yuk IP manzili:");
         TextField camera2Field = new TextField(CAMERA_2);
+        camera2Field.setPrefWidth(80);
 
-        // Chiqish Kamerasi
-        Label camera3Label = new Label("3-kamera (Chiqish kamerasi) IP manzili:");
-        TextField camera3Field = new TextField(CAMERA_3);
+//        saveButton.setDisable(true); // Disabled by default
+//
+//        // Enable Save button on any change in text fields
+//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
+//            saveButton.setDisable(
+//                    camera1Field.getText().equals(CAMERA_1) &&
+//                            camera2Field.getText().equals(CAMERA_2)
+//            );
+//        };
 
-        // Buttons
-        Button saveButton = new Button("Saqlash");
-        Button cancelButton = new Button("Bekor qilish");
+//        camera1Field.textProperty().addListener(changeListener);
+//        camera2Field.textProperty().addListener(changeListener);
 
-        saveButton.setDisable(true); // Disabled by default
+//        saveButton.setOnAction(event -> {
+//            CAMERA_1 = camera1Field.getText();
+//            CAMERA_2 = camera2Field.getText();
+//            configurations.setCamera1(camera1Field.getText());
+//            configurations.setCamera2(camera2Field.getText());
+//            configUtilsService.saveConfig(configurations);
+//            // Add save logic for all three cameras here
+//            popupStage.close();
+//        });
 
-        // Enable Save button on any change in text fields
-        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
-            saveButton.setDisable(
-                    camera1Field.getText().equals(CAMERA_1) &&
-                            camera2Field.getText().equals(CAMERA_2) &&
-                            camera3Field.getText().equals(CAMERA_3)
-            );
-        };
+//        cancelButton.setOnAction(event -> popupStage.close());
+//
+//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
+//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
+//
+//        HBox buttonBox = new HBox(saveButton, cancelButton);
+//        buttonBox.setSpacing(10);
+//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
-        camera1Field.textProperty().addListener(changeListener);
-        camera2Field.textProperty().addListener(changeListener);
-        camera3Field.textProperty().addListener(changeListener);
-
-        saveButton.setOnAction(event -> {
-            CAMERA_1 = camera1Field.getText();
-            CAMERA_2 = camera2Field.getText();
-            CAMERA_3 = camera3Field.getText();
-            configurations.setCamera1(camera1Field.getText());
-            configurations.setCamera2(camera2Field.getText());
-            configurations.setCamera3(camera3Field.getText());
-            configUtilsService.saveConfig(configurations);
-            // Add save logic for all three cameras here
-            popupStage.close();
-        });
-
-        cancelButton.setOnAction(event -> popupStage.close());
-
-        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
-
-        HBox buttonBox = new HBox(saveButton, cancelButton);
-        buttonBox.setSpacing(10);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-
+        VBox v = new VBox(10, rezervCam, cameraRezervField);
         // Layout
-        VBox layout = new VBox(10,
-                camera1Label, camera1Field,
-                camera2Label, camera2Field,
-                camera3Label, camera3Field,
-                buttonBox);
-        layout.setSpacing(15);
+        VBox h = new VBox(10, camera,
+                new HBox(20,
+                        new VBox(10,
+                                new VBox(10,
+                                        camera1Label, camera1Field),
+                                new VBox(10,
+                                        camera2Label, camera2Field)
+                        ), v
+                ));
+        h.setAlignment(Pos.CENTER);
+        AnchorPane layout = new AnchorPane(anchorSet(h
+                ,
+                0., 0., 0., 0.));
+//        layout.setSpacing(15);
         layout.setPadding(new Insets(15));
         layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
 
-        Scene popupScene = new Scene(layout, 400, 300);
-        popupStage.setResizable(false);
-        popupStage.setScene(popupScene);
-        popupStage.show();
+        return layout;
+    }
+
+    private AnchorPane showCameraPopupOut() {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+
+        // Chiqish Kamerasi
+        Label camera3Label = new Label("1-kamera kirish IP manzili:");
+        Label camera = new Label("Camera");
+
+        TextField camera3Field = new TextField(CAMERA_3);
+        camera3Field.setPrefWidth(80);
+
+        Label camera4Label = new Label("2-kamera yuk IP manzili:");
+        TextField camera4Field = new TextField(CAMERA_4);
+        camera4Field.setPrefWidth(80);
+
+        Label rezervCam = new Label("Rezerv kamera:");
+        TextField cameraRezervField = new TextField();
+        cameraRezervField.setPrefWidth(80);
+
+        // Buttons
+//        Button saveButton = new Button("Saqlash");
+//        Button cancelButton = new Button("Bekor qilish");
+
+//        saveButton.setDisable(true); // Disabled by default
+//
+//        // Enable Save button on any change in text fields
+//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
+//            saveButton.setDisable(
+//                    camera3Field.getText().equals(CAMERA_3) &&
+//                            camera4Field.getText().equals(CAMERA_4)
+//            );
+//        };
+
+//        camera3Field.textProperty().addListener(changeListener);
+//        camera4Field.textProperty().addListener(changeListener);
+
+//        saveButton.setOnAction(event -> {
+//            CAMERA_3 = camera3Field.getText();
+//            CAMERA_4 = camera4Field.getText();
+//            configurations.setCamera3(camera3Field.getText());
+//            configurations.setCamera4(camera4Field.getText());
+//            configUtilsService.saveConfig(configurations);
+//            // Add save logic for all three cameras here
+//            popupStage.close();
+//        });
+//
+//        cancelButton.setOnAction(event -> popupStage.close());
+//
+//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
+//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
+
+//        HBox buttonBox = new HBox(saveButton, cancelButton);
+//        buttonBox.setSpacing(10);
+//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+
+        // Layout
+        VBox v = new VBox(10, rezervCam, cameraRezervField);
+        // Layout
+        VBox h = new VBox(10, camera,
+                new HBox(20,
+                        new VBox(10,
+                                new VBox(10,
+                                        camera3Label, camera3Field),
+                                new VBox(10,
+                                        camera4Label, camera4Field)
+                        ), v
+                ));
+        h.setAlignment(Pos.CENTER);
+        AnchorPane layout = new AnchorPane(anchorSet(
+                h, 0., 0., 0., 0.));
+        layout.setPadding(new Insets(15));
+        layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
+
+        return layout;
     }
 
 
@@ -404,7 +577,7 @@ public class MenuBarController implements BaseController {
     }
 */
 
-    private void showControllerPopup() {
+    private Node showControllerPopup() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.setTitle("Controller Sozlamalari");
@@ -422,210 +595,438 @@ public class MenuBarController implements BaseController {
         ToggleSwitch toggleSwitch = new ToggleSwitch();
 
         // Buttons
-        Button saveButton = new Button("Saqlash");
-        Button cancelButton = new Button("Bekor qilish");
+//        Button saveButton = new Button("Saqlash");
+//        Button cancelButton = new Button("Bekor qilish");
 
-        saveButton.setDisable(true); // Disabled by default
+//        saveButton.setDisable(true); // Disabled by default
+//
+//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
+//            saveButton.setDisable(
+//                    toggleSwitch.isSelected() &&
+//                            controllerAddressField.getText().equals(CONTROLLER_IP) &&
+//                            portField.getText().equals(CONTROLLER_PORT.toString()) &&
+//                            timeoutField.getText().equals("" + CONTROLLER_CONNECT_TIMEOUT)
+//            );
+//        };
 
-        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
-            saveButton.setDisable(
-                    toggleSwitch.isSelected() &&
-                            controllerAddressField.getText().equals(CONTROLLER_IP) &&
-                            portField.getText().equals(CONTROLLER_PORT.toString()) &&
-                            timeoutField.getText().equals("" + CONTROLLER_CONNECT_TIMEOUT)
-            );
-        };
+//        controllerAddressField.textProperty().addListener(changeListener);
+//        portField.textProperty().addListener(changeListener);
+//        timeoutField.textProperty().addListener(changeListener);
+//
+//        if (IS_RASPBERRY_USING) {
+//            toggleSwitch.setSelected(true);
+//            controllerAddressField.setDisable(true);
+//            portField.setDisable(true);
+//            timeoutField.setDisable(true);
+//        }
 
-        controllerAddressField.textProperty().addListener(changeListener);
-        portField.textProperty().addListener(changeListener);
-        timeoutField.textProperty().addListener(changeListener);
+//        toggleSwitch.selectedProperty().addListener((observable, oldValue, newValue) -> {
+//            boolean isControllerUsed = newValue;
+//            controllerAddressField.setDisable(isControllerUsed);
+//            portField.setDisable(isControllerUsed);
+//            timeoutField.setDisable(isControllerUsed);
+//            saveButton.setDisable(false);
+//        });
 
-        if (IS_RASPBERRY_USING) {
-            toggleSwitch.setSelected(true);
-            controllerAddressField.setDisable(true);
-            portField.setDisable(true);
-            timeoutField.setDisable(true);
-        }
+//        saveButton.setOnAction(event -> {
+//            if (!toggleSwitch.isSelected()) {
+//                CONTROLLER_IP = controllerAddressField.getText();
+//                CONTROLLER_PORT = Integer.parseInt(portField.getText());
+//                CONTROLLER_CONNECT_TIMEOUT = Integer.parseInt(timeoutField.getText());
+//                configurations.setControllerIp(controllerAddressField.getText());
+//                configurations.setControllerPort(Integer.parseInt(portField.getText()));
+//                configurations.setControllerConnectTimeout(Integer.parseInt(timeoutField.getText()));
+//            } else {
+//                isRaspberryUsing = true;
+//                IS_RASPBERRY_USING = true;
+//            }
+//            configurations.setRaspberryUsing(toggleSwitch.isSelected() ? 1 : 0);
+//            configUtilsService.saveConfig(configurations);
+//            popupStage.close();
+//        });
+//
+//        cancelButton.setOnAction(event -> popupStage.close());
+//
+//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
+//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
 
-        toggleSwitch.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            boolean isControllerUsed = newValue;
-            controllerAddressField.setDisable(isControllerUsed);
-            portField.setDisable(isControllerUsed);
-            timeoutField.setDisable(isControllerUsed);
-            saveButton.setDisable(false);
-        });
-
-        saveButton.setOnAction(event -> {
-            if (!toggleSwitch.isSelected()) {
-                CONTROLLER_IP = controllerAddressField.getText();
-                CONTROLLER_PORT = Integer.parseInt(portField.getText());
-                CONTROLLER_CONNECT_TIMEOUT = Integer.parseInt(timeoutField.getText());
-                configurations.setControllerIp(controllerAddressField.getText());
-                configurations.setControllerPort(Integer.parseInt(portField.getText()));
-                configurations.setControllerConnectTimeout(Integer.parseInt(timeoutField.getText()));
-            } else {
-                isRaspberryUsing = true;
-                IS_RASPBERRY_USING = true;
-            }
-            configurations.setRaspberryUsing(toggleSwitch.isSelected() ? 1 : 0);
-            configUtilsService.saveConfig(configurations);
-            popupStage.close();
-        });
-
-        cancelButton.setOnAction(event -> popupStage.close());
-
-        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
-
-        HBox buttonBox = new HBox(saveButton, cancelButton);
-        buttonBox.setSpacing(10);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+//        HBox buttonBox = new HBox(saveButton, cancelButton);
+//        buttonBox.setSpacing(10);
+//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
         // Layout
         VBox layout = new VBox(10,
                 toggleSwitchLabel, toggleSwitch,
                 controllerAddressLabel, controllerAddressField,
                 portLabel, portField,
-                timeoutLabel, timeoutField,
-                buttonBox);
+                timeoutLabel, timeoutField);
         layout.setSpacing(15);
         layout.setPadding(new Insets(15));
         layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
 
-        Scene popupScene = new Scene(layout, 400, 350); // Adjusted height for the additional ToggleSwitch
-        popupStage.setScene(popupScene);
-        popupStage.show();
+//        Scene popupScene = new Scene(layout, 400, 350); // Adjusted height for the additional ToggleSwitch
+//        popupStage.setScene(popupScene);
+//        popupStage.show();
+        return layout;
     }
 
 
-    private void showShlagbaumPopup() {
+    private Node showShlagbaumPopup() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
-        popupStage.setTitle("Shlagbaum Sozlamalari");
 
         // Form Elements
         Label firstShlagbaumLabel = new Label("1-shlagbaum yopilish vaqti (ms):");
+        Label shlakbaum = new Label("Shlagbaum");
         TextField firstShlagbaumField = new TextField("" + CLOSE_GATE1_TIMEOUT);
+        firstShlagbaumField.setPrefWidth(80);
 
         Label secondShlagbaumLabel = new Label("2-shlagbaum yopilish vaqti (ms):");
         TextField secondShlagbaumField = new TextField("" + CLOSE_GATE2_TIMEOUT);
+        secondShlagbaumField.setPrefWidth(80);
+
+        Label pinLabel = new Label("Pin");
+        TextField pin = new TextField();
+        pin.setPrefWidth(40);
+
+        Label pinLabel2 = new Label("Pin");
+        TextField pin2 = new TextField();
+        pin2.setPrefWidth(40);
+
+        secondShlagbaumField.setPrefWidth(80);
+
+//        Label firstShlagbaumLabelExit = new Label("1-shlagbaum yopilish vaqti (ms):");
+//        TextField firstShlagbaumFieldExit = new TextField("" + CLOSE_GATE1_EXIT_TIMEOUT);
+//
+//        Label secondShlagbaumLabelExit = new Label("2-shlagbaum yopilish vaqti (ms):");
+//        TextField secondShlagbaumFieldExit = new TextField("" + CLOSE_GATE2_EXIT_TIMEOUT);
 
         // Buttons
-        Button saveButton = new Button("Saqlash");
-        Button cancelButton = new Button("Bekor qilish");
-
-        saveButton.setDisable(true); // Disabled by default
+//        Button saveButton = new Button("Saqlash");
+//        Button cancelButton = new Button("Bekor qilish");
+//
+//        saveButton.setDisable(true); // Disabled by default
 
         // Enable Save button on any change in text fields
-        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
-            saveButton.setDisable(
-                    firstShlagbaumField.getText().equals("" + CLOSE_GATE1_TIMEOUT) &&
-                            secondShlagbaumField.getText().equals("" + CLOSE_GATE2_TIMEOUT)
-            );
-        };
+//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
+//            saveButton.setDisable(
+//                    firstShlagbaumField.getText().equals("" + CLOSE_GATE1_TIMEOUT) &&
+//                            secondShlagbaumField.getText().equals("" + CLOSE_GATE2_TIMEOUT)
+////                            firstShlagbaumFieldExit.getText().equals("" + CLOSE_GATE1_EXIT_TIMEOUT) &&
+////                            secondShlagbaumFieldExit.getText().equals("" + CLOSE_GATE2_EXIT_TIMEOUT)
+//            );
+//        };
 
-        firstShlagbaumField.textProperty().addListener(changeListener);
-        secondShlagbaumField.textProperty().addListener(changeListener);
+//        firstShlagbaumField.textProperty().addListener(changeListener);
+//        secondShlagbaumField.textProperty().addListener(changeListener);
 
-        saveButton.setOnAction(event -> {
-            CLOSE_GATE1_TIMEOUT = Integer.parseInt(firstShlagbaumField.getText());
-            CLOSE_GATE2_TIMEOUT = Integer.parseInt(secondShlagbaumField.getText());
-            configurations.setCloseGate1Timeout(Integer.parseInt(firstShlagbaumField.getText()));
-            configurations.setCloseGate2Timeout(Integer.parseInt(secondShlagbaumField.getText()));
-            configUtilsService.saveConfig(configurations);
-            // Add save logic here
-            popupStage.close();
-        });
+//        firstShlagbaumFieldExit.textProperty().addListener(changeListener);
+//        secondShlagbaumFieldExit.textProperty().addListener(changeListener);
 
-        cancelButton.setOnAction(event -> popupStage.close());
+//        saveButton.setOnAction(event -> {
+//            CLOSE_GATE1_TIMEOUT = Integer.parseInt(firstShlagbaumField.getText());
+//            CLOSE_GATE2_TIMEOUT = Integer.parseInt(secondShlagbaumField.getText());
+//            configurations.setCloseGate1Timeout(Integer.parseInt(firstShlagbaumField.getText()));
+//            configurations.setCloseGate2Timeout(Integer.parseInt(secondShlagbaumField.getText()));
+//
+////            CLOSE_GATE1_EXIT_TIMEOUT = Integer.parseInt(firstShlagbaumFieldExit.getText());
+////            CLOSE_GATE2_EXIT_TIMEOUT = Integer.parseInt(secondShlagbaumFieldExit.getText());
+////            configurations.setCloseGateExit1Timeout(Integer.parseInt(firstShlagbaumFieldExit.getText()));
+////            configurations.setCloseGateExit2Timeout(Integer.parseInt(secondShlagbaumFieldExit.getText()));
+//            configUtilsService.saveConfig(configurations);
+//            // Add save logic here
+//            popupStage.close();
+//        });
 
-        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
-
-        HBox buttonBox = new HBox(saveButton, cancelButton);
-        buttonBox.setSpacing(10);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+//        cancelButton.setOnAction(event -> popupStage.close());
+//
+//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
+//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
+//
+//        HBox buttonBox = new HBox(saveButton, cancelButton);
+//        buttonBox.setSpacing(10);
+//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
         // Layout
-        VBox layout = new VBox(10,
-                firstShlagbaumLabel, firstShlagbaumField,
-                secondShlagbaumLabel, secondShlagbaumField,
-                buttonBox);
-        layout.setSpacing(15);
+        VBox v = new VBox(10, shlakbaum, new VBox(10,
+                new HBox(20, new VBox(firstShlagbaumLabel, firstShlagbaumField), new VBox(pinLabel, pin)),
+                new HBox(20, new VBox(secondShlagbaumLabel, secondShlagbaumField), new VBox(pinLabel2, pin2))
+        ));
+        v.setAlignment(Pos.CENTER);
+        AnchorPane layout = new AnchorPane(
+                anchorSet(v,
+                        0., 0., 0., 0.));
         layout.setPadding(new Insets(15));
         layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
 
-        Scene popupScene = new Scene(layout, 400, 220);
-        popupStage.setScene(popupScene);
-        popupStage.setResizable(false);
-        popupStage.show();
+        return layout;
+    }
+
+    private Node showShlagbaumPopupOut() {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+
+        // Form Elements
+//        Label firstShlagbaumLabel = new Label("1-shlagbaum yopilish vaqti (ms):");
+//        TextField firstShlagbaumField = new TextField("" + CLOSE_GATE1_TIMEOUT);
+//
+//        Label secondShlagbaumLabel = new Label("2-shlagbaum yopilish vaqti (ms):");
+//        TextField secondShlagbaumField = new TextField("" + CLOSE_GATE2_TIMEOUT);
+
+        Label firstShlagbaumLabelExit = new Label("1-shlagbaum yopilish vaqti (ms):");
+        Label shlagbaum = new Label("Shlagbaum");
+        TextField firstShlagbaumFieldExit = new TextField("" + CLOSE_GATE1_EXIT_TIMEOUT);
+        firstShlagbaumFieldExit.setPrefWidth(80);
+
+        Label secondShlagbaumLabelExit = new Label("2-shlagbaum yopilish vaqti (ms):");
+        TextField secondShlagbaumFieldExit = new TextField("" + CLOSE_GATE2_EXIT_TIMEOUT);
+        secondShlagbaumFieldExit.setPrefWidth(80);
+
+        Label pinLabel = new Label("Pin");
+        TextField pin = new TextField();
+        pin.setPrefWidth(40);
+
+        Label pinLabel2 = new Label("Pin");
+        TextField pin2 = new TextField();
+        pin2.setPrefWidth(40);
+
+        // Buttons
+//        Button saveButton = new Button("Saqlash");
+//        Button cancelButton = new Button("Bekor qilish");
+//
+//        saveButton.setDisable(true); // Disabled by default
+
+        // Enable Save button on any change in text fields
+//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
+//            saveButton.setDisable(
+//                    firstShlagbaumField.getText().equals("" + CLOSE_GATE1_TIMEOUT) &&
+//                            secondShlagbaumField.getText().equals("" + CLOSE_GATE2_TIMEOUT)
+////                            firstShlagbaumFieldExit.getText().equals("" + CLOSE_GATE1_EXIT_TIMEOUT) &&
+////                            secondShlagbaumFieldExit.getText().equals("" + CLOSE_GATE2_EXIT_TIMEOUT)
+//            );
+//        };
+
+//        firstShlagbaumField.textProperty().addListener(changeListener);
+//        secondShlagbaumField.textProperty().addListener(changeListener);
+
+//        firstShlagbaumFieldExit.textProperty().addListener(changeListener);
+//        secondShlagbaumFieldExit.textProperty().addListener(changeListener);
+
+//        saveButton.setOnAction(event -> {
+//            CLOSE_GATE1_TIMEOUT = Integer.parseInt(firstShlagbaumField.getText());
+//            CLOSE_GATE2_TIMEOUT = Integer.parseInt(secondShlagbaumField.getText());
+//            configurations.setCloseGate1Timeout(Integer.parseInt(firstShlagbaumField.getText()));
+//            configurations.setCloseGate2Timeout(Integer.parseInt(secondShlagbaumField.getText()));
+//
+////            CLOSE_GATE1_EXIT_TIMEOUT = Integer.parseInt(firstShlagbaumFieldExit.getText());
+////            CLOSE_GATE2_EXIT_TIMEOUT = Integer.parseInt(secondShlagbaumFieldExit.getText());
+////            configurations.setCloseGateExit1Timeout(Integer.parseInt(firstShlagbaumFieldExit.getText()));
+////            configurations.setCloseGateExit2Timeout(Integer.parseInt(secondShlagbaumFieldExit.getText()));
+//            configUtilsService.saveConfig(configurations);
+//            // Add save logic here
+//            popupStage.close();
+//        });
+
+//        cancelButton.setOnAction(event -> popupStage.close());
+//
+//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
+//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
+//
+//        HBox buttonBox = new HBox(saveButton, cancelButton);
+//        buttonBox.setSpacing(10);
+//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+
+        // Layout
+
+        VBox v = new VBox(10, shlagbaum, new VBox(10,
+                new HBox(20, new VBox(firstShlagbaumLabelExit, firstShlagbaumFieldExit), new VBox(pinLabel, pin)),
+                new HBox(20, new VBox(secondShlagbaumLabelExit, secondShlagbaumFieldExit), new VBox(pinLabel2, pin2))
+        ));
+        v.setAlignment(Pos.CENTER);
+        AnchorPane layout = new AnchorPane(
+                anchorSet(v,
+                        0., 0., 0., 0.));
+        layout.setPadding(new Insets(15));
+        layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
+
+        return layout;
     }
 
 
-    private void showTaroziPopup() {
+    private Node showTaroziPopup() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
-        popupStage.setTitle("Tarozi Sozlamalari");
+//        popupStage.setTitle("Tarozi Sozlamalari");
 
         // Form Elements
 //        Label exitTimeLabel = new Label("Mashinaning qaytib chiqish vaqti (ms):");
 //        TextField exitTimeField = new TextField(EXIT_TIMEOUT.toString());
 
         // Form Elements
-        Label massTimeLabel = new Label("Tarozi massasini aniqlash vaqti (ms):");
+        Label massTimeLabel = new Label("Vazn aniqlash vaqti (ms):");
+        Label tarozi = new Label("Tarozi");
         TextField massTimeField = new TextField(SCALE_TIMEOUT.toString());
+        massTimeField.setPrefWidth(80);
 
         Label portLabel = new Label("Porti:");
         TextField portField = new TextField(SCALE_PORT);
+        portField.setPrefWidth(80);
+//        Label massTimeLabelExit = new Label("Chiqish Tarozi massasini aniqlash vaqti (ms):");
+//        TextField massTimeFieldExit = new TextField(SCALE_TIMEOUT.toString());
+//
+//        Label portLabelExit = new Label("Porti:");
+//        TextField portFieldExit = new TextField(SCALE_PORT);
 
         // Buttons
-        Button saveButton = new Button("Saqlash");
-        Button cancelButton = new Button("Bekor qilish");
+//        Button saveButton = new Button("Saqlash");
+//        Button cancelButton = new Button("Bekor qilish");
 
-        saveButton.setDisable(true); // Disabled by default
+//        saveButton.setDisable(true); // Disabled by default
+//
+//        // Enable Save button on any change in text fields
+//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
+//            saveButton.setDisable(
+//                    massTimeField.getText().equals(SCALE_TIMEOUT.toString()) &&
+//                            portField.getText().equals(SCALE_PORT) &&
+//                            massTimeFieldExit.getText().equals(EXIT_TIMEOUT.toString()) &&
+//                            portFieldExit.getText().equals(SCALE_EXIT_PORT)
+//            );
+//        };
 
-        // Enable Save button on any change in text fields
-        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
-            saveButton.setDisable(
-                    massTimeField.getText().equals(SCALE_TIMEOUT.toString()) &&
-                            portField.getText().equals(SCALE_PORT)
-            );
-        };
+//        massTimeField.textProperty().addListener(changeListener);
+//        portField.textProperty().addListener(changeListener);
+//
+//        massTimeFieldExit.textProperty().addListener(changeListener);
+//        portFieldExit.textProperty().addListener(changeListener);
+//
+//        saveButton.setOnAction(event -> {
+//            SCALE_TIMEOUT = Integer.parseInt(massTimeField.getText());
+//            SCALE_PORT = portField.getText();
+//            configurations.setScaleTimeout(Integer.parseInt(massTimeField.getText()));
+//            configurations.setScalePort(portField.getText());
+//
+//            EXIT_TIMEOUT = Integer.parseInt(massTimeFieldExit.getText());
+//            SCALE_EXIT_PORT = portFieldExit.getText();
+//            configurations.setExitTimeout(Integer.parseInt(massTimeFieldExit.getText()));
+//            configurations.setScaleExitPort(portFieldExit.getText());
+//            configUtilsService.saveConfig(configurations);
+//            // Add save logic here
+//            popupStage.close();
+//        });
 
-        massTimeField.textProperty().addListener(changeListener);
-        portField.textProperty().addListener(changeListener);
-
-        saveButton.setOnAction(event -> {
-            SCALE_TIMEOUT = Integer.parseInt(massTimeField.getText());
-            SCALE_PORT = portField.getText();
-            configurations.setScaleTimeout(Integer.parseInt(massTimeField.getText()));
-            configurations.setScalePort(portField.getText());
-            configUtilsService.saveConfig(configurations);
-            // Add save logic here
-            popupStage.close();
-        });
-
-        cancelButton.setOnAction(event -> popupStage.close());
-
-        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
-
-        HBox buttonBox = new HBox(saveButton, cancelButton);
-        buttonBox.setSpacing(10);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+//        cancelButton.setOnAction(event -> popupStage.close());
+//
+//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
+//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
+//
+//        HBox buttonBox = new HBox(saveButton, cancelButton);
+//        buttonBox.setSpacing(10);
+//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
         // Layout
-        VBox layout = new VBox(10,
-                massTimeLabel, massTimeField,
-                portLabel, portField,
-                buttonBox);
-        layout.setSpacing(15);
+        VBox v = new VBox(10, tarozi, new HBox(20,
+                new VBox(10,
+                        massTimeLabel, massTimeField
+                ),
+                new VBox(10,
+                        portLabel, portField)
+        ));
+        v.setAlignment(Pos.CENTER);
+        AnchorPane layout = new AnchorPane(
+                anchorSet(v, 0., 0., 0., 0.)
+        );
         layout.setPadding(new Insets(15));
         layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
 
-        Scene popupScene = new Scene(layout, 450, 300);
-        popupStage.setScene(popupScene);
-        popupStage.show();
+        return layout;
+    }
+    private Node showTaroziPopupOut() {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+//        popupStage.setTitle("Tarozi Sozlamalari");
+
+        // Form Elements
+//        Label exitTimeLabel = new Label("Mashinaning qaytib chiqish vaqti (ms):");
+//        TextField exitTimeField = new TextField(EXIT_TIMEOUT.toString());
+
+        // Form Elements
+        Label massTimeLabel = new Label("Vazn aniqlash vaqti (ms):");
+        Label tarozi = new Label("Tarozi");
+
+        TextField massTimeField = new TextField(EXIT_TIMEOUT.toString());
+        massTimeField.setPrefWidth(80);
+
+        Label portLabel = new Label("Porti:");
+        TextField portField = new TextField(SCALE_EXIT_PORT);
+        portField.setPrefWidth(80);
+//        Label massTimeLabelExit = new Label("Chiqish Tarozi massasini aniqlash vaqti (ms):");
+//        TextField massTimeFieldExit = new TextField(SCALE_TIMEOUT.toString());
+//
+//        Label portLabelExit = new Label("Porti:");
+//        TextField portFieldExit = new TextField(SCALE_PORT);
+
+        // Buttons
+//        Button saveButton = new Button("Saqlash");
+//        Button cancelButton = new Button("Bekor qilish");
+
+//        saveButton.setDisable(true); // Disabled by default
+//
+//        // Enable Save button on any change in text fields
+//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
+//            saveButton.setDisable(
+//                    massTimeField.getText().equals(SCALE_TIMEOUT.toString()) &&
+//                            portField.getText().equals(SCALE_PORT) &&
+//                            massTimeFieldExit.getText().equals(EXIT_TIMEOUT.toString()) &&
+//                            portFieldExit.getText().equals(SCALE_EXIT_PORT)
+//            );
+//        };
+
+//        massTimeField.textProperty().addListener(changeListener);
+//        portField.textProperty().addListener(changeListener);
+//
+//        massTimeFieldExit.textProperty().addListener(changeListener);
+//        portFieldExit.textProperty().addListener(changeListener);
+//
+//        saveButton.setOnAction(event -> {
+//            SCALE_TIMEOUT = Integer.parseInt(massTimeField.getText());
+//            SCALE_PORT = portField.getText();
+//            configurations.setScaleTimeout(Integer.parseInt(massTimeField.getText()));
+//            configurations.setScalePort(portField.getText());
+//
+//            EXIT_TIMEOUT = Integer.parseInt(massTimeFieldExit.getText());
+//            SCALE_EXIT_PORT = portFieldExit.getText();
+//            configurations.setExitTimeout(Integer.parseInt(massTimeFieldExit.getText()));
+//            configurations.setScaleExitPort(portFieldExit.getText());
+//            configUtilsService.saveConfig(configurations);
+//            // Add save logic here
+//            popupStage.close();
+//        });
+
+//        cancelButton.setOnAction(event -> popupStage.close());
+//
+//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
+//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
+//
+//        HBox buttonBox = new HBox(saveButton, cancelButton);
+//        buttonBox.setSpacing(10);
+//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+
+        // Layout
+        VBox v = new VBox(10, tarozi, new HBox(20,
+                new VBox(10,
+                        massTimeLabel, massTimeField
+                ),
+                new VBox(10,
+                        portLabel, portField)
+        ));
+        v.setAlignment(Pos.CENTER);
+        AnchorPane layout = new AnchorPane(
+                anchorSet(v, 0., 0., 0., 0.)
+        );
+        layout.setPadding(new Insets(15));
+        layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
+
+        return layout;
     }
 
 
@@ -734,7 +1135,7 @@ public class MenuBarController implements BaseController {
 
         // Layout
         VBox layout = new VBox(10,
-                exitTimeLabel,exitTimeField,
+                exitTimeLabel, exitTimeField,
                 buttonBox);
         layout.setSpacing(15);
         layout.setPadding(new Insets(15));
@@ -746,7 +1147,7 @@ public class MenuBarController implements BaseController {
     }
 
 
-    private void showPrinterPopup() {
+    private Node showPrinterPopup() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.setTitle("Printer Sozlamalari");
@@ -757,38 +1158,38 @@ public class MenuBarController implements BaseController {
 
         // Buttons
         Button testButton = new Button("Test");
-        Button saveButton = new Button("Saqlash");
-        Button cancelButton = new Button("Bekor qilish");
+//        Button saveButton = new Button("Saqlash");
+//        Button cancelButton = new Button("Bekor qilish");
 
-        saveButton.setDisable(true); // Disabled by default
-
-        // Enable Save button when the text field value changes
-        printerNameField.textProperty().addListener((observable, oldValue, newValue) -> {
-            saveButton.setDisable(printerNameField.getText().equals(PRINTER_NAME));
-        });
+//        saveButton.setDisable(true); // Disabled by default
+//
+//        // Enable Save button when the text field value changes
+//        printerNameField.textProperty().addListener((observable, oldValue, newValue) -> {
+//            saveButton.setDisable(printerNameField.getText().equals(PRINTER_NAME));
+//        });
 
         // Test button action
         testButton.setOnAction(event -> {
             printCheck.testCheckRecipient();
         });
 
-        saveButton.setOnAction(event -> {
-            PRINTER_NAME = printerNameField.getText();
-            configurations.setPrinterName(printerNameField.getText());
-            configUtilsService.saveConfig(configurations);
-            // Add save logic here
-            popupStage.close();
-        });
-
-        cancelButton.setOnAction(event -> popupStage.close());
+//        saveButton.setOnAction(event -> {
+//            PRINTER_NAME = printerNameField.getText();
+//            configurations.setPrinterName(printerNameField.getText());
+//            configUtilsService.saveConfig(configurations);
+//            // Add save logic here
+//            popupStage.close();
+//        });
+//
+//        cancelButton.setOnAction(event -> popupStage.close());
 
         testButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-padding: 5 15;");
-        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
+//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
+//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
 
-        HBox buttonBox = new HBox(testButton, saveButton, cancelButton);
+        HBox buttonBox = new HBox(testButton);
         buttonBox.setSpacing(10);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        buttonBox.setAlignment(Pos.CENTER_LEFT);
 
         // Layout
         VBox layout = new VBox(10,
@@ -798,9 +1199,10 @@ public class MenuBarController implements BaseController {
         layout.setPadding(new Insets(15));
         layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
 
-        Scene popupScene = new Scene(layout, 400, 200);
-        popupStage.setScene(popupScene);
-        popupStage.show();
+//        Scene popupScene = new Scene(layout, 400, 200);
+//        popupStage.setScene(popupScene);
+//        popupStage.show();
+        return layout;
     }
 
     public void aboutMenuSelected() {
@@ -1067,5 +1469,93 @@ public class MenuBarController implements BaseController {
     }
 
 
+    @FXML
+    public void OpenTab() {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Tarozi Sozlamalari");
 
+        // Form Elements
+//        Label exitTimeLabel = new Label("Mashinaning qaytib chiqish vaqti (ms):");
+//        TextField exitTimeField = new TextField(EXIT_TIMEOUT.toString());
+
+        // Form Elements
+        Label massTimeLabel = new Label("Kirish Tarozi massasini aniqlash vaqti (ms):");
+        TextField massTimeField = new TextField(SCALE_TIMEOUT.toString());
+
+        Label portLabel = new Label("Porti:");
+        TextField portField = new TextField(SCALE_PORT);
+
+        Line line = new Line(50, 50, 465, 50);
+        line.setStroke(Color.BLUE); // chiziq rangi
+        line.setStrokeWidth(2);
+
+        Label massTimeLabelExit = new Label("Chiqish Tarozi massasini aniqlash vaqti (ms):");
+        TextField massTimeFieldExit = new TextField(SCALE_TIMEOUT.toString());
+
+        Label portLabelExit = new Label("Porti:");
+        TextField portFieldExit = new TextField(SCALE_PORT);
+
+        // Buttons
+        Button saveButton = new Button("Saqlash");
+        Button cancelButton = new Button("Bekor qilish");
+
+        saveButton.setDisable(true); // Disabled by default
+
+        // Enable Save button on any change in text fields
+        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
+            saveButton.setDisable(
+                    massTimeField.getText().equals(SCALE_TIMEOUT.toString()) &&
+                            portField.getText().equals(SCALE_PORT) &&
+                            massTimeFieldExit.getText().equals(EXIT_TIMEOUT.toString()) &&
+                            portFieldExit.getText().equals(SCALE_EXIT_PORT)
+            );
+        };
+
+        massTimeField.textProperty().addListener(changeListener);
+        portField.textProperty().addListener(changeListener);
+
+        massTimeFieldExit.textProperty().addListener(changeListener);
+        portFieldExit.textProperty().addListener(changeListener);
+
+        saveButton.setOnAction(event -> {
+            SCALE_TIMEOUT = Integer.parseInt(massTimeField.getText());
+            SCALE_PORT = portField.getText();
+            configurations.setScaleTimeout(Integer.parseInt(massTimeField.getText()));
+            configurations.setScalePort(portField.getText());
+
+            EXIT_TIMEOUT = Integer.parseInt(massTimeFieldExit.getText());
+            SCALE_EXIT_PORT = portFieldExit.getText();
+            configurations.setExitTimeout(Integer.parseInt(massTimeFieldExit.getText()));
+            configurations.setScaleExitPort(portFieldExit.getText());
+            configUtilsService.saveConfig(configurations);
+            // Add save logic here
+            popupStage.close();
+        });
+
+        cancelButton.setOnAction(event -> popupStage.close());
+
+        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
+        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
+
+        HBox buttonBox = new HBox(saveButton, cancelButton);
+        buttonBox.setSpacing(10);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+
+        // Layout
+        VBox layout = new VBox(10,
+                massTimeLabel, massTimeField,
+                portLabel, portField,
+                line,
+                massTimeLabelExit, massTimeFieldExit,
+                portLabelExit, portFieldExit,
+                buttonBox);
+        layout.setSpacing(15);
+        layout.setPadding(new Insets(15));
+        layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
+
+        Scene popupScene = new Scene(layout, 450, 370);
+        popupStage.setScene(popupScene);
+        popupStage.show();
+    }
 }

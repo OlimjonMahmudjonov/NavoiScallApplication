@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_1;
 
 @Service
 @RequiredArgsConstructor
