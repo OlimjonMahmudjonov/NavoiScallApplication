@@ -45,11 +45,10 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
-import static uz.tenzorsoft.scaleapplication.domain.Settings.SCALE_EXIT_PORT;
-import static uz.tenzorsoft.scaleapplication.domain.Settings.SCALE_PORT;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_CLOSE_GATE_1;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.scalePort;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.scaleExitPort;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.*;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.*;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_EXIT_2;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_EXIT_3;
 
 @Component
 @RequiredArgsConstructor
@@ -162,8 +161,8 @@ public class MainController implements BaseController {
         String path = System.getProperty("user.dir");
         directory = path;
         System.out.println("Path: " + path);
-
         configUtilsService.loadConfigurations();
+        setSensorPins();
         loadMainMenu();
         userController.loadUserMenu();
         try {
@@ -251,6 +250,16 @@ public class MainController implements BaseController {
 //shu yerda qolgandim
         controlPane.controlConnectButton();
         System.out.println("All tasks are submitted!");
+    }
+
+    private void setSensorPins() {
+        RASP_SENSOR_1 = SENSOR_IN1;
+        RASP_SENSOR_2 = SENSOR_IN2;
+        RASP_SENSOR_3 = SENSOR_IN3;
+
+        RASP_SENSOR_EXIT_1 = SENSOR_OUT1;
+        RASP_SENSOR_EXIT_2 = SENSOR_OUT2;
+        RASP_SENSOR_EXIT_3 = SENSOR_OUT3;
     }
 
     public static String showNumberInsertDialog() {

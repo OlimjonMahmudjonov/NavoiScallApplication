@@ -40,8 +40,13 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import static uz.tenzorsoft.scaleapplication.domain.Instances.configurations;
-import static uz.tenzorsoft.scaleapplication.domain.Instances.isRaspberryUsing;
 import static uz.tenzorsoft.scaleapplication.domain.Settings.*;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_1;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_2;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_3;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_EXIT_1;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_EXIT_2;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_EXIT_3;
 
 @Component
 @RequiredArgsConstructor
@@ -52,25 +57,68 @@ public class MenuBarController implements BaseController {
     private final TruckRepository truckRepository;
     private final TruckActionRepository truckActionRepository;
     private final ControlPane controlPane;
+
     @Autowired
     private TableController tableController;
+
+    private void initialize() {
+        camera1Field.setText(CAMERA_1);
+        cameraRezervField1.setText(CAMERA_REZERV1);
+        camera2Field.setText(CAMERA_2);
+
+        camera3Field.setText(CAMERA_3);
+        camera4Field.setText(CAMERA_4);
+        cameraRezervField2.setText(CAMERA_REZERV2);
+
+        controllerAddressField.setText(CONTROLLER_IP);
+        portFieldController.setText(CONTROLLER_PORT.toString());
+        timeoutField.setText(CONTROLLER_CONNECT_TIMEOUT.toString());
+
+        firstShlagbaumField.setText("" + CLOSE_GATE1_TIMEOUT);
+        secondShlagbaumField.setText("" + CLOSE_GATE2_TIMEOUT);
+        pinIn.setText(PIN_IN != null ? PIN_IN.toString() : "");
+        pinIn2.setText(PIN_IN2 != null ? PIN_IN2.toString() : "");
+
+        firstShlagbaumFieldExit.setText("" + CLOSE_GATE1_EXIT_TIMEOUT);
+        secondShlagbaumFieldExit.setText("" + CLOSE_GATE2_EXIT_TIMEOUT);
+        pinOut.setText(PIN_OUT != null ? PIN_OUT.toString() : "");
+        pinOut2.setText(PIN_OUT2 != null ? PIN_OUT2.toString() : "");
+
+        massTimeField.setText(SCALE_TIMEOUT != null ? SCALE_TIMEOUT.toString() : "");
+        portField.setText(SCALE_PORT);
+
+        massTimeFieldOut.setText(EXIT_TIMEOUT != null ? EXIT_TIMEOUT.toString() : "");
+        portFieldOut.setText(SCALE_EXIT_PORT);
+        printerNameField.setText(PRINTER_NAME);
+
+        sensorPinIn1.setText(SENSOR_IN1 != null ? SENSOR_IN1.toString() : "");
+        sensorPinIn2.setText(SENSOR_IN2 != null ? SENSOR_IN2.toString() : "");
+        sensorPinIn3.setText(SENSOR_IN3 != null ? SENSOR_IN3.toString() : "");
+
+        sensorPinOut1.setText(SENSOR_OUT1 != null ? SENSOR_OUT1.toString() : "");
+        sensorPinOut2.setText(SENSOR_OUT2 != null ? SENSOR_OUT2.toString() : "");
+        sensorPinOut3.setText(SENSOR_OUT3 != null ? SENSOR_OUT3.toString() : "");
+    }
 
     private Node incoms() {
         AnchorPane camera = showCameraPopup();
         Node node = showShlagbaumPopup();
         Node node1 = showTaroziPopup();
-        return new AnchorPane(new VBox(5, camera, node, node1));
+        AnchorPane sensor = sensorIn();
+        return new AnchorPane(new VBox(5, camera, node, node1, sensor));
     }
 
     private Node outs() {
         AnchorPane camera = showCameraPopupOut();
         Node node = showShlagbaumPopupOut();
         Node node1 = showTaroziPopupOut();
-        return new AnchorPane(new VBox(5, camera, node, node1));
+        AnchorPane sensor = sensorOut();
+        return new AnchorPane(new VBox(5, camera, node, node1, sensor));
     }
 
     @FXML
     private void settingsTabs() {
+        initialize();
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.setTitle("Sozlamalar");
@@ -79,11 +127,147 @@ public class MenuBarController implements BaseController {
 
         Button saveButton = new Button("Saqlash");
         Button cancelButton = new Button("Bekor qilish");
+
+        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
+            saveButton.setDisable(
+                    camera1Field.getText().equals(CAMERA_1) &&
+                            cameraRezervField1.getText().equals(CAMERA_REZERV1) &&
+                            camera2Field.getText().equals(CAMERA_2) &&
+                            camera3Field.getText().equals(CAMERA_3) &&
+                            camera4Field.getText().equals(CAMERA_4) &&
+                            cameraRezervField2.getText().equals(CAMERA_REZERV2) &&
+                            controllerAddressField.getText().equals(CONTROLLER_IP) &&
+                            portFieldController.getText().equals(CONTROLLER_PORT) &&
+                            timeoutField.getText().equals(CONTROLLER_CONNECT_TIMEOUT) &&
+                            firstShlagbaumField.getText().equals(CLOSE_GATE1_TIMEOUT) &&
+                            secondShlagbaumField.getText().equals(CLOSE_GATE2_TIMEOUT) &&
+                            pinIn.getText().equals(PIN_IN) &&
+                            pinIn2.getText().equals(PIN_IN2) &&
+                            firstShlagbaumFieldExit.getText().equals(CLOSE_GATE1_EXIT_TIMEOUT) &&
+                            secondShlagbaumFieldExit.getText().equals(CLOSE_GATE2_EXIT_TIMEOUT) &&
+                            pinOut.getText().equals(PIN_OUT) &&
+                            pinOut2.getText().equals(PIN_OUT2) &&
+                            massTimeField.getText().equals(SCALE_TIMEOUT) &&
+                            portField.getText().equals(SCALE_PORT) &&
+                            massTimeFieldOut.getText().equals(EXIT_TIMEOUT) &&
+                            portFieldOut.getText().equals(SCALE_EXIT_PORT) &&
+                            printerNameField.getText().equals(PRINTER_NAME) &&
+                            sensorPinIn1.getText().equals(SENSOR_IN1) &&
+                            sensorPinIn2.getText().equals(SENSOR_IN2) &&
+                            sensorPinIn3.getText().equals(SENSOR_IN3) &&
+                            sensorPinOut1.getText().equals(SENSOR_OUT1) &&
+                            sensorPinOut2.getText().equals(SENSOR_OUT2) &&
+                            sensorPinOut3.getText().equals(SENSOR_OUT3)
+            );
+        };
+
+        camera1Field.textProperty().addListener(changeListener);
+        cameraRezervField1.textProperty().addListener(changeListener);
+        camera2Field.textProperty().addListener(changeListener);
+        camera3Field.textProperty().addListener(changeListener);
+        camera4Field.textProperty().addListener(changeListener);
+        cameraRezervField2.textProperty().addListener(changeListener);
+        controllerAddressField.textProperty().addListener(changeListener);
+        portFieldController.textProperty().addListener(changeListener);
+        timeoutField.textProperty().addListener(changeListener);
+        firstShlagbaumField.textProperty().addListener(changeListener);
+        secondShlagbaumField.textProperty().addListener(changeListener);
+        pinIn.textProperty().addListener(changeListener);
+        pinIn2.textProperty().addListener(changeListener);
+        firstShlagbaumFieldExit.textProperty().addListener(changeListener);
+        secondShlagbaumFieldExit.textProperty().addListener(changeListener);
+        pinOut.textProperty().addListener(changeListener);
+        pinOut2.textProperty().addListener(changeListener);
+        massTimeField.textProperty().addListener(changeListener);
+        portField.textProperty().addListener(changeListener);
+        massTimeFieldOut.textProperty().addListener(changeListener);
+        portFieldOut.textProperty().addListener(changeListener);
+        printerNameField.textProperty().addListener(changeListener);
+        sensorPinIn1.textProperty().addListener(changeListener);
+        sensorPinIn2.textProperty().addListener(changeListener);
+        sensorPinIn3.textProperty().addListener(changeListener);
+        sensorPinOut1.textProperty().addListener(changeListener);
+        sensorPinOut2.textProperty().addListener(changeListener);
+        sensorPinOut3.textProperty().addListener(changeListener);
+
+        saveButton.setDisable(true);
+        saveButton.setOnAction(event -> {
+            CAMERA_1 = camera1Field.getText();
+            CAMERA_REZERV1 = cameraRezervField1.getText();
+            CAMERA_2 = camera2Field.getText();
+            CAMERA_3 = camera3Field.getText();
+            CAMERA_4 = camera4Field.getText();
+            CAMERA_REZERV2 = cameraRezervField2.getText();
+            CONTROLLER_IP = controllerAddressField.getText();
+            CONTROLLER_PORT = Integer.parseInt(portFieldController.getText());
+            CONTROLLER_CONNECT_TIMEOUT = Integer.parseInt(timeoutField.getText());
+            CLOSE_GATE1_TIMEOUT = Integer.parseInt(firstShlagbaumField.getText());
+            CLOSE_GATE2_TIMEOUT = Integer.parseInt(secondShlagbaumField.getText());
+            PIN_IN = Integer.parseInt(pinIn.getText());
+            PIN_IN2 = Integer.parseInt(pinIn2.getText());
+            CLOSE_GATE1_EXIT_TIMEOUT = Integer.parseInt(firstShlagbaumFieldExit.getText());
+            CLOSE_GATE2_EXIT_TIMEOUT = Integer.parseInt(secondShlagbaumFieldExit.getText());
+            PIN_OUT = Integer.parseInt(pinOut.getText());
+            PIN_OUT2 = Integer.parseInt(pinOut2.getText());
+            SCALE_TIMEOUT = Integer.parseInt(massTimeField.getText());
+            SCALE_PORT = portField.getText();
+            EXIT_TIMEOUT = Integer.parseInt(massTimeFieldOut.getText());
+            SCALE_EXIT_PORT = portFieldOut.getText();
+            PRINTER_NAME = printerNameField.getText();
+            SENSOR_IN1 = Integer.parseInt(sensorPinIn1.getText());
+            SENSOR_IN2 = Integer.parseInt(sensorPinIn2.getText());
+            SENSOR_IN3 = Integer.parseInt(sensorPinIn3.getText());
+            SENSOR_OUT1 = Integer.parseInt(sensorPinOut1.getText());
+            SENSOR_OUT2 = Integer.parseInt(sensorPinOut2.getText());
+            SENSOR_OUT3 = Integer.parseInt(sensorPinOut3.getText());
+
+            configurations.setCamera1(camera1Field.getText());
+            configurations.setCamera2(camera2Field.getText());
+            configurations.setCamera3(camera3Field.getText());
+            configurations.setCamera4(camera4Field.getText());
+            configurations.setCameraRezerv1(cameraRezervField1.getText());
+            configurations.setCameraRezerv2(cameraRezervField2.getText());
+            configurations.setControllerIp(controllerAddressField.getText());
+            configurations.setControllerPort(Integer.parseInt(portFieldController.getText()));
+            configurations.setCloseGate1Timeout(Integer.parseInt(firstShlagbaumField.getText()));
+            configurations.setCloseGate2Timeout(Integer.parseInt(secondShlagbaumField.getText()));
+            configurations.setPinIn(Integer.parseInt(pinIn.getText()));
+            configurations.setPinIn2(Integer.parseInt(pinIn2.getText()));
+            configurations.setCloseGateExit1Timeout(Integer.parseInt(firstShlagbaumFieldExit.getText()));
+            configurations.setCloseGateExit2Timeout(Integer.parseInt(secondShlagbaumFieldExit.getText()));
+            configurations.setPinOut(Integer.parseInt(pinOut.getText()));
+            configurations.setPinOut2(Integer.parseInt(pinOut2.getText()));
+            configurations.setScaleTimeout(Integer.parseInt(massTimeField.getText()));
+            configurations.setScalePort(portField.getText());
+            configurations.setExitTimeout(Integer.parseInt(massTimeFieldOut.getText()));
+            configurations.setScaleExitPort(portFieldOut.getText());
+            configurations.setPrinterName(printerNameField.getText());
+            configurations.setSensorIn1(Integer.parseInt(sensorPinIn1.getText()));
+            configurations.setSensorIn2(Integer.parseInt(sensorPinIn2.getText()));
+            configurations.setSensorIn3(Integer.parseInt(sensorPinIn3.getText()));
+            configurations.setSensorOut1(Integer.parseInt(sensorPinOut1.getText()));
+            configurations.setSensorOut2(Integer.parseInt(sensorPinOut2.getText()));
+            configurations.setSensorOut3(Integer.parseInt(sensorPinOut3.getText()));
+
+//            DATABASE_NAME = nameField.getText();
+//            USERNAME = loginField.getText();
+//            PASSWORD = passwordField.getText();
+//            configurations.setDatabaseName(nameField.getText());
+//            configurations.setUsername(loginField.getText());
+//            configurations.setPassword(passwordField.getText());
+            configUtilsService.saveConfig(configurations);
+            // Add save logic here
+            popupStage.close();
+        });
+        cancelButton.setOnAction(event -> {
+            setDefoultSettings();
+            popupStage.close();
+        });
+
         saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
         cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
 
         Tab inCamera = new Tab("Kirish");
-//        showCameraPopup();
         inCamera.setContent(incoms());
         inCamera.setClosable(false);
 
@@ -91,19 +275,6 @@ public class MenuBarController implements BaseController {
         outCamera.setContent(outs());
         outCamera.setClosable(false);
 
-//        Tab inGate = new Tab("Kirish shlagbaum");
-//        inGate.setContent(showShlagbaumPopup());
-//        inGate.setClosable(false);
-//
-//        Tab outGate = new Tab("Chiqish shlagbaum");
-//        outGate.setContent(showShlagbaumPopupOut());
-//        outGate.setClosable(false);
-//
-//        Tab inScale = new Tab("Kiruvchi tarozi");
-//        inScale.setContent(showTaroziPopup());
-//        inScale.setClosable(false);
-//
-//        Tab outScale = new Tab("Chiquvchi tarozi");
         Tab printer = new Tab("Printer");
         printer.setContent(showPrinterPopup());
         printer.setClosable(false);
@@ -113,10 +284,6 @@ public class MenuBarController implements BaseController {
 
         tabPane.getTabs().add(inCamera);
         tabPane.getTabs().add(outCamera);
-//        tabPane.getTabs().add(inGate);
-//        tabPane.getTabs().add(outGate);
-//        tabPane.getTabs().add(inScale);
-//        tabPane.getTabs().add(outScale);
         tabPane.getTabs().add(printer);
         tabPane.getTabs().add(controller);
 
@@ -133,6 +300,16 @@ public class MenuBarController implements BaseController {
         popupStage.show();
     }
 
+    private void setDefoultSettings() {
+        RASP_SENSOR_1 = SENSOR_IN1;
+        RASP_SENSOR_2 = SENSOR_IN2;
+        RASP_SENSOR_3 = SENSOR_IN3;
+
+        RASP_SENSOR_EXIT_1 = SENSOR_OUT1;
+        RASP_SENSOR_EXIT_2 = SENSOR_OUT2;
+        RASP_SENSOR_EXIT_3 = SENSOR_OUT3;
+    }
+
 
     private static Node anchorSet(Node node, Double left, Double top, Double right, Double bottom) {
         if (left != null)
@@ -147,43 +324,8 @@ public class MenuBarController implements BaseController {
     }
 
     @FXML
-    private void onDatabaseMenuSelected() {
-        showDatabasePopup();
-    }
-
-    @FXML
     private void onCameraMenuSelected() {
         showCameraPopup();
-    }
-
-    @FXML
-    private void onControllerMenuSelected() {
-        showControllerPopup();
-    }
-
-    @FXML
-    private void onShlagbaumMenuSelected() {
-        showShlagbaumPopup();
-    }
-
-    @FXML
-    private void onTaroziMenuSelected() {
-        showTaroziPopup();
-    }
-
-    @FXML
-    private void onExportDataMenuSelected() {
-        showExportData();
-    }
-
-    @FXML
-    private void onExitTimeMenuSelected() {
-        showExitTimePopup();
-    }
-
-    @FXML
-    private void onPrinterMenuSelected() {
-        showPrinterPopup();
     }
 
     @FXML
@@ -341,7 +483,7 @@ public class MenuBarController implements BaseController {
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
         // Layout
-        VBox layout = new VBox(10, nameLabel, nameField, loginLabel, loginField, passwordLabel, passwordBox, buttonBox);
+        VBox layout = new VBox(5, nameLabel, nameField, loginLabel, loginField, passwordLabel, passwordBox, buttonBox);
         layout.setSpacing(15);
         layout.setPadding(new Insets(15));
         layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
@@ -352,6 +494,9 @@ public class MenuBarController implements BaseController {
         popupStage.show();
     }
 
+    TextField camera1Field = new TextField();
+    TextField cameraRezervField1 = new TextField();
+    TextField camera2Field = new TextField();
 
     private AnchorPane showCameraPopup() {
         Stage popupStage = new Stage();
@@ -361,58 +506,23 @@ public class MenuBarController implements BaseController {
         Label camera = new Label("Camera");
 
         Label camera1Label = new Label("1-kamera kirish IP manzili:");
-        TextField camera1Field = new TextField(CAMERA_1);
         camera1Field.setPrefWidth(80);
 
         Label rezervCam = new Label("Rezerv kamera:");
-        TextField cameraRezervField = new TextField();
-        cameraRezervField.setPrefWidth(80);
+        cameraRezervField1.setPrefWidth(80);
 
         // Yuk Kamerasi
         Label camera2Label = new Label("2-kamera yuk IP manzili:");
-        TextField camera2Field = new TextField(CAMERA_2);
         camera2Field.setPrefWidth(80);
 
-//        saveButton.setDisable(true); // Disabled by default
-//
-//        // Enable Save button on any change in text fields
-//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
-//            saveButton.setDisable(
-//                    camera1Field.getText().equals(CAMERA_1) &&
-//                            camera2Field.getText().equals(CAMERA_2)
-//            );
-//        };
-
-//        camera1Field.textProperty().addListener(changeListener);
-//        camera2Field.textProperty().addListener(changeListener);
-
-//        saveButton.setOnAction(event -> {
-//            CAMERA_1 = camera1Field.getText();
-//            CAMERA_2 = camera2Field.getText();
-//            configurations.setCamera1(camera1Field.getText());
-//            configurations.setCamera2(camera2Field.getText());
-//            configUtilsService.saveConfig(configurations);
-//            // Add save logic for all three cameras here
-//            popupStage.close();
-//        });
-
-//        cancelButton.setOnAction(event -> popupStage.close());
-//
-//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
-//
-//        HBox buttonBox = new HBox(saveButton, cancelButton);
-//        buttonBox.setSpacing(10);
-//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-
-        VBox v = new VBox(10, rezervCam, cameraRezervField);
+        VBox v = new VBox(5, rezervCam, cameraRezervField1);
         // Layout
-        VBox h = new VBox(10, camera,
+        VBox h = new VBox(5, camera,
                 new HBox(20,
-                        new VBox(10,
-                                new VBox(10,
+                        new VBox(5,
+                                new VBox(5,
                                         camera1Label, camera1Field),
-                                new VBox(10,
+                                new VBox(5,
                                         camera2Label, camera2Field)
                         ), v
                 ));
@@ -427,6 +537,10 @@ public class MenuBarController implements BaseController {
         return layout;
     }
 
+    private TextField camera3Field = new TextField();
+    private TextField camera4Field = new TextField();
+    private TextField cameraRezervField2 = new TextField();
+
     private AnchorPane showCameraPopupOut() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
@@ -435,62 +549,20 @@ public class MenuBarController implements BaseController {
         Label camera3Label = new Label("1-kamera kirish IP manzili:");
         Label camera = new Label("Camera");
 
-        TextField camera3Field = new TextField(CAMERA_3);
         camera3Field.setPrefWidth(80);
-
         Label camera4Label = new Label("2-kamera yuk IP manzili:");
-        TextField camera4Field = new TextField(CAMERA_4);
+
         camera4Field.setPrefWidth(80);
-
         Label rezervCam = new Label("Rezerv kamera:");
-        TextField cameraRezervField = new TextField();
-        cameraRezervField.setPrefWidth(80);
-
-        // Buttons
-//        Button saveButton = new Button("Saqlash");
-//        Button cancelButton = new Button("Bekor qilish");
-
-//        saveButton.setDisable(true); // Disabled by default
-//
-//        // Enable Save button on any change in text fields
-//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
-//            saveButton.setDisable(
-//                    camera3Field.getText().equals(CAMERA_3) &&
-//                            camera4Field.getText().equals(CAMERA_4)
-//            );
-//        };
-
-//        camera3Field.textProperty().addListener(changeListener);
-//        camera4Field.textProperty().addListener(changeListener);
-
-//        saveButton.setOnAction(event -> {
-//            CAMERA_3 = camera3Field.getText();
-//            CAMERA_4 = camera4Field.getText();
-//            configurations.setCamera3(camera3Field.getText());
-//            configurations.setCamera4(camera4Field.getText());
-//            configUtilsService.saveConfig(configurations);
-//            // Add save logic for all three cameras here
-//            popupStage.close();
-//        });
-//
-//        cancelButton.setOnAction(event -> popupStage.close());
-//
-//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
-
-//        HBox buttonBox = new HBox(saveButton, cancelButton);
-//        buttonBox.setSpacing(10);
-//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-
+        cameraRezervField2.setPrefWidth(80);
+        VBox v = new VBox(5, rezervCam, cameraRezervField2);
         // Layout
-        VBox v = new VBox(10, rezervCam, cameraRezervField);
-        // Layout
-        VBox h = new VBox(10, camera,
+        VBox h = new VBox(5, camera,
                 new HBox(20,
-                        new VBox(10,
-                                new VBox(10,
+                        new VBox(5,
+                                new VBox(5,
                                         camera3Label, camera3Field),
-                                new VBox(10,
+                                new VBox(5,
                                         camera4Label, camera4Field)
                         ), v
                 ));
@@ -503,79 +575,109 @@ public class MenuBarController implements BaseController {
         return layout;
     }
 
+    private TextField sensorPinIn1 = new TextField();
+    private TextField sensorPinIn2 = new TextField();
+    private TextField sensorPinIn3 = new TextField();
 
-/*
-    private void showControllerPopup() {
+    private AnchorPane sensorIn() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
-        popupStage.setTitle("Controller Sozlamalari");
 
-        // Form Elements
-        Label controllerAddressLabel = new Label("Controller addresi:");
-        TextField controllerAddressField = new TextField(CONTROLLER_IP);
+        // Chiqish Kamerasi
+        Label sensor = new Label("Sensor");
+        Label sensorL1 = new Label("1-sensor:");
+        Label sensorL2 = new Label("2-sensor:");
+        Label sensorL3 = new Label("3-sensor:");
 
-        Label portLabel = new Label("Porti:");
-        TextField portField = new TextField(CONTROLLER_PORT.toString());
+        sensorPinIn1.setPrefWidth(40);
+        sensorPinIn2.setPrefWidth(40);
+        sensorPinIn3.setPrefWidth(40);
 
-        Label timeoutLabel = new Label("Time out (ms):");
-        TextField timeoutField = new TextField(CONTROLLER_CONNECT_TIMEOUT.toString());
-
-        // Buttons
-        Button saveButton = new Button("Saqlash");
-        Button cancelButton = new Button("Bekor qilish");
-
-        saveButton.setDisable(true); // Disabled by default
-
-        // Enable Save button on any change in text fields
-        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
-            saveButton.setDisable(
-                    controllerAddressField.getText().equals(CONTROLLER_IP) &&
-                            portField.getText().equals(CONTROLLER_PORT.toString()) &&
-                            timeoutField.getText().equals("" + CONTROLLER_CONNECT_TIMEOUT)
-            );
-        };
-
-
-        controllerAddressField.textProperty().addListener(changeListener);
-        portField.textProperty().addListener(changeListener);
-        timeoutField.textProperty().addListener(changeListener);
-
-        saveButton.setOnAction(event -> {
-            CONTROLLER_IP = controllerAddressField.getText();
-            CONTROLLER_PORT = Integer.parseInt(portField.getText());
-            CONTROLLER_CONNECT_TIMEOUT = Integer.parseInt(timeoutField.getText());
-            configurations.setControllerIp(controllerAddressField.getText());
-            configurations.setControllerPort(Integer.parseInt(portField.getText()));
-            configurations.setControllerConnectTimeout(Integer.parseInt(timeoutField.getText()));
-            configUtilsService.saveConfig(configurations);
-            // Add save logic here
-            popupStage.close();
+        Button testButton = new Button("Test");
+        testButton.prefWidth(40);
+        testButton.prefHeight(20);
+        testButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-padding: 5 15;");
+        testButton.setOnAction(event -> {
+            sensorInTest();
         });
 
-        cancelButton.setOnAction(event -> popupStage.close());
+        HBox v = new HBox(20,
+                new VBox(5, sensorL1, sensorPinIn1, testButton),
+                new VBox(5, sensorL2, sensorPinIn2),
+                new VBox(5, sensorL3, sensorPinIn3)
+        );
 
-        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
-
-        HBox buttonBox = new HBox(saveButton, cancelButton);
-        buttonBox.setSpacing(10);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-
-        // Layout
-        VBox layout = new VBox(10,
-                controllerAddressLabel, controllerAddressField,
-                portLabel, portField,
-                timeoutLabel, timeoutField,
-                buttonBox);
-        layout.setSpacing(15);
+        v.setAlignment(Pos.CENTER);
+        VBox h = new VBox(5, sensor, v);
+        h.setAlignment(Pos.CENTER);
+        AnchorPane layout = new AnchorPane(anchorSet(
+                h, 0., 0., 0., 0.));
         layout.setPadding(new Insets(15));
         layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
 
-        Scene popupScene = new Scene(layout, 400, 300);
-        popupStage.setScene(popupScene);
-        popupStage.show();
+        return layout;
     }
-*/
+
+    private void sensorInTest() {
+        RASP_SENSOR_1 = Integer.parseInt(sensorPinIn1.getText());
+        RASP_SENSOR_2 = Integer.parseInt(sensorPinIn2.getText());
+        RASP_SENSOR_3 = Integer.parseInt(sensorPinIn3.getText());
+    }
+
+    private TextField sensorPinOut1 = new TextField();
+    private TextField sensorPinOut2 = new TextField();
+    private TextField sensorPinOut3 = new TextField();
+
+    private AnchorPane sensorOut() {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+
+        // Chiqish Kamerasi
+        Label sensor = new Label("Sensor");
+        Label sensorL1 = new Label("1-sensor:");
+        Label sensorL2 = new Label("2-sensor:");
+        Label sensorL3 = new Label("3-sensor:");
+
+        sensorPinOut1.setPrefWidth(40);
+        sensorPinOut2.setPrefWidth(40);
+        sensorPinOut3.setPrefWidth(40);
+
+        Button testButton = new Button("Test");
+        testButton.prefWidth(40);
+        testButton.prefHeight(20);
+        testButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-padding: 5 15;");
+
+        testButton.setOnAction(event -> {
+            sensorOutTest();
+        });
+
+        HBox v = new HBox(20,
+                new VBox(5, sensorL1, sensorPinOut1, testButton),
+                new VBox(5, sensorL2, sensorPinOut2),
+                new VBox(5, sensorL3, sensorPinOut3)
+        );
+
+        v.setAlignment(Pos.CENTER);
+        VBox h = new VBox(5, sensor, v);
+        h.setAlignment(Pos.CENTER);
+        AnchorPane layout = new AnchorPane(anchorSet(
+                h, 0., 0., 0., 0.));
+        layout.setPadding(new Insets(15));
+        layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
+
+        return layout;
+    }
+
+    private void sensorOutTest() {
+        RASP_SENSOR_EXIT_1 = Integer.parseInt(sensorPinOut1.getText());
+        RASP_SENSOR_EXIT_2 = Integer.parseInt(sensorPinOut2.getText());
+        RASP_SENSOR_EXIT_3 = Integer.parseInt(sensorPinOut3.getText());
+    }
+
+    TextField controllerAddressField = new TextField();
+    TextField portFieldController = new TextField();
+    TextField timeoutField = new TextField();
+    ToggleSwitch toggleSwitch = new ToggleSwitch();
 
     private Node showControllerPopup() {
         Stage popupStage = new Stage();
@@ -583,93 +685,26 @@ public class MenuBarController implements BaseController {
         popupStage.setTitle("Controller Sozlamalari");
 
         Label controllerAddressLabel = new Label("Controller addresi:");
-        TextField controllerAddressField = new TextField(CONTROLLER_IP);
-
         Label portLabel = new Label("Porti:");
-        TextField portField = new TextField(CONTROLLER_PORT.toString());
-
         Label timeoutLabel = new Label("Time out (ms):");
-        TextField timeoutField = new TextField(CONTROLLER_CONNECT_TIMEOUT.toString());
-
         Label toggleSwitchLabel = new Label("Raspberrydan foylanilyapti:");
-        ToggleSwitch toggleSwitch = new ToggleSwitch();
 
-        // Buttons
-//        Button saveButton = new Button("Saqlash");
-//        Button cancelButton = new Button("Bekor qilish");
-
-//        saveButton.setDisable(true); // Disabled by default
-//
-//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
-//            saveButton.setDisable(
-//                    toggleSwitch.isSelected() &&
-//                            controllerAddressField.getText().equals(CONTROLLER_IP) &&
-//                            portField.getText().equals(CONTROLLER_PORT.toString()) &&
-//                            timeoutField.getText().equals("" + CONTROLLER_CONNECT_TIMEOUT)
-//            );
-//        };
-
-//        controllerAddressField.textProperty().addListener(changeListener);
-//        portField.textProperty().addListener(changeListener);
-//        timeoutField.textProperty().addListener(changeListener);
-//
-//        if (IS_RASPBERRY_USING) {
-//            toggleSwitch.setSelected(true);
-//            controllerAddressField.setDisable(true);
-//            portField.setDisable(true);
-//            timeoutField.setDisable(true);
-//        }
-
-//        toggleSwitch.selectedProperty().addListener((observable, oldValue, newValue) -> {
-//            boolean isControllerUsed = newValue;
-//            controllerAddressField.setDisable(isControllerUsed);
-//            portField.setDisable(isControllerUsed);
-//            timeoutField.setDisable(isControllerUsed);
-//            saveButton.setDisable(false);
-//        });
-
-//        saveButton.setOnAction(event -> {
-//            if (!toggleSwitch.isSelected()) {
-//                CONTROLLER_IP = controllerAddressField.getText();
-//                CONTROLLER_PORT = Integer.parseInt(portField.getText());
-//                CONTROLLER_CONNECT_TIMEOUT = Integer.parseInt(timeoutField.getText());
-//                configurations.setControllerIp(controllerAddressField.getText());
-//                configurations.setControllerPort(Integer.parseInt(portField.getText()));
-//                configurations.setControllerConnectTimeout(Integer.parseInt(timeoutField.getText()));
-//            } else {
-//                isRaspberryUsing = true;
-//                IS_RASPBERRY_USING = true;
-//            }
-//            configurations.setRaspberryUsing(toggleSwitch.isSelected() ? 1 : 0);
-//            configUtilsService.saveConfig(configurations);
-//            popupStage.close();
-//        });
-//
-//        cancelButton.setOnAction(event -> popupStage.close());
-//
-//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
-
-//        HBox buttonBox = new HBox(saveButton, cancelButton);
-//        buttonBox.setSpacing(10);
-//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-
-        // Layout
-        VBox layout = new VBox(10,
+        VBox layout = new VBox(5,
                 toggleSwitchLabel, toggleSwitch,
                 controllerAddressLabel, controllerAddressField,
-                portLabel, portField,
+                portLabel, portFieldController,
                 timeoutLabel, timeoutField);
         layout.setSpacing(15);
         layout.setPadding(new Insets(15));
         layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
 
-//        Scene popupScene = new Scene(layout, 400, 350); // Adjusted height for the additional ToggleSwitch
-//        popupStage.setScene(popupScene);
-//        popupStage.show();
         return layout;
     }
 
+    private TextField firstShlagbaumField = new TextField();
+    private TextField secondShlagbaumField = new TextField();
+    private TextField pinIn = new TextField();
+    private TextField pinIn2 = new TextField();
 
     private Node showShlagbaumPopup() {
         Stage popupStage = new Stage();
@@ -678,79 +713,22 @@ public class MenuBarController implements BaseController {
         // Form Elements
         Label firstShlagbaumLabel = new Label("1-shlagbaum yopilish vaqti (ms):");
         Label shlakbaum = new Label("Shlagbaum");
-        TextField firstShlagbaumField = new TextField("" + CLOSE_GATE1_TIMEOUT);
         firstShlagbaumField.setPrefWidth(80);
 
         Label secondShlagbaumLabel = new Label("2-shlagbaum yopilish vaqti (ms):");
-        TextField secondShlagbaumField = new TextField("" + CLOSE_GATE2_TIMEOUT);
         secondShlagbaumField.setPrefWidth(80);
 
         Label pinLabel = new Label("Pin");
-        TextField pin = new TextField();
-        pin.setPrefWidth(40);
+        pinIn.setPrefWidth(40);
 
         Label pinLabel2 = new Label("Pin");
-        TextField pin2 = new TextField();
-        pin2.setPrefWidth(40);
-
+        pinIn2.setPrefWidth(40);
         secondShlagbaumField.setPrefWidth(80);
 
-//        Label firstShlagbaumLabelExit = new Label("1-shlagbaum yopilish vaqti (ms):");
-//        TextField firstShlagbaumFieldExit = new TextField("" + CLOSE_GATE1_EXIT_TIMEOUT);
-//
-//        Label secondShlagbaumLabelExit = new Label("2-shlagbaum yopilish vaqti (ms):");
-//        TextField secondShlagbaumFieldExit = new TextField("" + CLOSE_GATE2_EXIT_TIMEOUT);
-
-        // Buttons
-//        Button saveButton = new Button("Saqlash");
-//        Button cancelButton = new Button("Bekor qilish");
-//
-//        saveButton.setDisable(true); // Disabled by default
-
-        // Enable Save button on any change in text fields
-//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
-//            saveButton.setDisable(
-//                    firstShlagbaumField.getText().equals("" + CLOSE_GATE1_TIMEOUT) &&
-//                            secondShlagbaumField.getText().equals("" + CLOSE_GATE2_TIMEOUT)
-////                            firstShlagbaumFieldExit.getText().equals("" + CLOSE_GATE1_EXIT_TIMEOUT) &&
-////                            secondShlagbaumFieldExit.getText().equals("" + CLOSE_GATE2_EXIT_TIMEOUT)
-//            );
-//        };
-
-//        firstShlagbaumField.textProperty().addListener(changeListener);
-//        secondShlagbaumField.textProperty().addListener(changeListener);
-
-//        firstShlagbaumFieldExit.textProperty().addListener(changeListener);
-//        secondShlagbaumFieldExit.textProperty().addListener(changeListener);
-
-//        saveButton.setOnAction(event -> {
-//            CLOSE_GATE1_TIMEOUT = Integer.parseInt(firstShlagbaumField.getText());
-//            CLOSE_GATE2_TIMEOUT = Integer.parseInt(secondShlagbaumField.getText());
-//            configurations.setCloseGate1Timeout(Integer.parseInt(firstShlagbaumField.getText()));
-//            configurations.setCloseGate2Timeout(Integer.parseInt(secondShlagbaumField.getText()));
-//
-////            CLOSE_GATE1_EXIT_TIMEOUT = Integer.parseInt(firstShlagbaumFieldExit.getText());
-////            CLOSE_GATE2_EXIT_TIMEOUT = Integer.parseInt(secondShlagbaumFieldExit.getText());
-////            configurations.setCloseGateExit1Timeout(Integer.parseInt(firstShlagbaumFieldExit.getText()));
-////            configurations.setCloseGateExit2Timeout(Integer.parseInt(secondShlagbaumFieldExit.getText()));
-//            configUtilsService.saveConfig(configurations);
-//            // Add save logic here
-//            popupStage.close();
-//        });
-
-//        cancelButton.setOnAction(event -> popupStage.close());
-//
-//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
-//
-//        HBox buttonBox = new HBox(saveButton, cancelButton);
-//        buttonBox.setSpacing(10);
-//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-
         // Layout
-        VBox v = new VBox(10, shlakbaum, new VBox(10,
-                new HBox(20, new VBox(firstShlagbaumLabel, firstShlagbaumField), new VBox(pinLabel, pin)),
-                new HBox(20, new VBox(secondShlagbaumLabel, secondShlagbaumField), new VBox(pinLabel2, pin2))
+        VBox v = new VBox(5, shlakbaum, new VBox(5,
+                new HBox(20, new VBox(5, firstShlagbaumLabel, firstShlagbaumField), new VBox(5, pinLabel, pinIn)),
+                new HBox(20, new VBox(5, secondShlagbaumLabel, secondShlagbaumField), new VBox(5, pinLabel2, pinIn2))
         ));
         v.setAlignment(Pos.CENTER);
         AnchorPane layout = new AnchorPane(
@@ -761,86 +739,30 @@ public class MenuBarController implements BaseController {
 
         return layout;
     }
+
+    private TextField firstShlagbaumFieldExit = new TextField();
+    private TextField secondShlagbaumFieldExit = new TextField();
+    private TextField pinOut = new TextField();
+    TextField pinOut2 = new TextField();
 
     private Node showShlagbaumPopupOut() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
 
-        // Form Elements
-//        Label firstShlagbaumLabel = new Label("1-shlagbaum yopilish vaqti (ms):");
-//        TextField firstShlagbaumField = new TextField("" + CLOSE_GATE1_TIMEOUT);
-//
-//        Label secondShlagbaumLabel = new Label("2-shlagbaum yopilish vaqti (ms):");
-//        TextField secondShlagbaumField = new TextField("" + CLOSE_GATE2_TIMEOUT);
-
         Label firstShlagbaumLabelExit = new Label("1-shlagbaum yopilish vaqti (ms):");
         Label shlagbaum = new Label("Shlagbaum");
-        TextField firstShlagbaumFieldExit = new TextField("" + CLOSE_GATE1_EXIT_TIMEOUT);
         firstShlagbaumFieldExit.setPrefWidth(80);
-
         Label secondShlagbaumLabelExit = new Label("2-shlagbaum yopilish vaqti (ms):");
-        TextField secondShlagbaumFieldExit = new TextField("" + CLOSE_GATE2_EXIT_TIMEOUT);
         secondShlagbaumFieldExit.setPrefWidth(80);
-
         Label pinLabel = new Label("Pin");
-        TextField pin = new TextField();
-        pin.setPrefWidth(40);
-
+        pinOut.setPrefWidth(40);
         Label pinLabel2 = new Label("Pin");
-        TextField pin2 = new TextField();
-        pin2.setPrefWidth(40);
 
-        // Buttons
-//        Button saveButton = new Button("Saqlash");
-//        Button cancelButton = new Button("Bekor qilish");
-//
-//        saveButton.setDisable(true); // Disabled by default
+        pinOut2.setPrefWidth(40);
 
-        // Enable Save button on any change in text fields
-//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
-//            saveButton.setDisable(
-//                    firstShlagbaumField.getText().equals("" + CLOSE_GATE1_TIMEOUT) &&
-//                            secondShlagbaumField.getText().equals("" + CLOSE_GATE2_TIMEOUT)
-////                            firstShlagbaumFieldExit.getText().equals("" + CLOSE_GATE1_EXIT_TIMEOUT) &&
-////                            secondShlagbaumFieldExit.getText().equals("" + CLOSE_GATE2_EXIT_TIMEOUT)
-//            );
-//        };
-
-//        firstShlagbaumField.textProperty().addListener(changeListener);
-//        secondShlagbaumField.textProperty().addListener(changeListener);
-
-//        firstShlagbaumFieldExit.textProperty().addListener(changeListener);
-//        secondShlagbaumFieldExit.textProperty().addListener(changeListener);
-
-//        saveButton.setOnAction(event -> {
-//            CLOSE_GATE1_TIMEOUT = Integer.parseInt(firstShlagbaumField.getText());
-//            CLOSE_GATE2_TIMEOUT = Integer.parseInt(secondShlagbaumField.getText());
-//            configurations.setCloseGate1Timeout(Integer.parseInt(firstShlagbaumField.getText()));
-//            configurations.setCloseGate2Timeout(Integer.parseInt(secondShlagbaumField.getText()));
-//
-////            CLOSE_GATE1_EXIT_TIMEOUT = Integer.parseInt(firstShlagbaumFieldExit.getText());
-////            CLOSE_GATE2_EXIT_TIMEOUT = Integer.parseInt(secondShlagbaumFieldExit.getText());
-////            configurations.setCloseGateExit1Timeout(Integer.parseInt(firstShlagbaumFieldExit.getText()));
-////            configurations.setCloseGateExit2Timeout(Integer.parseInt(secondShlagbaumFieldExit.getText()));
-//            configUtilsService.saveConfig(configurations);
-//            // Add save logic here
-//            popupStage.close();
-//        });
-
-//        cancelButton.setOnAction(event -> popupStage.close());
-//
-//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
-//
-//        HBox buttonBox = new HBox(saveButton, cancelButton);
-//        buttonBox.setSpacing(10);
-//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-
-        // Layout
-
-        VBox v = new VBox(10, shlagbaum, new VBox(10,
-                new HBox(20, new VBox(firstShlagbaumLabelExit, firstShlagbaumFieldExit), new VBox(pinLabel, pin)),
-                new HBox(20, new VBox(secondShlagbaumLabelExit, secondShlagbaumFieldExit), new VBox(pinLabel2, pin2))
+        VBox v = new VBox(5, shlagbaum, new VBox(5,
+                new HBox(20, new VBox(5, firstShlagbaumLabelExit, firstShlagbaumFieldExit), new VBox(5, pinLabel, pinOut)),
+                new HBox(20, new VBox(5, secondShlagbaumLabelExit, secondShlagbaumFieldExit), new VBox(5, pinLabel2, pinOut2))
         ));
         v.setAlignment(Pos.CENTER);
         AnchorPane layout = new AnchorPane(
@@ -852,83 +774,27 @@ public class MenuBarController implements BaseController {
         return layout;
     }
 
+    private TextField massTimeField = new TextField();
+    private TextField portField = new TextField();
 
     private Node showTaroziPopup() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
-//        popupStage.setTitle("Tarozi Sozlamalari");
-
-        // Form Elements
-//        Label exitTimeLabel = new Label("Mashinaning qaytib chiqish vaqti (ms):");
-//        TextField exitTimeField = new TextField(EXIT_TIMEOUT.toString());
 
         // Form Elements
         Label massTimeLabel = new Label("Vazn aniqlash vaqti (ms):");
         Label tarozi = new Label("Tarozi");
-        TextField massTimeField = new TextField(SCALE_TIMEOUT.toString());
         massTimeField.setPrefWidth(80);
 
         Label portLabel = new Label("Porti:");
-        TextField portField = new TextField(SCALE_PORT);
         portField.setPrefWidth(80);
-//        Label massTimeLabelExit = new Label("Chiqish Tarozi massasini aniqlash vaqti (ms):");
-//        TextField massTimeFieldExit = new TextField(SCALE_TIMEOUT.toString());
-//
-//        Label portLabelExit = new Label("Porti:");
-//        TextField portFieldExit = new TextField(SCALE_PORT);
-
-        // Buttons
-//        Button saveButton = new Button("Saqlash");
-//        Button cancelButton = new Button("Bekor qilish");
-
-//        saveButton.setDisable(true); // Disabled by default
-//
-//        // Enable Save button on any change in text fields
-//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
-//            saveButton.setDisable(
-//                    massTimeField.getText().equals(SCALE_TIMEOUT.toString()) &&
-//                            portField.getText().equals(SCALE_PORT) &&
-//                            massTimeFieldExit.getText().equals(EXIT_TIMEOUT.toString()) &&
-//                            portFieldExit.getText().equals(SCALE_EXIT_PORT)
-//            );
-//        };
-
-//        massTimeField.textProperty().addListener(changeListener);
-//        portField.textProperty().addListener(changeListener);
-//
-//        massTimeFieldExit.textProperty().addListener(changeListener);
-//        portFieldExit.textProperty().addListener(changeListener);
-//
-//        saveButton.setOnAction(event -> {
-//            SCALE_TIMEOUT = Integer.parseInt(massTimeField.getText());
-//            SCALE_PORT = portField.getText();
-//            configurations.setScaleTimeout(Integer.parseInt(massTimeField.getText()));
-//            configurations.setScalePort(portField.getText());
-//
-//            EXIT_TIMEOUT = Integer.parseInt(massTimeFieldExit.getText());
-//            SCALE_EXIT_PORT = portFieldExit.getText();
-//            configurations.setExitTimeout(Integer.parseInt(massTimeFieldExit.getText()));
-//            configurations.setScaleExitPort(portFieldExit.getText());
-//            configUtilsService.saveConfig(configurations);
-//            // Add save logic here
-//            popupStage.close();
-//        });
-
-//        cancelButton.setOnAction(event -> popupStage.close());
-//
-//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
-//
-//        HBox buttonBox = new HBox(saveButton, cancelButton);
-//        buttonBox.setSpacing(10);
-//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
         // Layout
-        VBox v = new VBox(10, tarozi, new HBox(20,
-                new VBox(10,
+        VBox v = new VBox(5, tarozi, new HBox(20,
+                new VBox(5,
                         massTimeLabel, massTimeField
                 ),
-                new VBox(10,
+                new VBox(5,
                         portLabel, portField)
         ));
         v.setAlignment(Pos.CENTER);
@@ -940,84 +806,29 @@ public class MenuBarController implements BaseController {
 
         return layout;
     }
+
+    private TextField massTimeFieldOut = new TextField();
+    private TextField portFieldOut = new TextField();
+
     private Node showTaroziPopupOut() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
-//        popupStage.setTitle("Tarozi Sozlamalari");
-
-        // Form Elements
-//        Label exitTimeLabel = new Label("Mashinaning qaytib chiqish vaqti (ms):");
-//        TextField exitTimeField = new TextField(EXIT_TIMEOUT.toString());
 
         // Form Elements
         Label massTimeLabel = new Label("Vazn aniqlash vaqti (ms):");
         Label tarozi = new Label("Tarozi");
 
-        TextField massTimeField = new TextField(EXIT_TIMEOUT.toString());
-        massTimeField.setPrefWidth(80);
-
+        massTimeFieldOut.setPrefWidth(80);
         Label portLabel = new Label("Porti:");
-        TextField portField = new TextField(SCALE_EXIT_PORT);
-        portField.setPrefWidth(80);
-//        Label massTimeLabelExit = new Label("Chiqish Tarozi massasini aniqlash vaqti (ms):");
-//        TextField massTimeFieldExit = new TextField(SCALE_TIMEOUT.toString());
-//
-//        Label portLabelExit = new Label("Porti:");
-//        TextField portFieldExit = new TextField(SCALE_PORT);
 
-        // Buttons
-//        Button saveButton = new Button("Saqlash");
-//        Button cancelButton = new Button("Bekor qilish");
-
-//        saveButton.setDisable(true); // Disabled by default
-//
-//        // Enable Save button on any change in text fields
-//        ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
-//            saveButton.setDisable(
-//                    massTimeField.getText().equals(SCALE_TIMEOUT.toString()) &&
-//                            portField.getText().equals(SCALE_PORT) &&
-//                            massTimeFieldExit.getText().equals(EXIT_TIMEOUT.toString()) &&
-//                            portFieldExit.getText().equals(SCALE_EXIT_PORT)
-//            );
-//        };
-
-//        massTimeField.textProperty().addListener(changeListener);
-//        portField.textProperty().addListener(changeListener);
-//
-//        massTimeFieldExit.textProperty().addListener(changeListener);
-//        portFieldExit.textProperty().addListener(changeListener);
-//
-//        saveButton.setOnAction(event -> {
-//            SCALE_TIMEOUT = Integer.parseInt(massTimeField.getText());
-//            SCALE_PORT = portField.getText();
-//            configurations.setScaleTimeout(Integer.parseInt(massTimeField.getText()));
-//            configurations.setScalePort(portField.getText());
-//
-//            EXIT_TIMEOUT = Integer.parseInt(massTimeFieldExit.getText());
-//            SCALE_EXIT_PORT = portFieldExit.getText();
-//            configurations.setExitTimeout(Integer.parseInt(massTimeFieldExit.getText()));
-//            configurations.setScaleExitPort(portFieldExit.getText());
-//            configUtilsService.saveConfig(configurations);
-//            // Add save logic here
-//            popupStage.close();
-//        });
-
-//        cancelButton.setOnAction(event -> popupStage.close());
-//
-//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
-//
-//        HBox buttonBox = new HBox(saveButton, cancelButton);
-//        buttonBox.setSpacing(10);
-//        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-
+        portFieldOut.setPrefWidth(80);
         // Layout
-        VBox v = new VBox(10, tarozi, new HBox(20,
-                new VBox(10,
-                        massTimeLabel, massTimeField
+        VBox v = new VBox(5, tarozi, new HBox(20,
+                new VBox(5,
+                        massTimeLabel, massTimeFieldOut
                 ),
-                new VBox(10,
-                        portLabel, portField)
+                new VBox(5,
+                        portLabel, portFieldOut)
         ));
         v.setAlignment(Pos.CENTER);
         AnchorPane layout = new AnchorPane(
@@ -1079,7 +890,7 @@ public class MenuBarController implements BaseController {
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
         // Layout
-        VBox layout = new VBox(10,
+        VBox layout = new VBox(5,
                 mycoalLabel, mycoalField,
                 scaleWebLabel, scaleWebField,
                 buttonBox);
@@ -1134,7 +945,7 @@ public class MenuBarController implements BaseController {
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
         // Layout
-        VBox layout = new VBox(10,
+        VBox layout = new VBox(5,
                 exitTimeLabel, exitTimeField,
                 buttonBox);
         layout.setSpacing(15);
@@ -1146,62 +957,36 @@ public class MenuBarController implements BaseController {
         popupStage.show();
     }
 
+    TextField printerNameField = new TextField();
 
     private Node showPrinterPopup() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.setTitle("Printer Sozlamalari");
 
-        // Form Elements
         Label printerNameLabel = new Label("Printer nomi:");
-        TextField printerNameField = new TextField(PRINTER_NAME);
 
-        // Buttons
         Button testButton = new Button("Test");
-//        Button saveButton = new Button("Saqlash");
-//        Button cancelButton = new Button("Bekor qilish");
 
-//        saveButton.setDisable(true); // Disabled by default
-//
-//        // Enable Save button when the text field value changes
-//        printerNameField.textProperty().addListener((observable, oldValue, newValue) -> {
-//            saveButton.setDisable(printerNameField.getText().equals(PRINTER_NAME));
-//        });
-
-        // Test button action
         testButton.setOnAction(event -> {
             printCheck.testCheckRecipient();
         });
 
-//        saveButton.setOnAction(event -> {
-//            PRINTER_NAME = printerNameField.getText();
-//            configurations.setPrinterName(printerNameField.getText());
-//            configUtilsService.saveConfig(configurations);
-//            // Add save logic here
-//            popupStage.close();
-//        });
-//
-//        cancelButton.setOnAction(event -> popupStage.close());
 
         testButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-padding: 5 15;");
-//        saveButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
-//        cancelButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-padding: 5 15;");
 
         HBox buttonBox = new HBox(testButton);
         buttonBox.setSpacing(10);
         buttonBox.setAlignment(Pos.CENTER_LEFT);
 
         // Layout
-        VBox layout = new VBox(10,
+        VBox layout = new VBox(5,
                 printerNameLabel, printerNameField,
                 buttonBox);
         layout.setSpacing(15);
         layout.setPadding(new Insets(15));
         layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
 
-//        Scene popupScene = new Scene(layout, 400, 200);
-//        popupStage.setScene(popupScene);
-//        popupStage.show();
         return layout;
     }
 
@@ -1228,7 +1013,7 @@ public class MenuBarController implements BaseController {
         closeButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 5 15;");
 
         // Layout
-        VBox layout = new VBox(10, infoLabel, closeButton);
+        VBox layout = new VBox(5, infoLabel, closeButton);
         layout.setPadding(new Insets(15));
         layout.setAlignment(Pos.CENTER);
 
@@ -1381,7 +1166,7 @@ public class MenuBarController implements BaseController {
     }
 
     private VBox createRowWithImages(String[] imagePaths, String description) {
-        VBox rowContainer = new VBox(10);
+        VBox rowContainer = new VBox(5);
         rowContainer.setAlignment(Pos.CENTER);
 
         HBox imageRow = new HBox(10);
@@ -1405,7 +1190,7 @@ public class MenuBarController implements BaseController {
         descriptionLabel.setWrapText(true);
         descriptionLabel.setStyle("-fx-font-size: 16px;"); // Bigger font size
         descriptionLabel.setCursor(Cursor.TEXT);
-        VBox sectionLayout = new VBox(10, imageView, descriptionLabel, new Separator());
+        VBox sectionLayout = new VBox(5, imageView, descriptionLabel, new Separator());
         sectionLayout.setAlignment(Pos.CENTER);
         return sectionLayout;
     }
@@ -1476,10 +1261,6 @@ public class MenuBarController implements BaseController {
         popupStage.setTitle("Tarozi Sozlamalari");
 
         // Form Elements
-//        Label exitTimeLabel = new Label("Mashinaning qaytib chiqish vaqti (ms):");
-//        TextField exitTimeField = new TextField(EXIT_TIMEOUT.toString());
-
-        // Form Elements
         Label massTimeLabel = new Label("Kirish Tarozi massasini aniqlash vaqti (ms):");
         TextField massTimeField = new TextField(SCALE_TIMEOUT.toString());
 
@@ -1543,7 +1324,7 @@ public class MenuBarController implements BaseController {
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
         // Layout
-        VBox layout = new VBox(10,
+        VBox layout = new VBox(5,
                 massTimeLabel, massTimeField,
                 portLabel, portField,
                 line,

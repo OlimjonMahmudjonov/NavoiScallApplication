@@ -27,24 +27,28 @@ public class GpioControl {
     private Context pi4jIn;
 
     public void initialize() {
-        if (pi4jOut == null) {
-            pi4jOut = Pi4J.newContextBuilder()
-                    .add(GpioDDigitalOutputProvider.newInstance())
-                    .build();
+        try {
+            if (pi4jOut == null) {
+                pi4jOut = Pi4J.newContextBuilder()
+                        .add(GpioDDigitalOutputProvider.newInstance())
+                        .build();
+            }
+
+            if (pi4jIn == null) {
+                pi4jIn = Pi4J.newContextBuilder()
+                        .add(GpioDDigitalInputProvider.newInstance())
+                        .build();
+            }
+
+            Platform platform = pi4jOut.platform();
+            System.out.println("Platform: " + (platform != null ? platform.name() : "Not Initialized"));
+
+            controlPinsInitialization(pi4jOut);
+            statusPinsInitialization(pi4jIn);
+            setStatusListeners();
+        } catch (Exception e) {
+            System.out.println("mana hato");
         }
-
-        if (pi4jIn == null) {
-            pi4jIn = Pi4J.newContextBuilder()
-                    .add(GpioDDigitalInputProvider.newInstance())
-                    .build();
-        }
-
-        Platform platform = pi4jOut.platform();
-        System.out.println("Platform: " + (platform != null ? platform.name() : "Not Initialized"));
-
-        controlPinsInitialization(pi4jOut);
-        statusPinsInitialization(pi4jIn);
-        setStatusListeners();
     }
 
     private void setStatusListeners() {
@@ -58,13 +62,17 @@ public class GpioControl {
         );
 
         for (int pin : STATUS_PINS) {
-            DigitalInput input = inputPins.get(pin);
-            if (input != null && pinToSensorMap.containsKey(pin)) {
-                Consumer<Boolean> sensorUpdater = pinToSensorMap.get(pin);
-                input.addListener((event) -> {
-                    boolean isHigh = event.state().isHigh();
-                    sensorUpdater.accept(isHigh);
-                });
+            try {
+                DigitalInput input = inputPins.get(pin);
+                if (input != null && pinToSensorMap.containsKey(pin)) {
+                    Consumer<Boolean> sensorUpdater = pinToSensorMap.get(pin);
+                    input.addListener((event) -> {
+                        boolean isHigh = event.state().isHigh();
+                        sensorUpdater.accept(isHigh);
+                    });
+                }
+            } catch (Exception e) {
+                System.out.println("mana hato");
             }
         }
     }
@@ -75,17 +83,22 @@ public class GpioControl {
 //            System.out.println("Pin number not found " + pin);
 //            resetPin(pin);
 //            if (!outputPins.containsKey(pin)){
-                throw new RuntimeException("Pin number not found " + pin + " again");
+            throw new RuntimeException("Pin number not found " + pin + " again");
 //            }
         }
 
         DigitalOutput output = outputPins.get(pin);
-        if (state == PinState.HIGH) {
-            output.low();
-            return true;
-        } else if (state == PinState.LOW) {
-            output.high();
-            return true;
+
+        try {
+            if (state == PinState.HIGH) {
+                output.low();
+                return true;
+            } else if (state == PinState.LOW) {
+                output.high();
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println("mana hato");
         }
         return false;
     }
@@ -157,7 +170,7 @@ public class GpioControl {
 //        if (pi4jOut != null) pi4jOut.shutdown();
 //        if (pi4jIn != null) pi4jIn.shutdown();
 //    }
-
+//
     public void shutdownCompletely() {
         if (pi4jOut != null) {
             if (outputPins != null && !outputPins.isEmpty()) {
@@ -189,16 +202,20 @@ public class GpioControl {
 
     public void getSensorStatuses() {
         for (int pin : STATUS_PINS) {
-            DigitalInput input = inputPins.get(pin);
-            if (input != null) {
-                switch (pin) {
-                    case 17 -> sensor1Connection = input.isHigh();
-                    case 22 -> sensor2Connection = input.isHigh();
-                    case 27 -> sensor3Connection = input.isHigh();
-                    case 30 -> sensorExit1Connection = input.isHigh();
-                    case 31 -> sensorExit2Connection = input.isHigh();
-                    case 32 -> sensorExit3Connection = input.isHigh();
+            try {
+                DigitalInput input = inputPins.get(pin);
+                if (input != null) {
+                    switch (pin) {
+                        case 17 -> sensor1Connection = input.isHigh();
+                        case 22 -> sensor2Connection = input.isHigh();
+                        case 27 -> sensor3Connection = input.isHigh();
+                        case 14 -> sensorExit1Connection = input.isHigh();
+                        case 15 -> sensorExit2Connection = input.isHigh();
+                        case 18 -> sensorExit3Connection = input.isHigh();
+                    }
                 }
+            } catch (Exception e) {
+                System.out.println("mana hato");
             }
         }
     }
