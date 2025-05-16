@@ -17,6 +17,7 @@ import java.util.Base64;
 
 import static uz.tenzorsoft.scaleapplication.domain.Instances.configurations;
 import static uz.tenzorsoft.scaleapplication.domain.Instances.directory;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.*;
 
 @Service
 public class ConfigUtilsService {
@@ -85,12 +86,12 @@ public class ConfigUtilsService {
         config.setControllerConnectTimeout(2000);
         config.setCloseGate1Timeout(8000);
         config.setCloseGate2Timeout(8000);
-        config.setPinIn(2);
-        config.setPinIn2(3);
+        config.setPinIn(RASP_OPEN_GATE_1);
+        config.setPinIn2(RASP_OPEN_GATE_2);
         config.setCloseGateExit1Timeout(8000);
         config.setCloseGateExit2Timeout(8000);
-        config.setPinOut(4);
-        config.setPinOut2(5);
+        config.setPinOut(RASP_OPEN_GATE_EXIT_1);
+        config.setPinOut2(RASP_OPEN_GATE_EXIT_2);
         config.setScaleTimeout(3000);
         config.setScalePort("COM3");
         config.setScaleExitPort("COM2");
@@ -108,12 +109,12 @@ public class ConfigUtilsService {
         config.setCameraRezerv1("");
         config.setCameraRezerv2("");
         config.setRaspberryUsing(0);
-        config.setSensorIn1(17);
-        config.setSensorIn2(27);
-        config.setSensorIn3(22);
-        config.setSensorOut1(14);
-        config.setSensorOut2(15);
-        config.setSensorOut3(18);
+        config.setSensorIn1(RASP_SENSOR_1);
+        config.setSensorIn2(RASP_SENSOR_2);
+        config.setSensorIn3(RASP_SENSOR_3);
+        config.setSensorOut1(RASP_SENSOR_EXIT_1);
+        config.setSensorOut2(RASP_SENSOR_EXIT_2);
+        config.setSensorOut3(RASP_SENSOR_EXIT_3);
         return config;
     }
 
