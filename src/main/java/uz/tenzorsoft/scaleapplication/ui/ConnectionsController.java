@@ -16,7 +16,8 @@ import java.util.concurrent.ExecutorService;
 import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
 import static uz.tenzorsoft.scaleapplication.domain.Settings.*;
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.*;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.COIL_CLOSE_GATE_EXIT_2;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_CLOSE_GATE_EXIT_2;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_CLOSE_GATE_2;
 
 
 @Component
@@ -27,18 +28,29 @@ public class ConnectionsController implements BaseController {
     private final ControllerService controllerService;
     private final LogService logService;
     @FXML
-    private ImageView controller, camera1, camera2, camera3, camera4, gate1, gate2, sensor1, sensor2, sensor3, gateExit1, gateExit2, sensorExit1, sensorExit2, sensorExit3;
+    private ImageView camera1, camera2, camera3, gate1, gate2, sensor1, sensor2, sensor3, cameraExit1, cameraExit2, cameraExit3, gateExit1, gateExit2, sensorExit1, sensorExit2, sensorExit3;
 
     public void initialize() {
-        controller.setImage(redLight);
-        camera1.setImage(redLight);
-        camera2.setImage(redLight);
-        camera3.setImage(redLight);
-        sensor1.setImage(redLight);
-        sensor2.setImage(redLight);
-        sensor3.setImage(redLight);
-        gate1.setImage(redLight);
-        gate2.setImage(redLight);
+        if (sensor1 != null) {
+            camera1.setImage(redLight);
+            camera2.setImage(redLight);
+            camera3.setImage(redLight);
+            sensor1.setImage(redLight);
+            sensor2.setImage(redLight);
+            sensor3.setImage(redLight);
+            gate1.setImage(redLight);
+            gate2.setImage(redLight);
+        }
+        if (sensorExit1 != null) {
+            cameraExit1.setImage(redLight);
+            cameraExit2.setImage(redLight);
+            cameraExit3.setImage(redLight);
+            sensorExit1.setImage(redLight);
+            sensorExit2.setImage(redLight);
+            sensorExit3.setImage(redLight);
+            gateExit1.setImage(redLight);
+            gateExit2.setImage(redLight);
+        }
     }
 
     public void updateConnections() {
@@ -46,17 +58,17 @@ public class ConnectionsController implements BaseController {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     if (!isTesting && !isRaspberryUsing) {
-                        gate1Connection = controllerService.checkConnection(COIL_CLOSE_GATE_1);
-                        gate2Connection = controllerService.checkConnection(COIL_CLOSE_GATE_2);
-                        sensor1Connection = controllerService.checkConnection(COIL_SENSOR_1);
-                        sensor2Connection = controllerService.checkConnection(COIL_SENSOR_2);
-                        sensor3Connection = controllerService.checkConnection(COIL_SENSOR_3);
+                        gate1Connection = controllerService.checkConnection(RASP_CLOSE_GATE_1);
+                        gate2Connection = controllerService.checkConnection(RASP_CLOSE_GATE_2);
+                        sensor1Connection = controllerService.checkConnection(RASP_SENSOR_1);
+                        sensor2Connection = controllerService.checkConnection(RASP_SENSOR_2);
+                        sensor3Connection = controllerService.checkConnection(RASP_SENSOR_3);
 
-                        gateExit1Connection = controllerService.checkConnection(COIL_CLOSE_GATE_EXIT_1);
-                        gateExit2Connection = controllerService.checkConnection(COIL_CLOSE_GATE_EXIT_2);
-                        sensorExit1Connection = controllerService.checkConnection(COIL_SENSOR_EXIT_1);
-                        sensorExit2Connection = controllerService.checkConnection(COIL_SENSOR_EXIT_2);
-                        sensorExit3Connection = controllerService.checkConnection(COIL_SENSOR_EXIT_3);
+                        gateExit1Connection = controllerService.checkConnection(RASP_CLOSE_GATE_EXIT_1);
+                        gateExit2Connection = controllerService.checkConnection(RASP_CLOSE_GATE_EXIT_2);
+                        sensorExit1Connection = controllerService.checkConnection(RASP_SENSOR_EXIT_1);
+                        sensorExit2Connection = controllerService.checkConnection(RASP_SENSOR_EXIT_2);
+                        sensorExit3Connection = controllerService.checkConnection(RASP_SENSOR_EXIT_3);
                     }
                     camera1Connection = controllerService.checkConnection(CAMERA_1);
 //                    System.out.println("camera1Connection: " + camera1Connection);
@@ -64,6 +76,8 @@ public class ConnectionsController implements BaseController {
 //                    System.out.println("camera2Connection: " + camera2Connection);
                     camera3Connection = controllerService.checkConnection(CAMERA_3);
                     camera4Connection = controllerService.checkConnection(CAMERA_4);
+                    cameraRezerv1Connection = controllerService.checkConnection(CAMERA_REZERV1);
+                    cameraRezerv2Connection = controllerService.checkConnection(CAMERA_REZERV2);
 //                    System.out.println("camera3Connection: " + camera3Connection);
                     isConnectedToInternet = controllerService.checkInternetConnection(GOOGLE_DNS);
                     Thread.sleep(500);
@@ -92,10 +106,12 @@ public class ConnectionsController implements BaseController {
 
                     camera1.setImage(camera1Connection ? greenLight : redLight);
                     camera2.setImage(camera2Connection ? greenLight : redLight);
-                    camera3.setImage(camera3Connection ? greenLight : redLight);
-                    camera4.setImage(camera4Connection ? greenLight : redLight);
+                    camera3.setImage(cameraRezerv1Connection ? greenLight : redLight);
+                    cameraExit1.setImage(camera3Connection ? greenLight : redLight);
+                    cameraExit2.setImage(camera4Connection ? greenLight : redLight);
+                    cameraExit3.setImage(cameraRezerv2Connection ? greenLight : redLight);
 
-                    controller.setImage(isConnected ? greenLight : redLight);
+//                    controller.setImage(isConnected ? greenLight : redLight);
                     gate1.setImage(gate1Connection ? greenLight : redLight);
                     gate2.setImage(gate2Connection ? greenLight : redLight);
 

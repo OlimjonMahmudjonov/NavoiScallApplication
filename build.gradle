@@ -26,6 +26,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
+    // Spring Security uchun qo'shildi
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // JWT (JSON Web Token) uchun qo'shildi (jjwt kutubxonasi)
+    // Eng so'nggi barqaror versiyalarni ishlatish tavsiya etiladi. Misol uchun 0.12.5:
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5' // Agar Jackson JSON parser ishlatsangiz (Spring Boot odatda ishlatadi)
+    // Yoki 'io.jsonwebtoken:jjwt-gson:0.12.5' agar Gson ishlatsangiz
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
     implementation 'org.openjfx:javafx-controls:17.0.6'
     implementation 'org.openjfx:javafx-fxml:17.0.6'
     implementation 'org.openjfx:javafx-base:17.0.6'
@@ -54,13 +66,18 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    implementation 'com.fazecast:jSerialComm:2.9.0'
+    implementation 'com.fazecast:jSerialComm:2.9.0' // Bu qator takrorlangan ko'rinadi, bittasi qolishi kerak
 
     implementation 'org.apache.pdfbox:pdfbox:2.0.29'
 
     implementation 'org.apache.poi:poi:5.2.3' // For basic Excel support
     implementation 'org.apache.poi:poi-ooxml:5.2.3' // For advanced Excel support (XLSX)
 
+    // com.fazecast:jSerialComm:2.9.3 qatori yuqorida 2.9.0 bilan takrorlanmoqda.
+    // Agar 2.9.3 versiyasi kerak bo'lsa, 2.9.0 ni olib tashlang yoki aksincha.
+    // Men 2.9.3 ni qoldiraman, chunki u yangiroq bo'lishi mumkin.
+    // Agar `com.fazecast:jSerialComm:2.9.0` ni ishlatmoqchi bo'lsangiz, quyidagi qatorni o'chiring
+    // va yuqoridagi 2.9.0 ni qoldiring.
     implementation 'com.fazecast:jSerialComm:2.9.3'
 
 }

@@ -9,7 +9,11 @@ import javafx.scene.layout.Pane;
 import lombok.RequiredArgsConstructor;
 import org.controlsfx.control.ToggleSwitch;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import uz.tenzorsoft.scaleapplication.domain.Instances;
 import uz.tenzorsoft.scaleapplication.domain.entity.LogEntity;
 import uz.tenzorsoft.scaleapplication.domain.enumerators.AttachStatus;
@@ -29,7 +33,10 @@ import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.truckPosition;
 
 @Component
+@RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/kpp")
+
 public class TestController implements BaseController {
 
     private final ExecutorService executors;
@@ -287,9 +294,48 @@ public class TestController implements BaseController {
         buttonController.openGate2();
         truckPosition = -1;
     }
+    public void kppopenGate1() {
+        buttonController.kppopenGate1();
+        truckPosition = -1;
+    }
+
+    public void kppopenGate2() {
+        buttonController.kppopenGate2();
+        truckPosition = -1;
+    }
+
+    public void openExitGate1() {
+        buttonController.openExitGate1();
+        truckPosition = -1;
+    }
+
+    public void openExitGate2() {
+        buttonController.openExitGate2();
+        truckPosition = -1;
+    }
+
 
     public void closeGate1() {
         buttonController.closeGate1();
+        truckPosition = -1;
+        currentTruck = new TruckResponse();
+        truckScalingController.reinitialize();
+        cargoConfirmationStatus = -1;
+        isWaiting = false;
+        truckNumber = "";
+    }
+
+    public void kppcloseGate1() {
+        buttonController.kppcloseGate1();
+        truckPosition = -1;
+        currentTruck = new TruckResponse();
+        truckScalingController.reinitialize();
+        cargoConfirmationStatus = -1;
+        isWaiting = false;
+        truckNumber = "";
+    }
+    public void kppcloseGate2() {
+        buttonController.kppcloseGate2();
         truckPosition = -1;
         currentTruck = new TruckResponse();
         truckScalingController.reinitialize();
@@ -308,7 +354,78 @@ public class TestController implements BaseController {
         truckNumber = "";
     }
 
+    public void closeExitGate1() {
+        buttonController.closeExitGate1();
+        truckPosition = -1;
+        currentTruck = new TruckResponse();
+        truckScalingController.reinitialize();
+        cargoConfirmationStatus = -1;
+        isWaiting = false;
+        truckNumber = "";
+    }
+
+    public void closeExitGate2() {
+        buttonController.closeExitGate2();
+        truckPosition = -1;
+        currentTruck = new TruckResponse();
+        truckScalingController.reinitialize();
+        cargoConfirmationStatus = -1;
+        isWaiting = false;
+        truckNumber = "";
+    }
+
     public void getWeight() {
         buttonController.getTruckWeigh();
+    }
+
+
+    @PostMapping("/kpp-gate1/open") // POST so'rovi uchun: http://localhost:port/kpp-gate1/open
+    public ResponseEntity<String> apiKppOpenGate1() {
+        try {
+            // Log yozish mumkin: logService.save(...) yoki shunchaki System.out.println
+            System.out.println("API orqali kppopenGate1 chaqirildi");
+            kppopenGate1(); // Sizning asl metodingizni chaqirish
+            return ResponseEntity.ok("KPP Darvoza 1 muvaffaqiyatli ochildi.");
+        } catch (Exception e) {
+            System.err.println("KPP Darvoza 1ni ochishda xatolik: " + e.getMessage());
+            // Log yozish mumkin: logService.save(new LogEntity(5L, "", "API_ERROR: kppopenGate1 - " + e.getMessage()));
+            return ResponseEntity.status(500).body("KPP Darvoza 1ni ochishda server xatoligi: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/kpp-gate2/open") // POST so'rovi uchun: http://localhost:port/kpp-gate2/open
+    public ResponseEntity<String> apiKppOpenGate2() {
+        try {
+            System.out.println("API orqali kppopenGate2 chaqirildi");
+            kppopenGate2(); // Sizning asl metodingizni chaqirish
+            return ResponseEntity.ok("KPP Darvoza 2 muvaffaqiyatli ochildi.");
+        } catch (Exception e) {
+            System.err.println("KPP Darvoza 2ni ochishda xatolik: " + e.getMessage());
+            return ResponseEntity.status(500).body("KPP Darvoza 2ni ochishda server xatoligi: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/kpp-gate1/close") // POST so'rovi uchun: http://localhost:port/kpp-gate1/close
+    public ResponseEntity<String> apiKppCloseGate1() {
+        try {
+            System.out.println("API orqali kppcloseGate1 chaqirildi");
+            kppcloseGate1(); // Sizning asl metodingizni chaqirish
+            return ResponseEntity.ok("KPP Darvoza 1 muvaffaqiyatli yopildi.");
+        } catch (Exception e) {
+            System.err.println("KPP Darvoza 1ni yopishda xatolik: " + e.getMessage());
+            return ResponseEntity.status(500).body("KPP Darvoza 1ni yopishda server xatoligi: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/kpp-gate2/close") // POST so'rovi uchun: http://localhost:port/kpp-gate2/close
+    public ResponseEntity<String> apiKppCloseGate2() {
+        try {
+            System.out.println("API orqali kppcloseGate2 chaqirildi");
+            kppcloseGate2(); // Sizning asl metodingizni chaqirish
+            return ResponseEntity.ok("KPP Darvoza 2 muvaffaqiyatli yopildi.");
+        } catch (Exception e) {
+            System.err.println("KPP Darvoza 2ni yopishda xatolik: " + e.getMessage());
+            return ResponseEntity.status(500).body("KPP Darvoza 2ni yopishda server xatoligi: " + e.getMessage());
+        }
     }
 }

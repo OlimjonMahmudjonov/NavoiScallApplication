@@ -7,42 +7,43 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:id="rootPane"
             fx:controller="uz.tenzorsoft.scaleapplication.ui.ImageController">
-    <!--          vgap="5" hgap="5"-->
-    <!--          alignment="CENTER"-->
-    <!--          style="-fx-border-color: #000; -fx-border-style: solid; -fx-padding: 5;"-->
 
-    <!--  <columnConstraints>-->
-    <!--    <ColumnConstraints hgrow="ALWAYS" percentWidth="50" minWidth="100"/>-->
-    <!--    <ColumnConstraints hgrow="ALWAYS" percentWidth="50" minWidth="100"/>-->
-    <!--  </columnConstraints>-->
-
-    <!--  <rowConstraints>-->
-    <!--    <RowConstraints vgrow="ALWAYS" percentHeight="50" minHeight="100"/>-->
-    <!--    <RowConstraints vgrow="ALWAYS" percentHeight="50" minHeight="100"/>-->
-    <!--  </rowConstraints>-->
-
-    <HBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="0">
-        <VBox>
+    <HBox AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="0" spacing="25" alignment="CENTER">
+        <VBox prefWidth="400" prefHeight="200">
             <StackPane alignment="CENTER" style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
                 <ImageView fx:id="imageView1" preserveRatio="true"
-                           fitWidth="180" fitHeight="70"/>
+                           fitWidth="250" fitHeight="100"/>
             </StackPane>
 
             <StackPane alignment="CENTER" style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
                 <ImageView fx:id="imageView2" preserveRatio="true"
-                           fitWidth="180" fitHeight="70"/>
+                           fitWidth="250" fitHeight="100"/>
             </StackPane>
         </VBox>
-        <VBox>
+
+        <VBox prefWidth="400" prefHeight="200">
+            <!-- 2-qatordagi rasmlar -->
+            <StackPane alignment="CENTER" style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
+                <ImageView fx:id="imageViewIn" preserveRatio="true"
+                           fitWidth="432" fitHeight="100"/>
+            </StackPane>
+
+            <StackPane alignment="CENTER" style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
+                <ImageView fx:id="imageViewOut" preserveRatio="true"
+                           fitWidth="432" fitHeight="100"/>
+            </StackPane>
+        </VBox>
+
+        <VBox prefWidth="400" prefHeight="200">
             <!-- 2-qatordagi rasmlar -->
             <StackPane alignment="CENTER" style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
                 <ImageView fx:id="imageView3" preserveRatio="true"
-                           fitWidth="180" fitHeight="70"/>
+                           fitWidth="250" fitHeight="100"/>
             </StackPane>
 
             <StackPane alignment="CENTER" style="-fx-border-color: black; -fx-border-width: 1px; -fx-padding: 3;">
                 <ImageView fx:id="imageView4" preserveRatio="true"
-                           fitWidth="180" fitHeight="70"/>
+                           fitWidth="250" fitHeight="100"/>
             </StackPane>
         </VBox>
     </HBox>

@@ -86,12 +86,18 @@ public class ConfigUtilsService {
         config.setControllerConnectTimeout(2000);
         config.setCloseGate1Timeout(8000);
         config.setCloseGate2Timeout(8000);
-        config.setPinIn(RASP_OPEN_GATE_1);
-        config.setPinIn2(RASP_OPEN_GATE_2);
+        config.setPinInIn(RASP_OPEN_GATE_1);
+        config.setPinInOut(RASP_CLOSE_GATE_1);
+        config.setPinInIn2(RASP_OPEN_GATE_2);
+        config.setPinInOut2(RASP_CLOSE_GATE_2);
         config.setCloseGateExit1Timeout(8000);
         config.setCloseGateExit2Timeout(8000);
-        config.setPinOut(RASP_OPEN_GATE_EXIT_1);
-        config.setPinOut2(RASP_OPEN_GATE_EXIT_2);
+
+        config.setPinOutIn(RASP_OPEN_GATE_EXIT_1);
+        config.setPinOutOut(RASP_CLOSE_GATE_EXIT_1);
+        config.setPinOutIn2(RASP_OPEN_GATE_EXIT_2);
+        config.setPinOutOut2(RASP_CLOSE_GATE_EXIT_2);
+
         config.setScaleTimeout(3000);
         config.setScalePort("COM3");
         config.setScaleExitPort("COM2");
@@ -115,6 +121,8 @@ public class ConfigUtilsService {
         config.setSensorOut1(RASP_SENSOR_EXIT_1);
         config.setSensorOut2(RASP_SENSOR_EXIT_2);
         config.setSensorOut3(RASP_SENSOR_EXIT_3);
+        config.setKppkirishshalagbaum(KPP_OPEN_GATE_EXIT_1);
+        config.setKppchiqishshalagbaum(KPP_CLOSE_GATE_EXIT_1);
         return config;
     }
 
@@ -124,13 +132,18 @@ public class ConfigUtilsService {
         Settings.CONTROLLER_CONNECT_TIMEOUT = config.getControllerConnectTimeout() == null ? defaultConfig.getControllerConnectTimeout() : config.getControllerConnectTimeout();
         Settings.CLOSE_GATE1_TIMEOUT = config.getCloseGate1Timeout() == null ? defaultConfig.getCloseGate1Timeout() : config.getCloseGate1Timeout();
         Settings.CLOSE_GATE2_TIMEOUT = config.getCloseGate2Timeout() == null ? defaultConfig.getCloseGate2Timeout() : config.getCloseGate2Timeout();
-        Settings.PIN_IN = config.getPinIn() == null ? defaultConfig.getPinIn() : config.getPinIn();
-        Settings.PIN_IN2 = config.getPinIn2() == null ? defaultConfig.getPinIn2() : config.getPinIn2();
+        Settings.PIN_IN_IN = config.getPinInIn() == null ? defaultConfig.getPinInIn() : config.getPinInIn();
+        Settings.PIN_IN_OUT = config.getPinInOut() == null ? defaultConfig.getPinInOut() : config.getPinInOut();
+        Settings.PIN_IN_IN2 = config.getPinInIn2() == null ? defaultConfig.getPinInIn2() : config.getPinInIn2();
+        Settings.PIN_IN_OUT2 = config.getPinInOut2() == null ? defaultConfig.getPinInOut2() : config.getPinInOut2();
 
         Settings.CLOSE_GATE1_EXIT_TIMEOUT = config.getCloseGate1Timeout() == null ? defaultConfig.getCloseGate1Timeout() : config.getCloseGate1Timeout();
         Settings.CLOSE_GATE2_EXIT_TIMEOUT = config.getCloseGate2Timeout() == null ? defaultConfig.getCloseGate2Timeout() : config.getCloseGate2Timeout();
-        Settings.PIN_OUT = config.getPinIn() == null ? defaultConfig.getPinOut() : config.getPinOut();
-        Settings.PIN_OUT2 = config.getPinIn2() == null ? defaultConfig.getPinOut2() : config.getPinOut2();
+
+        Settings.PIN_OUT_IN = config.getPinOutIn() == null ? defaultConfig.getPinOutIn() : config.getPinOutIn();
+        Settings.PIN_OUT_OUT = config.getPinOutOut() == null ? defaultConfig.getPinOutOut() : config.getPinOutOut();
+        Settings.PIN_OUT_IN2 = config.getPinOutIn2() == null ? defaultConfig.getPinOutIn2() : config.getPinOutIn2();
+        Settings.PIN_OUT_OUT2 = config.getPinOutOut2() == null ? defaultConfig.getPinOutOut2() : config.getPinOutOut2();
 
         Settings.SCALE_TIMEOUT = config.getScaleTimeout() == null ? defaultConfig.getScaleTimeout() : config.getScaleTimeout();
         Settings.SCALE_PORT = config.getScalePort() == null ? defaultConfig.getScalePort() : config.getScalePort();
@@ -157,6 +170,9 @@ public class ConfigUtilsService {
         Settings.SENSOR_OUT1 = config.getSensorOut1() == null ? defaultConfig.getSensorOut1() : config.getSensorOut1();
         Settings.SENSOR_OUT2 = config.getSensorOut2() == null ? defaultConfig.getSensorOut2() : config.getSensorOut2();
         Settings.SENSOR_OUT3 = config.getSensorOut3() == null ? defaultConfig.getSensorOut3() : config.getSensorOut3();
+
+        Settings.KPPCHIQISHSHALAGBAUM = config.getKppchiqishshalagbaum() == null ? defaultConfig.getKppchiqishshalagbaum() : config.getKppchiqishshalagbaum();
+        Settings.KPPKIRISHSHALAGBAUM = config.getKppkirishshalagbaum() == null ? defaultConfig.getKppkirishshalagbaum() : config.getKppkirishshalagbaum();
         Instances.isRaspberryUsing = config.getRaspberryUsing() == 1;
     }
 

@@ -332,7 +332,7 @@ public class TableController implements BaseController {
 
     public void addLastRecord() {
         TableViewData record = truckService.findLastRecord();
-        if (record == null) return;
+        if (record == null) {return;}
         tableData.getItems().add(0, record);
     }
 

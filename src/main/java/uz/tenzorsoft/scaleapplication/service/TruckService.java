@@ -38,6 +38,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import static uz.tenzorsoft.scaleapplication.domain.Settings.*;
 
 @Service
@@ -356,11 +357,11 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
         return truckRepository.findByTruckPhotosContains(truckPhotos).orElse(null);
     }
 
-    public void deleteTruckById(Long id){
-        try{
+    public void deleteTruckById(Long id) {
+        try {
             truckRepository.deleteById(id);
             tableController.addLastRecord();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("To'liq bo'lmagan truck datani o'chirishda xatolik.");
         }
     }
@@ -379,7 +380,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             currentTruckEntity.setProducts(selectedProduct); // Set the selected product
             currentTruckEntity.setTruckNumber(currentTruck.getTruckNumber());
             List<TruckPhotosEntity> truckPhotos = new ArrayList<>();
-            if (attach!=null) {
+            if (attach != null) {
                 TruckPhotosEntity entity = truckPhotoRepository.save(
                         new TruckPhotosEntity(attachService.findById(attach.getId()), AttachStatus.ENTRANCE_PHOTO)
                 );
@@ -412,8 +413,8 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                 log.error("unable to find trucks with number: {}", currentTruck.getTruckNumber());
                 return;
             }
-            currentTruckEntity = list.get(0);
-            currentTruckEntity.getTruckPhotos().removeIf(photo -> photo.getAttachStatus() == AttachStatus.EXIT_PHOTO);
+            currentExitTruckEntity = list.get(0);
+            currentExitTruckEntity.getTruckPhotos().removeIf(photo -> photo.getAttachStatus() == AttachStatus.EXIT_PHOTO);
 
             List<TruckPhotosEntity> truckPhotos = new ArrayList<>();
             if (attach != null) {
@@ -421,8 +422,8 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                         new TruckPhotosEntity(attachService.findById(attach.getId()), AttachStatus.EXIT_PHOTO)
                 );
 
-            truckPhotos.add(entity);
-        }
+                truckPhotos.add(entity);
+            }
 //            for (AttachIdWithStatus attach : currentTruck.getAttaches()) {
 //                if (attach.getStatus().equals(AttachStatus.EXIT_PHOTO)) {
 //                    break;
@@ -432,8 +433,8 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             exitedAction.setAction(currentTruck.getExitedStatus());
             exitedAction.setOnDuty(Instances.currentUser);
             truckActionRepository.save(exitedAction);
-            currentTruckEntity.getTruckActions().add(exitedAction);
-            currentTruckEntity.getTruckPhotos().addAll(truckPhotos);
+            currentExitTruckEntity.getTruckActions().add(exitedAction);
+            currentExitTruckEntity.getTruckPhotos().addAll(truckPhotos);
             truckRepository.save(currentTruckEntity);
         }
     }
@@ -449,6 +450,17 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             System.err.println(e.getMessage());
         }
         return currentTruckEntity;
+    }
+    public TruckEntity saveCurrentExitTruck(TruckResponse currentTruck, boolean isFinished) {
+        currentExitTruckEntity.setIsFinished(isFinished);
+        currentExitTruckEntity.setIsSentToCloud(false);
+        try {
+            currentExitTruckEntity = truckRepository.save(currentExitTruckEntity);
+        } catch (Exception e) {
+            logService.save(new LogEntity(5L, Instances.truckExitNumber, "00015: (" + getClass().getName() + ") " + e.getMessage()));
+            System.err.println(e.getMessage());
+        }
+        return currentExitTruckEntity;
     }
 
     @Override
@@ -468,7 +480,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             //        currentTruckEntity = truckRepository.findByTruckNumberAndIsFinished(currentTruck.getTruckNumber(), false)
 //                .orElse(new TruckEntity());
 //        currentTruckEntity.setTruckNumber(currentTruck.getTruckNumber());
-            if (response != null){
+            if (response != null) {
 
                 if (currentTruckEntity == null || currentTruckEntity.getTruckPhotos() == null) {
                     log.error("Truck entity or its photos are null. Cannot proceed.");
@@ -501,7 +513,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             }
 
 
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             System.out.println("Mana saveTruckAttaches() metodida xato tashadi:  NullPointerException");
         } catch (Exception e) {
             System.out.println("Mana saveTruckAttaches() metodida xato tashadi:  Exception");
@@ -530,7 +542,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
         currentTruckEntity.setIsSentToCloud(false);
         currentTruckEntity.setNextEntranceTime(currentTruck.getExitedAt().plusMinutes(EXIT_TIMEOUT));
         System.out.println("Chiqish vaqti: " + EXIT_TIMEOUT);
-        truckRepository.save(currentTruckEntity);
+        truckRepository.save(currentExitTruckEntity);
         log.info("Truck exited action saved for status: {}", currentTruck.getExitedStatus());
     }
 
@@ -619,7 +631,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
 
 
     public List<TruckEntity> findNotSentDataToMyCoal() {
-        return truckRepository.findByIsSentToMyCoalAndIsFinishedAndIsDeleted(false, true,false);
+        return truckRepository.findByIsSentToMyCoalAndIsFinishedAndIsDeleted(false, true, false);
     }
 
     public boolean isNumberExists(String truckNumber) {

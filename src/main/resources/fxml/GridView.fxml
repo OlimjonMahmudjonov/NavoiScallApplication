@@ -3,82 +3,148 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<GridPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
-          fx:controller="uz.tenzorsoft.scaleapplication.ui.ConnectionsController" alignment="CENTER_LEFT"
-          prefWidth="360.0" style="-fx-border-color: black;">
-  <columnConstraints>
-    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="107.20001220703125" minWidth="10.0"
-                       prefWidth="22.40001220703125"/>
-    <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="187.19998168945312" minWidth="10.0"
-                       prefWidth="67.99998779296875"/>
-    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="212.00000000000003" minWidth="0.0"
-                       prefWidth="16.80000000000001"/>
-    <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="212.00000000000003" minWidth="10.0"
-                       prefWidth="69.5999755859375"/>
-    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="212.00000000000003" minWidth="10.0"
-                       prefWidth="21.799951171874966"/>
-    <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="247.2" minWidth="10.0" prefWidth="50.0"/>
-  </columnConstraints>
-  <rowConstraints>
-    <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
-    <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
-    <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
-  </rowConstraints>
-  <children>
-    <ImageView fx:id="controller" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
-      <image>
-        <Image url="@../images/green_light.png"/>
-      </image>
-    </ImageView>
-    <ImageView fx:id="camera1" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="0" GridPane.rowIndex="1">
-      <image>
-        <Image url="@../images/green_light.png"/>
-      </image>
-    </ImageView>
-    <ImageView fx:id="sensor1" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="0" GridPane.rowIndex="2">
-      <image>
-        <Image url="@../images/green_light.png"/>
-      </image>
-    </ImageView>
-    <ImageView fx:id="gate1" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="2" GridPane.rowIndex="0">
-      <image>
-        <Image url="@../images/green_light.png"/>
-      </image>
-    </ImageView>
-    <ImageView fx:id="camera2" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-      <image>
-        <Image url="@../images/green_light.png"/>
-      </image>
-    </ImageView>
-    <ImageView fx:id="sensor2" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-      <image>
-        <Image url="@../images/green_light.png"/>
-      </image>
-    </ImageView>
-    <ImageView fx:id="gate2" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="4" GridPane.rowIndex="0">
-      <image>
-        <Image url="@../images/green_light.png"/>
-      </image>
-    </ImageView>
-    <ImageView fx:id="camera3" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="4" GridPane.rowIndex="1">
-      <image>
-        <Image url="@../images/green_light.png"/>
-      </image>
-    </ImageView>
-    <ImageView fx:id="sensor3" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="4" GridPane.rowIndex="2">
-      <image>
-        <Image url="@../images/green_light.png"/>
-      </image>
-    </ImageView>
-    <Label text="Controller" GridPane.columnIndex="1" GridPane.rowIndex="0" style="-fx-font-size: 14px;" />
-    <Label text="Camera 1" GridPane.columnIndex="1" GridPane.rowIndex="1" style="-fx-font-size: 14px;" />
-    <Label text="Sensor 1" GridPane.columnIndex="1" GridPane.rowIndex="2" style="-fx-font-size: 14px;" />
-    <Label text="Gate 1" GridPane.columnIndex="3" GridPane.rowIndex="0" style="-fx-font-size: 14px;" />
-    <Label text="Camera 2" GridPane.columnIndex="3" GridPane.rowIndex="1" style="-fx-font-size: 14px;" />
-    <Label text="Sensor 2" GridPane.columnIndex="3" GridPane.rowIndex="2" style="-fx-font-size: 14px;" />
-    <Label text="Gate 2" GridPane.columnIndex="5" GridPane.rowIndex="0" style="-fx-font-size: 14px;" />
-    <Label text="Camera 3" GridPane.columnIndex="5" GridPane.rowIndex="1" style="-fx-font-size: 14px;" />
-    <Label text="Sensor 3" GridPane.columnIndex="5" GridPane.rowIndex="2" style="-fx-font-size: 14px;" />
-  </children>
-</GridPane>
+<?import javafx.scene.text.Text?>
+<AnchorPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="uz.tenzorsoft.scaleapplication.ui.ConnectionsController"
+            prefWidth="360.0">
+    <children>
+        <VBox prefWidth="360.0">
+            <HBox prefWidth="360.0">
+                <Label prefWidth="360.0" alignment="CENTER" text="Kirish"
+                       style="-fx-font-size: 20px; -fx-border-color: black; -fx-border-width: 1.5;"/>
+            </HBox>
+            <HBox prefWidth="360.0">
+                <Label prefWidth="135.0" alignment="CENTER" text="Sensor"
+                       style="-fx-font-size: 20px; -fx-border-color: black; -fx-border-width: 1;"/>
+                <Label prefWidth="135.0" alignment="CENTER" text="Camera"
+                       style="-fx-font-size: 20px; -fx-border-color: black; -fx-border-width: 1;"/>
+                <Label prefWidth="90.0" alignment="CENTER" text="Gate"
+                       style="-fx-font-size: 20px; -fx-border-color: black; -fx-border-width: 1;"/>
+            </HBox>
+            <HBox prefWidth="360.0">
+                <HBox prefWidth="135.0" alignment="CENTER" spacing="10" style="-fx-border-color: black; -fx-border-width: 1">
+                    <VBox alignment="CENTER">
+                        <Label alignment="CENTER" text="1" style="-fx-font-size: 14px;"/>
+                        <ImageView fx:id="sensor1" fitHeight="23.0" fitWidth="23.0">
+                            <image>
+                                <Image url="@../images/green_light.png"/>
+                            </image>
+                        </ImageView>
+                    </VBox>
+                    <VBox alignment="CENTER">
+                        <Label alignment="CENTER" text="2" style="-fx-font-size: 14px;"/>
+                        <ImageView fx:id="sensor2" fitHeight="23.0" fitWidth="23.0">
+                            <image>
+                                <Image url="@../images/green_light.png"/>
+                            </image>
+                        </ImageView>
+                    </VBox>
+                    <VBox alignment="CENTER">
+                        <Label alignment="CENTER" text="3" style="-fx-font-size: 14px;"/>
+                        <ImageView fx:id="sensor3" fitHeight="23.0" fitWidth="23.0">
+                            <image>
+                                <Image url="@../images/green_light.png"/>
+                            </image>
+                        </ImageView>
+                    </VBox>
+                </HBox>
+                <HBox prefWidth="135.0" alignment="CENTER" spacing="10" style="-fx-border-color: black; -fx-border-width: 1">
+                    <VBox alignment="CENTER">
+                        <Label alignment="CENTER" text="1" style="-fx-font-size: 14px;"/>
+                        <ImageView fx:id="camera1" fitHeight="23.0" fitWidth="23.0">
+                            <image>
+                                <Image url="@../images/green_light.png"/>
+                            </image>
+                        </ImageView>
+                    </VBox>
+                    <VBox alignment="CENTER">
+                        <Label alignment="CENTER" text="2" style="-fx-font-size: 14px;"/>
+                        <ImageView fx:id="camera2" fitHeight="23.0" fitWidth="23.0">
+                            <image>
+                                <Image url="@../images/green_light.png"/>
+                            </image>
+                        </ImageView>
+                    </VBox>
+                    <VBox alignment="CENTER">
+                        <Label alignment="CENTER" text="3" style="-fx-font-size: 14px;"/>
+                        <ImageView fx:id="camera3" fitHeight="23.0" fitWidth="23.0">
+                            <image>
+                                <Image url="@../images/green_light.png"/>
+                            </image>
+                        </ImageView>
+                    </VBox>
+                </HBox>
+                <HBox prefWidth="90.0" alignment="CENTER" spacing="10" style="-fx-border-color: black; -fx-border-width: 1">
+                    <VBox alignment="CENTER">
+                        <Label alignment="CENTER" text="1" style="-fx-font-size: 14px;"/>
+                        <ImageView fx:id="gate1" fitHeight="23.0" fitWidth="23.0">
+                            <image>
+                                <Image url="@../images/green_light.png"/>
+                            </image>
+                        </ImageView>
+                    </VBox>
+                    <VBox alignment="CENTER">
+                        <Label alignment="CENTER" text="2" style="-fx-font-size: 14px;"/>
+                        <ImageView fx:id="gate2" fitHeight="23.0" fitWidth="23.0">
+                            <image>
+                                <Image url="@../images/green_light.png"/>
+                            </image>
+                        </ImageView>
+                    </VBox>
+                </HBox>
+            </HBox>
+<!--            <ImageView fx:id="controller" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="0"-->
+<!--                       GridPane.rowIndex="0">-->
+<!--                <image>-->
+<!--                    <Image url="@../images/green_light.png"/>-->
+<!--                </image>-->
+<!--            </ImageView>-->
+<!--            <ImageView fx:id="camera1" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="0" GridPane.rowIndex="1">-->
+<!--                <image>-->
+<!--                    <Image url="@../images/green_light.png"/>-->
+<!--                </image>-->
+<!--            </ImageView>-->
+
+<!--            <ImageView fx:id="gate1" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="2" GridPane.rowIndex="0">-->
+<!--                <image>-->
+<!--                    <Image url="@../images/green_light.png"/>-->
+<!--                </image>-->
+<!--            </ImageView>-->
+<!--            <ImageView fx:id="camera2" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="2" GridPane.rowIndex="1">-->
+<!--                <image>-->
+<!--                    <Image url="@../images/green_light.png"/>-->
+<!--                </image>-->
+<!--            </ImageView>-->
+<!--            <ImageView fx:id="sensor2" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="2" GridPane.rowIndex="2">-->
+<!--                <image>-->
+<!--                    <Image url="@../images/green_light.png"/>-->
+<!--                </image>-->
+<!--            </ImageView>-->
+<!--            <ImageView fx:id="gate2" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="4" GridPane.rowIndex="0">-->
+<!--                <image>-->
+<!--                    <Image url="@../images/green_light.png"/>-->
+<!--                </image>-->
+<!--            </ImageView>-->
+<!--            <ImageView fx:id="camera3" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="4" GridPane.rowIndex="1">-->
+<!--                <image>-->
+<!--                    <Image url="@../images/green_light.png"/>-->
+<!--                </image>-->
+<!--            </ImageView>-->
+<!--            <ImageView fx:id="sensor3" fitHeight="23.0" fitWidth="23.0" GridPane.columnIndex="4" GridPane.rowIndex="2">-->
+<!--                <image>-->
+<!--                    <Image url="@../images/green_light.png"/>-->
+<!--                </image>-->
+<!--            </ImageView>-->
+<!--            <Label text="Controller" GridPane.columnIndex="1" GridPane.rowIndex="0" style="-fx-font-size: 14px;"/>-->
+<!--            <Label text="Camera 1" GridPane.columnIndex="1" GridPane.rowIndex="1" style="-fx-font-size: 14px;"/>-->
+<!--            <Label text="Sensor 1" GridPane.columnIndex="1" GridPane.rowIndex="2" style="-fx-font-size: 14px;"/>-->
+<!--            <Label text="Gate 1" GridPane.columnIndex="3" GridPane.rowIndex="0" style="-fx-font-size: 14px;"/>-->
+<!--            <Label text="Camera 2" GridPane.columnIndex="3" GridPane.rowIndex="1" style="-fx-font-size: 14px;"/>-->
+<!--            <Label text="Sensor 2" GridPane.columnIndex="3" GridPane.rowIndex="2" style="-fx-font-size: 14px;"/>-->
+<!--            <Label text="Gate 2" GridPane.columnIndex="5" GridPane.rowIndex="0" style="-fx-font-size: 14px;"/>-->
+<!--            <Label text="Camera 3" GridPane.columnIndex="5" GridPane.rowIndex="1" style="-fx-font-size: 14px;"/>-->
+<!--            <Label text="Sensor 3" GridPane.columnIndex="5" GridPane.rowIndex="2" style="-fx-font-size: 14px;"/>-->
+        </VBox>
+    </children>
+</AnchorPane>
 

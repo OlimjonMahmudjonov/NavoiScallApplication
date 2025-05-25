@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
 import static uz.tenzorsoft.scaleapplication.domain.Settings.*;
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.*;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_OPEN_GATE_EXIT_2;
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_EXIT_2;
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_EXIT_3;
 
@@ -166,7 +167,7 @@ public class MainController implements BaseController {
         loadMainMenu();
         userController.loadUserMenu();
         try {
-            String osName = "linux"; //System.getProperty("os.name").toLowerCase();
+            String osName = System.getProperty("os.name").toLowerCase();
             if (osName.contains("linux")) {
                 isRaspberryUsing = true;
                 gpioControl.initialize();
@@ -191,12 +192,12 @@ public class MainController implements BaseController {
 
         connectionsController.updateConnections();
         connectionsController.showConnections();
-        System.out.println("Ma'lumot jo'natadigan metod ishga tushmoqda: sendNotSentData()");
-        dataSendController.sendNotSentData();
+//        System.out.println("Ma'lumot jo'natadigan metod ishga tushmoqda: sendNotSentData()");
+//        dataSendController.sendNotSentData();
         truckScalingController.start();
         tableController.loadData();
         testController.start();
-        sendStatuesDataController.startSending();
+//        sendStatuesDataController.startSending();
         scaleController.showScale();
 //        ----------------------------------------------------------------------------------------
         printCheck.listAvailablePrinters();
@@ -260,6 +261,22 @@ public class MainController implements BaseController {
         RASP_SENSOR_EXIT_1 = SENSOR_OUT1;
         RASP_SENSOR_EXIT_2 = SENSOR_OUT2;
         RASP_SENSOR_EXIT_3 = SENSOR_OUT3;
+
+        RASP_OPEN_GATE_1 = PIN_IN_IN;
+        RASP_CLOSE_GATE_1 = PIN_IN_OUT;
+        RASP_OPEN_GATE_2 = PIN_IN_IN2;
+        RASP_CLOSE_GATE_2 = PIN_IN_OUT2;
+
+        RASP_OPEN_GATE_EXIT_1 = PIN_OUT_IN;
+        RASP_CLOSE_GATE_EXIT_1 = PIN_OUT_OUT;
+        RASP_OPEN_GATE_EXIT_2 = PIN_OUT_IN2;
+        RASP_CLOSE_GATE_EXIT_2 = PIN_OUT_OUT2;
+
+        KPPKIRISHSHALAGBAUM = KPP_OPEN_GATE_EXIT_1;
+        KPPCHIQISHSHALAGBAUM = KPP_CLOSE_GATE_EXIT_1;
+
+        STATUS_PINS = new int[]{RASP_SENSOR_1, RASP_SENSOR_2, RASP_SENSOR_3, RASP_SENSOR_EXIT_1, RASP_SENSOR_EXIT_2, RASP_SENSOR_EXIT_3};
+        CONTROL_PINS = new int[]{RASP_GREEN_LIGHT_1, RASP_GREEN_LIGHT_2, RASP_OPEN_GATE_1, RASP_CLOSE_GATE_1, RASP_OPEN_GATE_2, RASP_CLOSE_GATE_2, RASP_GREEN_LIGHT_EXIT_1, RASP_GREEN_LIGHT_EXIT_2, RASP_OPEN_GATE_EXIT_1, RASP_CLOSE_GATE_EXIT_1, RASP_OPEN_GATE_EXIT_2, RASP_CLOSE_GATE_EXIT_2,KPP_CLOSE_GATE_EXIT_1,KPP_OPEN_GATE_EXIT_1,KPP_CLOSE_GATE_EXIT_2,KPP_OPEN_GATE_EXIT_2};
     }
 
     public static String showNumberInsertDialog() {

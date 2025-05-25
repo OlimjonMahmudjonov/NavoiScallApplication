@@ -29,10 +29,16 @@ public class Instances<T> {
     public static boolean gate2Connection = false;
     public static boolean gateExit1Connection = false;
     public static boolean gateExit2Connection = false;
+    public static boolean kppgate1Connection = false;
+    public static boolean kppgate2Connection = false;
+    public static boolean kppgateExit1Connection = false;
+    public static boolean kppgateExit2Connection = false;
     public static boolean camera1Connection = false;
     public static boolean camera2Connection = false;
     public static boolean camera3Connection = false;
     public static boolean camera4Connection = false;
+    public static boolean cameraRezerv1Connection = false;
+    public static boolean cameraRezerv2Connection = false;
     public static boolean sensor1Connection = false;
     public static boolean sensor2Connection = false;
     public static boolean sensor3Connection = false;
@@ -50,12 +56,16 @@ public class Instances<T> {
     public static long secondGateEntranceTime = 0;
     public static long firstExitGateEntranceTime = 0;
     public static long secondExitGateEntranceTime = 0;
+    public static long kppfirstGateEntranceTime = 0;
+    public static long kppsecondGateEntranceTime = 0;
+    public static long kppfirstExitGateEntranceTime = 0;
+    public static long kppsecondExitGateEntranceTime = 0;
 
-    public static final Map<Integer, DigitalOutput> outputPins = new HashMap<>();
-    public static final Map<Integer, DigitalInput> inputPins = new HashMap<>();
+    public static Map<Integer, DigitalOutput> outputPins = new HashMap<>();
+    public static Map<Integer, DigitalInput> inputPins = new HashMap<>();
 
-    public static final int[] CONTROL_PINS = {RASP_GREEN_LIGHT_1, RASP_GREEN_LIGHT_2, RASP_OPEN_GATE_1, RASP_CLOSE_GATE_1, RASP_OPEN_GATE_2, RASP_CLOSE_GATE_2,RASP_GREEN_LIGHT_EXIT_1, RASP_GREEN_LIGHT_EXIT_2, RASP_OPEN_GATE_EXIT_1, RASP_CLOSE_GATE_EXIT_1, RASP_OPEN_GATE_EXIT_2, RASP_CLOSE_GATE_EXIT_2};
-    public static final int[] STATUS_PINS = {RASP_SENSOR_1, RASP_SENSOR_2, RASP_SENSOR_3,RASP_SENSOR_EXIT_1, RASP_SENSOR_EXIT_2, RASP_SENSOR_EXIT_3};
+    public static int[] CONTROL_PINS = {RASP_GREEN_LIGHT_1, RASP_GREEN_LIGHT_2, RASP_OPEN_GATE_1, RASP_CLOSE_GATE_1, RASP_OPEN_GATE_2, RASP_CLOSE_GATE_2,RASP_GREEN_LIGHT_EXIT_1, RASP_GREEN_LIGHT_EXIT_2, RASP_OPEN_GATE_EXIT_1, RASP_CLOSE_GATE_EXIT_1, RASP_OPEN_GATE_EXIT_2, RASP_CLOSE_GATE_EXIT_2,KPP_CLOSE_GATE_EXIT_1,KPP_OPEN_GATE_EXIT_1,KPP_OPEN_GATE_EXIT_2,KPP_CLOSE_GATE_EXIT_2};
+    public static int[] STATUS_PINS = {RASP_SENSOR_1, RASP_SENSOR_2, RASP_SENSOR_3,RASP_SENSOR_EXIT_1, RASP_SENSOR_EXIT_2, RASP_SENSOR_EXIT_3};
 
     public static Configurations configurations;
 

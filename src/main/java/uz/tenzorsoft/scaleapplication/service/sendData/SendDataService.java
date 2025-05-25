@@ -98,7 +98,7 @@ public class SendDataService {
     public void sendStatuses() {
         try {
             StatusResponse statusResponse = new StatusResponse(
-                    isConnected, gate1Connection, gate2Connection, camera1Connection, camera2Connection,
+                    isConnected, gate1Connection, gate2Connection,kppgate1Connection,kppgate2Connection, camera1Connection, camera2Connection,
                     camera3Connection, sensor1Connection, sensor2Connection, sensor3Connection, currentUser.getInternalScaleId()
             );
 

@@ -55,6 +55,9 @@ public class ButtonController implements BaseController {
     @FXML
     private Button button1, button2, button4, button5;
 
+    @FXML
+    private Button buttonExit1, buttonExit2, buttonExit4, buttonExit5;
+
     private String commandComment = "";
 
     @Autowired
@@ -62,10 +65,18 @@ public class ButtonController implements BaseController {
 
     @FXML
     public void initialize() {
-        setupButtonPressEffect(button1, "#4CAF50");
-        setupButtonPressEffect(button2, "#4CAF50");
-        setupButtonPressEffect(button4, "#D32F2F");
-        setupButtonPressEffect(button5, "#D32F2F");
+        if (button1 != null) {
+            setupButtonPressEffect(button1, "#4CAF50");
+            setupButtonPressEffect(button2, "#4CAF50");
+            setupButtonPressEffect(button4, "#D32F2F");
+            setupButtonPressEffect(button5, "#D32F2F");
+        }
+        if (buttonExit1 != null) {
+            setupButtonPressEffect(buttonExit1, "#4CAF50");
+            setupButtonPressEffect(buttonExit2, "#4CAF50");
+            setupButtonPressEffect(buttonExit4, "#D32F2F");
+            setupButtonPressEffect(buttonExit5, "#D32F2F");
+        }
     }
 
     private void setupButtonPressEffect(Button button, String pressedColor) {
@@ -93,6 +104,38 @@ public class ButtonController implements BaseController {
         return false;
     }
 
+    public boolean kppopenGate1() {
+        try {
+            if (!isTesting) {
+                if (isRaspberryUsing) {
+                    raspberryService.kppopenGate1();
+                } else controllerService.kppopenGate1();
+                gate1Connection = false;
+                commandComment = "Finished";
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            logService.save(new LogEntity(5L, truckNumber, "00017: (" + getClass().getName() + ") " + e.getMessage()));
+            showAlert(Alert.AlertType.ERROR, "Xatolik", e.getMessage());
+        }
+        return false;
+    }
+    public boolean kppopenGate2() {
+        try {
+            if (!isTesting) {
+                if (isRaspberryUsing) {
+                    raspberryService.kppopenGate2();
+                } else controllerService.kppopenGate2();
+                kppgate2Connection = false;
+                commandComment = "Finished";
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            logService.save(new LogEntity(5L, truckNumber, "00017: (" + getClass().getName() + ") " + e.getMessage()));
+            showAlert(Alert.AlertType.ERROR, "Xatolik", e.getMessage());
+        }
+        return false;
+    }
     public boolean openExitGate1() {
         try {
             if (!isTesting) {
@@ -135,6 +178,31 @@ public class ButtonController implements BaseController {
         return false;
     }
 
+    public boolean kppopenGate1(int truckPosition) {
+        try {
+            if (!isTesting) {
+                if (isRaspberryUsing) {
+                    boolean b = raspberryService.kppopenGate1(truckPosition);
+                    if (b) kppgate1Connection = false;
+                    return b;
+                }
+                boolean b = controllerService.kppopenGate1(truckPosition);
+                if (b) kppgate1Connection = false;
+                return b;
+            } else {
+                ScaleSystem.truckPosition = truckPosition;
+                kppgate1Connection = true;
+                return true;
+            }
+        } catch (Exception e) {
+            commandComment = e.getMessage();
+            System.err.println(e.getMessage());
+            logService.save(new LogEntity(5L, truckNumber, "00018: (" + getClass().getName() + ") " + e.getMessage()));
+            showAlert(Alert.AlertType.ERROR, "Xatolik", e.getMessage());
+        }
+        return false;
+    }
+
     public boolean openGate1Manually() {
         try {
             if (!isConnected) {
@@ -163,7 +231,7 @@ public class ButtonController implements BaseController {
 
                 AttachResponse attachResponse = new AttachResponse();
                 try {
-                     attachResponse = cameraViewController.takePicture(CAMERA_1);
+                    attachResponse = cameraViewController.takePicture(CAMERA_1);
 
 
                     Long attachId = null;
@@ -213,6 +281,48 @@ public class ButtonController implements BaseController {
         return false;
     }
 
+    public boolean kppcloseGate1() {
+        try {
+            kppfirstGateEntranceTime = 0;
+            if (!isTesting) {
+                if (isRaspberryUsing) {
+                    System.out.println("Closing KPP Gate 1 ....");
+                    raspberryService.kppcloseGate1();
+                } else controllerService.kppcloseGate1();
+                commandComment = "Finished";
+                kppgateExit1Connection = true;
+            }
+        } catch (Exception e) {
+            commandComment = e.getMessage();
+            System.err.println(e.getMessage());
+            logService.save(new LogEntity(5L, truckNumber, "00024: (" + getClass().getName() + ") " + e.getMessage()));
+            if (truckNumber.length() >= 3) {
+                showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
+            }
+        }
+        return false;
+    }
+    public boolean kppcloseGate2() {
+        try {
+            kppsecondGateEntranceTime = 0;
+            if (!isTesting) {
+                if (isRaspberryUsing) {
+                    System.out.println("Closing KPP Gate 2 ....");
+                    raspberryService.kppcloseGate2();
+                } else controllerService.kppcloseGate2();
+                commandComment = "Finished";
+                kppgateExit2Connection = true;
+            }
+        } catch (Exception e) {
+            commandComment = e.getMessage();
+            System.err.println(e.getMessage());
+            logService.save(new LogEntity(5L, truckNumber, "00024: (" + getClass().getName() + ") " + e.getMessage()));
+            if (truckNumber.length() >= 3) {
+                showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
+            }
+        }
+        return false;
+    }
     public boolean closeExitGate1() {
         try {
             firstExitGateEntranceTime = 0;
@@ -322,11 +432,11 @@ public class ButtonController implements BaseController {
         try {
             if (!isTesting) {
                 if (isRaspberryUsing) {
-                    boolean b = raspberryService.openExitGate2(truckPosition);
+                    boolean b = raspberryService.openExitGate1(truckPosition);
                     if (b) gateExit2Connection = false;
                     return b;
                 }
-                boolean b = controllerService.openExitGate2(truckPosition);
+                boolean b = controllerService.openExitGate1(truckPosition);
                 if (b) gateExit2Connection = false;
                 return b;
             } else {
@@ -365,12 +475,12 @@ public class ButtonController implements BaseController {
                 System.out.println("Kamera: " + CAMERA_3);
                 AttachResponse attachResponse = new AttachResponse();
                 try {
-                attachResponse = cameraViewController.takePicture(CAMERA_3);
-                Long attachId = null;
-                if (attachResponse != null) {
-                    attachId = attachResponse.getId();
-                }
-                currentTruck.getAttaches().add(new AttachIdWithStatus(attachId, AttachStatus.MANUAL_EXIT_PHOTO));
+                    attachResponse = cameraViewController.takePicture(CAMERA_3);
+                    Long attachId = null;
+                    if (attachResponse != null) {
+                        attachId = attachResponse.getId();
+                    }
+                    currentTruck.getAttaches().add(new AttachIdWithStatus(attachId, AttachStatus.MANUAL_EXIT_PHOTO));
                 } catch (Exception e) {
                     logService.save(new LogEntity(5L, truckNumber, "00022-1: (" + getClass().getName() + ") " + e.getMessage()));
                     e.printStackTrace();
@@ -441,9 +551,12 @@ public class ButtonController implements BaseController {
                 isConnected = isAvailableToConnect;
                 closeGate1();
                 closeGate2();
+                kppcloseGate2();
+                kppcloseGate1();
 
                 closeExitGate1();
                 closeExitGate2();
+
                 return;
             }
             controllerService.connect();
@@ -548,18 +661,19 @@ public class ButtonController implements BaseController {
         try {
             if (isTesting) return (int) ((Math.random() * 10) + 100);
 
-            return isRaspberryUsing ? getTruckWeightRaspberry() : getTruckWeightWindows();
-
+//            return isRaspberryUsing ? getTruckWeightRaspberry() : getTruckWeightWindows();
+            return 5000.0;
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
     }
+
     public double getTruckExitWeigh() {
         try {
             if (isTesting) return (int) ((Math.random() * 10) + 100);
 
-            return isRaspberryUsing ? getTruckWeightRaspberryExit() : getTruckWeightWindowsExit();
-
+//            return isRaspberryUsing ? getTruckWeightRaspberryExit() : getTruckWeightWindowsExit();
+            return 10000.0;
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }

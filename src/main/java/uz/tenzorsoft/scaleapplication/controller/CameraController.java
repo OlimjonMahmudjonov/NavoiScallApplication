@@ -89,18 +89,18 @@ public class CameraController implements BaseController {
                             truckNumber = extractNumberFromXmlFile(file);
                             truckExitNumber = truckNumber;
                             System.out.println("truckNumber = " + truckNumber);
-//                            if (truckNumber == null || truckNumber.equals("unknown")) {
+//                        if (truckNumber == null || truckNumber.equals("unknown")) {
                             if (truckNumber == null || truckNumber.trim().isEmpty() || truckNumber.equalsIgnoreCase("unknown")) {
                                 showAlert(Alert.AlertType.ERROR, "Xatolik", "Moshina raqami aniqlanmadi");
                                 return ResponseEntity.ok("-NOT_MATCH");
                             }
                             if (!truckNumber.isEmpty()) {
                                 isWaiting = true;
-//                                if (!truckService.isValidTruckNumber(truckNumber)) {
-//                                    log.warn("Truck number does not match: {}", truckNumber);
-//                                    truckNumber = "";
-//                                    return ResponseEntity.ok("NOT_MATCH");
-//                                }
+                                if (!truckService.isValidTruckNumber(truckNumber)) {
+                                    log.warn("Truck number does not match: {}", truckNumber);
+                                    truckNumber = "";
+                                    return ResponseEntity.ok("NOT_MATCH");
+                                }
                                 if (cameraId == 1) {
                                     if (!truckService.isEntranceAvailableForCamera1(truckNumber)) {
                                         logService.save(new LogEntity(5L, truckNumber, "00001: (CameraController) Chiqishi topilmadi" + truckNumber));
@@ -170,6 +170,10 @@ public class CameraController implements BaseController {
                 showAlert(Alert.AlertType.ERROR, "Xatolik", "Moshina raqami aniqlanmadi");
                 return ResponseEntity.ok("_NOT_MATCH");
             }
+            if (truckExitNumber == null || truckExitNumber.trim().isEmpty() || truckExitNumber.equalsIgnoreCase("unknown")) {
+                showAlert(Alert.AlertType.ERROR, "Xatolik", "Moshina raqami aniqlanmadi");
+                return ResponseEntity.ok("_NOT_MATCH");
+            }
 
             try { // added
                 if (cameraId == 1) {
@@ -186,11 +190,11 @@ public class CameraController implements BaseController {
                     }
                 } else if (cameraId == 2) {
                     if (buttonController.openExitGate1(0)) {
-                        currentExitTruck.setEnteredStatus(TruckAction.ENTRANCE);
+                        currentExitTruck.setEnteredStatus(TruckAction.EXIT);
                         firstExitGateEntranceTime = System.currentTimeMillis();
                         truckService.saveTruck(currentExitTruck, cameraId, attachResponse);
                         tableController.addLastRecord();
-                        System.out.println("Opening gate 1");
+                        System.out.println("Exit Opening gate 1");
                     } else {
                         System.err.println("Unable to open gate 1");
                         showAlert(Alert.AlertType.ERROR, "Error", "Unable to open gate 1");
