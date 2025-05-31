@@ -18,8 +18,10 @@ public class Instances<T> {
 
     public static String truckNumber = "";
     public static String truckExitNumber = "";
-    public static String WEBSOCKET_URL = "wss://api-scale.mycoal.uz/ws";
-    public static String SERVER_URL = "https://api-scale.mycoal.uz";
+    public static String WEBSOCKET_URL = "wss://api-kimyosanoat.tenzorsoft.uz/be/ws";
+//    public static String WEBSOCKET_URL = "ws://192.168.68.134:8880/ws";
+    public static String SERVER_URL = "https://api-kimyosanoat.tenzorsoft.uz/be/api/v1";
+//    public static String SERVER_URL = "http://192.168.68.134:8880";
 
     public static String directory = "";
     public static boolean isTesting = false;
@@ -31,8 +33,6 @@ public class Instances<T> {
     public static boolean gateExit2Connection = false;
     public static boolean kppgate1Connection = false;
     public static boolean kppgate2Connection = false;
-    public static boolean kppgateExit1Connection = false;
-    public static boolean kppgateExit2Connection = false;
     public static boolean camera1Connection = false;
     public static boolean camera2Connection = false;
     public static boolean camera3Connection = false;
@@ -58,8 +58,6 @@ public class Instances<T> {
     public static long secondExitGateEntranceTime = 0;
     public static long kppfirstGateEntranceTime = 0;
     public static long kppsecondGateEntranceTime = 0;
-    public static long kppfirstExitGateEntranceTime = 0;
-    public static long kppsecondExitGateEntranceTime = 0;
 
     public static Map<Integer, DigitalOutput> outputPins = new HashMap<>();
     public static Map<Integer, DigitalInput> inputPins = new HashMap<>();

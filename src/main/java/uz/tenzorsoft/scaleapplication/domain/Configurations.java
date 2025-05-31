@@ -60,9 +60,13 @@ public class Configurations implements Serializable {
     private String cameraRezerv1;
     private String cameraRezerv2;
 
+    private Integer kppcloseGate1Timeout;
+    private Integer kppcloseGate2Timeout;
+    private Integer kpppinInIn;
+    private Integer kpppinInOut;
+    private Integer kpppinOutIn;
+    private Integer kpppinOutOut;
 
-    private Integer kppkirishshalagbaum;
-    private Integer kppchiqishshalagbaum;
 
     private Integer raspberryUsing = 0;
 }

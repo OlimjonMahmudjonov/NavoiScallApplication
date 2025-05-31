@@ -57,6 +57,7 @@ dependencies {
 
 
     implementation 'ws.schild:jave-all-deps:2.4.0'
+    implementation 'jakarta.websocket:jakarta.websocket-client-api:2.1.0'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
     compileOnly 'org.projectlombok:lombok'

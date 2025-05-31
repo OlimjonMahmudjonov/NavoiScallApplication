@@ -27,7 +27,7 @@ public class Settings {
     public static Integer PIN_OUT_IN2;
     public static Integer PIN_OUT_OUT2;
 
-    public static Long MYCOAL_SCALE_ID;
+    public static Long MYCOAL_SCALE_ID = 1L;
     public static Long SCALE_WEB_ID;
 
     public static Integer SCALE_TIMEOUT;
@@ -47,8 +47,13 @@ public class Settings {
     public static String CAMERA_4;
     public static boolean IS_RASPBERRY_USING;
 
-    public static Integer KPPKIRISHSHALAGBAUM;
-    public static Integer KPPCHIQISHSHALAGBAUM;
+
+    public static Integer KPP_CLOSE_GATE1_TIMEOUT;
+    public static Integer KPP_CLOSE_GATE2_TIMEOUT;
+    public static Integer KPP_PIN_IN_IN;
+    public static Integer KPP_PIN_IN_OUT;
+    public static Integer KPP_EXIT_PIN_IN_IN;
+    public static Integer KPP_EXIT_PIN_IN_OUT;
 
     public static Integer SENSOR_IN1;
     public static Integer SENSOR_IN2;

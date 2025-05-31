@@ -77,7 +77,7 @@ public class SendDataService {
         System.out.println(body);
 
 
-        attachService.dataSentNew(notSentAttachData, body.getViewAttachment(),false);
+        attachService.dataSentNew(notSentAttachData, body.getViewAttachment(), false);
 
         notSentAttachData = attachService.getNotSentDataNew();
         body = restTemplate.postForObject(
@@ -91,20 +91,20 @@ public class SendDataService {
             System.out.println("body = " + body);
             return;
         }
-        attachService.dataSentNew(notSentAttachData, body.getViewAttachment(),true);
+        attachService.dataSentNew(notSentAttachData, body.getViewAttachment(), true);
     }
 
 
     public void sendStatuses() {
         try {
             StatusResponse statusResponse = new StatusResponse(
-                    isConnected, gate1Connection, gate2Connection,kppgate1Connection,kppgate2Connection, camera1Connection, camera2Connection,
+                    isConnected, gate1Connection, gate2Connection, kppgate1Connection, kppgate2Connection, camera1Connection, camera2Connection,
                     camera3Connection, sensor1Connection, sensor2Connection, sensor3Connection, currentUser.getInternalScaleId()
             );
 
             RestTemplate restTemplate = new RestTemplate();
             HttpStatusCode statusCode = restTemplate.postForEntity(
-                    "https://api-scale.mycoal.uz/remote/getAllDatchikStatus",
+                    SERVER_URL + "shlagbaun/check",
                     statusResponse, Void.class
             ).getStatusCode();
             boolean error = statusCode.isError();
@@ -120,7 +120,7 @@ public class SendDataService {
     }
 
     public void sendDataToMyCoal() {
-        if (MYCOAL_SCALE_ID == 0){
+        if (MYCOAL_SCALE_ID == 0) {
             System.out.println("Settingdan mycoal tarozi id ni kiriting .....");
             return;
         }
@@ -163,21 +163,21 @@ public class SendDataService {
             }
 
 
-            myCoalData.setId(truckEntity.getId());
-            myCoalData.setNp(0L);
-            myCoalData.setTarozi_id(MYCOAL_SCALE_ID);
+            myCoalData.setLocalId(truckEntity.getId());
+//            myCoalData.setNp(0L);
+            myCoalData.setScaleId(MYCOAL_SCALE_ID);
 //            myCoalData.setRfid("");
-            myCoalData.setAvto_number(truckEntity.getTruckNumber());
+//            myCoalData.setAvto_number(truckEntity.getTruckNumber());
 //            myCoalData.setFul_name("");
 //            myCoalData.setTex_pass_number("");
 //            myCoalData.se("");
-            myCoalData.setOrg_name_seller(cargo == null ? "" : cargo.getScaleName());
-            myCoalData.setProduct(new ProductResponse());
-            myCoalData.setCheck(new CheckResponse(
-                    getLocalDateTime(enteredWeigh), getLocalDateTime(exitedWeigh)
-            ));
-            myCoalData.setAccord(new AccordResponse(null, LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))));
-            myCoalData.setDoverennost(new Doverennost(null, LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))));
+//            myCoalData.setOrg_name_seller(cargo == null ? "" : cargo.getScaleName());
+//            myCoalData.setProduct(new ProductResponse());
+//            myCoalData.setCheck(new CheckResponse(
+//                    getLocalDateTime(enteredWeigh), getLocalDateTime(exitedWeigh)
+//            ));
+//            myCoalData.setAccord(new AccordResponse(null, LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))));
+//            myCoalData.setDoverennost(new Doverennost(null, LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))));
             if (noneAction.getId() != null) {
                 if (enteredWeigh.getAction() == null) {
                     enteredWeigh = noneAction;
@@ -192,10 +192,13 @@ public class SendDataService {
 
             double brutto = Math.max(exitedWeigh.getWeight(), enteredWeigh.getWeight());
             double tara = Math.min(exitedWeigh.getWeight(), enteredWeigh.getWeight());
-            myCoalData.setHeft(new Heft(
-                    brutto, tara, brutto,
-                    cargo != null ? cargo.getNetWeight() : null
-            ));
+            myCoalData.setBrutto(brutto);
+            myCoalData.setTara(tara);
+            myCoalData.setNetto(cargo != null ? cargo.getNetWeight() : null);
+//            myCoalData.setHeft(new Heft(
+//                    brutto, tara, brutto,
+//                    cargo != null ? cargo.getNetWeight() : null
+//            ));
 
             request.add(myCoalData);
         }
@@ -209,16 +212,17 @@ public class SendDataService {
         System.out.println("My coal url: https://api.mycoal.uz/be/api/v1/scales/save-list");
         System.out.println("My coalga jo'natilmoqda");
         ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
-                "https://api.mycoal.uz/be/api/v1/scales/save-list",
+                SERVER_URL + "weight/create",
                 HttpMethod.POST,
                 entity,
-                new ParameterizedTypeReference<List<Map<String, Object>>>() {}
+                new ParameterizedTypeReference<List<Map<String, Object>>>() {
+                }
         );
 
         List<Map<String, Object>> body = response.getBody();
 
         if (body == null) {
-            System.out.println("Bu malumot my coalda mavjud");
+//            System.out.println("Bu malumot my coalda mavjud");
             return;
         }
 
@@ -244,9 +248,9 @@ public class SendDataService {
 
         System.out.println("Rasmlar jonatish uchun tayyyorlanmoqda ..");
 
-        for (ScalesSaveResponseDTO dto : dtoList){
+        for (ScalesSaveResponseDTO dto : dtoList) {
             TruckEntity truck = truckService.findById(dto.getId());
-            if (truck == null){
+            if (truck == null) {
                 return;
             }
 
@@ -283,12 +287,12 @@ public class SendDataService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        headers.set("Authorization","Basic " + encodedAuth);
+        headers.set("Authorization", "Basic " + encodedAuth);
 
         System.out.println("My coal rasmlarni jo'natish uchun url: https://api.mycoal.uz/be/api/v1/scales/fileUpload?externalId=");
         System.out.println("Rasmlar jonatilmoqda ..");
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-        ResponseEntity<String> response = restTemplate.exchange("https://api.mycoal.uz/be/api/v1/scales/fileUpload?externalId=" + externalId, HttpMethod.POST, requestEntity, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(SERVER_URL + "weight/addImages" + externalId, HttpMethod.POST, requestEntity, String.class);
 
         System.out.println("Status: " + response.getStatusCode());
         System.out.println("Response: " + response.getBody());
@@ -350,7 +354,7 @@ public class SendDataService {
         // Jo'natilmagan mahsulotlarni olish
         List<ProductsEntity> notSentProducts = productService.getNotSentProducts();
         if (notSentProducts.isEmpty()) {
-            // System.out.println("No products to send.");
+            System.out.println("No products to send.");
             return;
         }
 
@@ -372,7 +376,8 @@ public class SendDataService {
                     SERVER_URL + "/product/save",
                     HttpMethod.POST,
                     requestEntity,
-                    new ParameterizedTypeReference<Map<String, Long>>() {}
+                    new ParameterizedTypeReference<Map<String, Long>>() {
+                    }
             );
 
             // Javobni tekshirish

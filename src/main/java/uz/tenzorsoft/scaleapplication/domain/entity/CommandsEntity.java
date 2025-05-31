@@ -39,6 +39,12 @@ public class CommandsEntity {
     @Column(name = "close_gate2")
     private Boolean closeGate2;
 
+    @Column(name = "kpp_open_gate")
+    private Boolean kppopenGate;
+
+    @Column(name = "kpp_close_gate")
+    private Boolean kppcloseGate;
+
     private Long serverId;
 
     @Column(name = "created_at", updatable = false)

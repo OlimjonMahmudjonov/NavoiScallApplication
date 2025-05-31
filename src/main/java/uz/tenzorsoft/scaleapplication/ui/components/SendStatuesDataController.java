@@ -31,12 +31,15 @@ public class SendStatuesDataController {
                             || lastStatuses.isGate1() != gate1Connection
                             || lastStatuses.isGate2() != gate2Connection
 
+                            || lastStatuses.isKppgate1() != kppgate1Connection
+                            || lastStatuses.isKppgate2() != kppgate2Connection
+
                             || lastStatuses.isSensor1() != sensor1Connection
                             || lastStatuses.isSensor2() != sensor2Connection
                             || lastStatuses.isSensor3() != sensor3Connection
-
                             || lastStatuses.isGateExit1() != gateExit1Connection
                             || lastStatuses.isGateExit2() != gateExit2Connection
+
 
                             || lastStatuses.isSensorExit1() != sensorExit1Connection
                             || lastStatuses.isSensorExit2() != sensorExit2Connection
@@ -53,14 +56,22 @@ public class SendStatuesDataController {
                         lastStatuses.setGate1(gate1Connection);
                         lastStatuses.setGate2(gate2Connection);
 
+                        lastStatuses.setKppgate1(kppgate1Connection);
+                        lastStatuses.setKppgate2(kppgate2Connection);
+
                         lastStatuses.setGateExit1(gateExit1Connection);
                         lastStatuses.setGateExit2(gateExit2Connection);
+
 
                         status.setGate1(gate1Connection);
                         status.setGate2(gate2Connection);
 
+                        status.setKppgate1(kppgate1Connection);
+                        status.setKppgate2(kppgate2Connection);
+
                         status.setGateExit1(gateExit1Connection);
                         status.setGateExit2(gateExit2Connection);
+
 
                         lastStatuses.setCamera1(camera1Connection);
                         lastStatuses.setCamera2(camera2Connection);
@@ -88,7 +99,7 @@ public class SendStatuesDataController {
 
                         statusRepository.save(status);
 
-//                        sendDataService.sendStatuses();
+                        sendDataService.sendStatuses();
                     }
 
                     Thread.sleep(500);

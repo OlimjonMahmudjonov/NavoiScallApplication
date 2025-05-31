@@ -72,9 +72,9 @@ public class TruckScalingController {
 //        scheduler.scheduleAtFixedRate(() -> {
         executors.execute(() -> {
             while (true) {
-                System.out.println("////////-----enter-----////////");
+//                System.out.println("////////-----enter-----////////");
                 startScaleEntrance();
-                System.out.println("////////-----exit-----////////");
+//                System.out.println("////////-----exit-----////////");
                 startScaleExit();
             }
         });
