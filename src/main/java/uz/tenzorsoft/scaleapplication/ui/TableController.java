@@ -71,10 +71,10 @@ public class TableController implements BaseController {
     private TableColumn<TableViewData, String> enteredTruckNumber;
 
     @FXML
-    private TableColumn<TableViewData, LocalDateTime> enteredDate;
+    private TableColumn<TableViewData, String> enteredDate;
 
     @FXML
-    private TableColumn<TableViewData, LocalDateTime> enteredTime;
+    private TableColumn<TableViewData, String> enteredTime;
 
     @FXML
     private TableColumn<TableViewData, Double> enteredWeight;
@@ -89,10 +89,10 @@ public class TableController implements BaseController {
     private TableColumn<TableViewData, String> exitedTruckNumber;
 
     @FXML
-    private TableColumn<TableViewData, LocalDateTime> exitedDate;
+    private TableColumn<TableViewData, String> exitedDate;
 
     @FXML
-    private TableColumn<TableViewData, LocalDateTime> exitedTime;
+    private TableColumn<TableViewData, String> exitedTime;
 
     @FXML
     private TableColumn<TableViewData, Double> exitedWeight;
@@ -262,17 +262,17 @@ public class TableController implements BaseController {
     }
 
     public void loadData() {
-//        executors.execute(() -> {
-//            while (true) {
-//                loadDataNow();
-//                try {
-//                    Thread.sleep(30000);
-//                } catch (Exception e) {
-//                    logService.save(new LogEntity(5L, Instances.truckNumber, "00034: (" + getClass().getName() + ") " + e.getMessage()));
-//                    showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
-//                }
-//            }
-//        });
+        executors.execute(() -> {
+            while (true) {
+                loadDataNow();
+                try {
+                    Thread.sleep(30000);
+                } catch (Exception e) {
+                    logService.save(new LogEntity(5L, Instances.truckNumber, "00034: (" + getClass().getName() + ") " + e.getMessage()));
+                    showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
+                }
+            }
+        });
 
         scheduler.scheduleAtFixedRate(() -> {
             try {
@@ -289,8 +289,8 @@ public class TableController implements BaseController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            System.out.println("60 sekunda table loading data ...");
-        }, 0, 60, TimeUnit.SECONDS);
+            System.out.println("10 sekunda table loading data ...");
+        }, 0, 10, TimeUnit.SECONDS);
     }
 
     public void updateTableSmoothly(TableView<TableViewData> tableView, List<TableViewData> newData) {

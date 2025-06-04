@@ -27,13 +27,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
     // Spring Security uchun qo'shildi
-    implementation 'org.springframework.boot:spring-boot-starter-security'
+//    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // JWT (JSON Web Token) uchun qo'shildi (jjwt kutubxonasi)
     // Eng so'nggi barqaror versiyalarni ishlatish tavsiya etiladi. Misol uchun 0.12.5:
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5' // Agar Jackson JSON parser ishlatsangiz (Spring Boot odatda ishlatadi)
+//    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+//    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+//    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5' // Agar Jackson JSON parser ishlatsangiz (Spring Boot odatda ishlatadi)
     // Yoki 'io.jsonwebtoken:jjwt-gson:0.12.5' agar Gson ishlatsangiz
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'

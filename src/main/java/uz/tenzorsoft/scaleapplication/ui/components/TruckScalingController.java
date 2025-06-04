@@ -115,7 +115,7 @@ public class TruckScalingController {
             if (truckPosition == 1 && sensor1Connection && (!sensor2Connection || isOnScale)) {
                 // Save status as PROCESSING
                 imageController.setIncomePhoto(new Image("/images/in/1.1.png"));
-                truckService.saveTruckStatus(currentTruck.getEnteredStatus(), ActionStatus.PROCESSING);
+                truckService.saveTruckStatus(currentTruck.getEnteredStatus(), ActionStatus.COMPLETE);
                 truckPosition = 2;
                 buttonController.closeGate1();
             }
@@ -174,8 +174,9 @@ public class TruckScalingController {
                             if (isCargoPhotoTaken) {
                                 System.out.println("Opening gate 2");
                                 buttonController.openGate2(); // Open Gate 2
-//                                if (weigh > 0) {
-                                currentTruck.setEnteredWeight(weigh);
+                                if (weigh > 0) {
+                                currentTruck.setEnteredWeight(weigh);}
+                                else currentTruck.setEnteredWeight(5000.0);
 
                                 log.info("Truck entered weigh: {}", currentTruck.getEnteredWeight());
                                 currentTruck.setEnteredAt(LocalDateTime.now());

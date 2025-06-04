@@ -472,6 +472,7 @@ public class ControlPane implements BaseController {
             truckPosition = -1;
             currentTruck = new TruckResponse();
             truckScalingController.reinitialize();
+            truckScalingController.reinitializeExit();
             cargoConfirmationStatus = -1;
             isWaiting = false;
             truckNumber = "";

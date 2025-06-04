@@ -209,6 +209,7 @@ public class SendDataService {
 
         HttpEntity<List<MyCoalData>> entity = new HttpEntity<>(request, headers);
 
+        //todo send server
         System.out.println("My coal url: https://api.mycoal.uz/be/api/v1/scales/save-list");
         System.out.println("My coalga jo'natilmoqda");
         ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(

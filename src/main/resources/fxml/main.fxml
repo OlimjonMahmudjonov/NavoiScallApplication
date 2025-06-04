@@ -12,7 +12,7 @@
 
     <TabPane AnchorPane.topAnchor="25.0" AnchorPane.leftAnchor="0.0"
              AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0">
-        <Tab closable="false" text="Bosh sahifa">
+        <Tab closable="false" text="Tarozi">
             <VBox spacing="10.0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
                 <AnchorPane>
                     <VBox AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" spacing="10" HBox.hgrow="ALWAYS">
@@ -59,7 +59,13 @@
                 </AnchorPane>
             </VBox>
         </Tab>
-
+        <Tab closable="false" text="Ruxsatnoma">
+            <AnchorPane AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                        AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <fx:include AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                        AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" source="TableViewRegistration.fxml"/>
+            </AnchorPane>
+        </Tab>
         <fx:include source="CameraView.fxml"/>
         <fx:include source="UserView.fxml"/>
         <fx:include source="TestTab.fxml"/>

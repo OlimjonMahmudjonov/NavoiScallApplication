@@ -20,6 +20,7 @@ public class TruckActionEntity extends BaseEntity {
     private Double weight = 0.0;
 
     @Enumerated(EnumType.STRING)
+    @ColumnDefault("TruckAction.NO_ACTION")
     private TruckAction action = TruckAction.NO_ACTION;
 
     @Enumerated(EnumType.STRING)
@@ -27,6 +28,7 @@ public class TruckActionEntity extends BaseEntity {
 
     @ManyToOne
     private UserEntity onDuty;
+
     private Boolean isSentToMyCoal = false;
 
 }

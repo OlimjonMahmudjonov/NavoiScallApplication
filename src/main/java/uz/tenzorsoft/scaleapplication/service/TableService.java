@@ -13,6 +13,7 @@ import uz.tenzorsoft.scaleapplication.domain.enumerators.TruckAction;
 
 import java.time.LocalDateTime;
 
+
 @Service
 @RequiredArgsConstructor
 public class TableService {
@@ -34,43 +35,48 @@ public class TableService {
 
         for (TruckActionEntity action : truckEntity.getTruckActions()) {
 
-           /// if (action.getActionStatus() != ActionStatus.COMPLETE && action.getWeight() == 0) continue;
+            /// if (action.getActionStatus() != ActionStatus.COMPLETE && action.getWeight() == 0) continue;
 
 //            if (action.getActionStatus() != ActionStatus.COMPLETE) continue;
 
 
-            switch (action.getAction()) {
-                case ENTRANCE, MANUAL_ENTRANCE -> {
-                    data.setEnteredTruckNumber(truckEntity.getTruckNumber());
-                    data.setEnteredDate(getDate(action.getCreatedAt()));
-                    data.setEnteredWeight(action.getWeight() == null ? 0.0 : action.getWeight());
-                    enteredWeight = action.getWeight() == null ? 0.0 : action.getWeight();
-                    entranceAction = action.getAction();
-                    data.setEnteredTime(getTime(action.getCreatedAt()));
-                    data.setEnteredOnDuty(action.getOnDuty() == null ? "unknown" : action.getOnDuty().getPhoneNumber());
+            if (action.getAction() != null) {
+                switch (action.getAction()) {
+                    case ENTRANCE, MANUAL_ENTRANCE -> {
+                        data.setEnteredTruckNumber(truckEntity.getTruckNumber());
+                        data.setEnteredDate(getDate(action.getCreatedAt()));
+                        data.setEnteredWeight(action.getWeight() == null ? 0.0 : action.getWeight());
+                        enteredWeight = action.getWeight() == null ? 0.0 : action.getWeight();
+                        entranceAction = action.getAction();
+                        data.setEnteredTime(getTime(action.getCreatedAt()));
+                        data.setEnteredOnDuty(action.getOnDuty() == null ? "unknown" : action.getOnDuty().getPhoneNumber());
 
-                    if (action.getActionStatus() != null) {
-                       data.setEnteredActionStatus(action.getActionStatus().name());
+                        if (action.getActionStatus() != null) {
+                            data.setEnteredActionStatus(action.getActionStatus().name());
+                        }
+                        isActionAvailable = true;
+
                     }
-                            isActionAvailable = true;
+                    case EXIT, MANUAL_EXIT -> {
+                        data.setExitedTruckNumber(truckEntity.getTruckNumber());
+                        data.setExitedDate(getDate(action.getCreatedAt()));
+                        data.setExitedWeight(action.getWeight() == null ? 0.0 : action.getWeight());
+                        exitedWeight = action.getWeight() == null ? 0.0 : action.getWeight();
+                        exitAction = action.getAction();
+                        data.setExitedTime(getTime(action.getCreatedAt()));
+                        data.setExitedOnDuty(action.getOnDuty() == null ? "unknown" : action.getOnDuty().getPhoneNumber());
 
-                }
-                case EXIT, MANUAL_EXIT -> {
-                    data.setExitedTruckNumber(truckEntity.getTruckNumber());
-                    data.setExitedDate(getDate(action.getCreatedAt()));
-                    data.setExitedWeight(action.getWeight() == null ? 0.0 : action.getWeight());
-                    exitedWeight = action.getWeight() == null ? 0.0 : action.getWeight();
-                    exitAction = action.getAction();
-                    data.setExitedTime(getTime(action.getCreatedAt()));
-                    data.setExitedOnDuty(action.getOnDuty() == null ? "unknown" : action.getOnDuty().getPhoneNumber());
+                        if (action.getActionStatus() != null) {
+                            data.setExitedActionStatus(action.getActionStatus().name());
+                        }
 
-                    if (action.getActionStatus() != null) {
-                        data.setExitedActionStatus(action.getActionStatus().name());
+
+                        isActionAvailable = true;
                     }
-
-
-                    isActionAvailable = true;
                 }
+            } else {
+                // action maydoni null bo'lsa, bu yerda tegishli log yozishingiz yoki boshqa harakat qilishingiz mumkin
+                System.err.println("Ogohlantirish: TruckActionEntity da action maydoni null: " + truckEntity.getId());
             }
         }
         if (!isActionAvailable) return null;
@@ -112,6 +118,7 @@ public class TableService {
         String truckActionStatus = "";
         for (TruckActionEntity action : truckEntity.getTruckActions()) {
             if (action.getActionStatus() != null &&
+                    action.getAction() != null && // Bu yerga null tekshiruvi qo'shildi
                     (action.getAction().equals(truckAction))) {
                 truckActionStatus = action.getActionStatus().name();
             }

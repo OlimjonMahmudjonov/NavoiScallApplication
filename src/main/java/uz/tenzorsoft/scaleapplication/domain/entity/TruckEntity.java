@@ -33,5 +33,19 @@ public class TruckEntity extends BaseEntity {
     private Boolean isFinished = false;
 
     private Boolean isSentToMyCoal = false;
+    @Column(name = "owner_pinfl")
+    private String ownerPinfl;
+
+    @Column(name = "quantity")
+    private Double quantity;
+
+    @Column(name = "driver_name")
+    private String driverName;
+
+    @Column(name = "product_name")
+    private String productName;
+
+    @Column(name = "model")
+    private String model;
 
 }
