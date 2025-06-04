@@ -45,6 +45,22 @@ public class ControllerService {
         writeCoil(COIL_CLOSE_GATE_1, false);
         return true;
     }
+    public boolean kppopenGate1() throws ModbusException {
+        if (!isConnected) {
+            throw new ModbusException("Not connected to controller");
+        }
+        writeCoil(KPP_OPEN_GATE_EXIT_1, true);
+        writeCoil(KPP_OPEN_GATE_EXIT_1, false);
+        return true;
+    }
+    public boolean kppopenGate2() throws ModbusException {
+        if (!isConnected) {
+            throw new ModbusException("Not connected to controller");
+        }
+        writeCoil(KPP_OPEN_GATE_EXIT_2, true);
+        writeCoil(KPP_OPEN_GATE_EXIT_2, false);
+        return true;
+    }
 
     public boolean openExitGate1() throws ModbusException {
         if (!isConnected) {
@@ -64,6 +80,13 @@ public class ControllerService {
         return openGate1();
     }
 
+    public boolean kppopenGate1(int truckPosition) throws ModbusException {
+        if (!isConnected) {
+            throw new ModbusException("Controllerga ulanmagan");
+        }
+        ScaleSystem.truckPosition = truckPosition;
+        return openGate1();
+    }
 
     public boolean closeGate1() throws ModbusException {
         if (!isConnected) {
@@ -74,6 +97,25 @@ public class ControllerService {
         writeCoil(COIL_CLOSE_GATE_1, true);
         return true;
     }
+    public boolean kppcloseGate1() throws ModbusException {
+        if (!isConnected) {
+            throw new ModbusException("Controllerga ulanmagan");
+        }
+//        writeCoil(COIL_GREEN_LIGHT_1, false);
+        writeCoil(KPP_OPEN_GATE_EXIT_1, false);
+        writeCoil(KPP_CLOSE_GATE_EXIT_1, true);
+        return true;
+    }
+    public boolean kppcloseGate2() throws ModbusException {
+        if (!isConnected) {
+            throw new ModbusException("Controllerga ulanmagan");
+        }
+//        writeCoil(COIL_GREEN_LIGHT_1, false);
+        writeCoil(KPP_OPEN_GATE_EXIT_2, false);
+        writeCoil(KPP_CLOSE_GATE_EXIT_2, true);
+        return true;
+    }
+
     public boolean closeExitGate1() throws ModbusException {
         if (!isConnected) {
             throw new ModbusException("Controllerga ulanmagan");
@@ -114,6 +156,15 @@ public class ControllerService {
         return true;
     }
 
+    public boolean openExitGate1(int truckPosition) throws ModbusException {
+        if (!isConnected) {
+            throw new ModbusException("Controllerga ulanmagan");
+        }
+        ScaleSystem.truckExitPosition = truckPosition;
+        openExitGate1();
+        return true;
+    }
+
     public boolean openExitGate2(int truckPosition) throws ModbusException {
         if (!isConnected) {
             throw new ModbusException("Controllerga ulanmagan");
@@ -151,8 +202,10 @@ public class ControllerService {
     }
 
     public boolean checkConnection(String ipAddress) throws IOException {
-        InetAddress address = InetAddress.getByName(ipAddress);
-        return address.isReachable(1000);
+        if (ipAddress != null && !ipAddress.equals("") && !ipAddress.isEmpty()) {
+            InetAddress address = InetAddress.getByName(ipAddress);
+            return address.isReachable(1000);
+        } else return false;
     }
 
 
@@ -206,7 +259,8 @@ public class ControllerService {
         if (connection != null && connection.isConnected()) {
             connection.close();
             isConnected = false;
-            scalePort.closePort();
+            if (scalePort != null)
+                scalePort.closePort();
         }
     }
 }

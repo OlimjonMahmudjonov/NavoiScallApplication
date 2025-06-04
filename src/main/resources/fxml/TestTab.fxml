@@ -8,152 +8,214 @@
      xmlns:fx="http://javafx.com/fxml"
      fx:controller="uz.tenzorsoft.scaleapplication.ui.TestController">
 
-  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-    <children>
-      <Pane fx:id="testSwitchPane" layoutX="594.0" layoutY="24.0" prefHeight="54.0" prefWidth="206.0">
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
         <children>
-          <Label fx:id="testLabel" onMouseClicked="#setTestingStatusLabel" layoutX="124.0" layoutY="11.0" prefHeight="32.0" prefWidth="42.0" text="Test">
-            <font>
-              <Font size="20.0"/>
-            </font>
-          </Label>
-          <ToggleSwitch fx:id="testStatusSwitch" layoutX="50.0" layoutY="11.0" onMouseClicked="#setTestingStatusSwitch"/>
+            <VBox alignment="CENTER" spacing="50">
+                <VBox spacing="5" AnchorPane.leftAnchor="0" AnchorPane.topAnchor="20" AnchorPane.rightAnchor="0">
+                    <HBox spacing="10" alignment="CENTER" style="-fx-background-color: #f4f4f9;">
+
+                        <Button text="Open Gate 1" onMouseClicked="#openGate1"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="80" minHeight="40"/>
+
+                        <Button text="Open Gate 2" onMouseClicked="#openGate2"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="80" minHeight="40"/>
+
+                        <Button text="Measure Weight" onMouseClicked="#getWeight"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="80" minHeight="40"/>
+
+                        <Button text="Close gate 1" onMouseClicked="#closeGate1"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="100" minHeight="40"/>
+
+                        <Button text="Close gate 2" onMouseClicked="#closeGate2"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="80" minHeight="40"/>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER" style="-fx-background-color: #f4f4f9;">
+
+                        <Button text="Open Exit Gate 1" onMouseClicked="#openExitGate1"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="80" minHeight="40"/>
+
+                        <Button text="Open Exit Gate 2" onMouseClicked="#openExitGate2"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="80" minHeight="40"/>
+
+                        <Button text="Measure Exit Weight" onMouseClicked="#getWeight"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="80" minHeight="40"/>
+
+                        <Button text="Close Exit gate 1" onMouseClicked="#closeExitGate1"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="100" minHeight="40"/>
+
+                        <Button text="Close Exit gate 2" onMouseClicked="#closeExitGate2"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="80" minHeight="40"/>
+                    </HBox>
+                    <HBox spacing="10" alignment="CENTER" style="-fx-background-color: #f4f4f9;">
+
+                        <Button text="Open KPP Gate 1" onMouseClicked="#kppopenGate1"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="80" minHeight="40"/>
+
+                        <Button text="Open KPP Gate 2" onMouseClicked="#kppopenGate2"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="80" minHeight="40"/>
+
+
+                        <Button text="Close KPP gate 1" onMouseClicked="#kppcloseGate1"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="100" minHeight="40"/>
+
+                        <Button text="Close KPP gate 2" onMouseClicked="#kppcloseGate2"
+                                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
+                                minWidth="80" minHeight="40"/>
+                    </HBox>
+                </VBox>
+                <VBox alignment="CENTER">
+                    <Pane fx:id="testSwitchPane" layoutX="594.0" layoutY="24.0" prefHeight="54.0" prefWidth="206.0">
+                        <children>
+                            <Label fx:id="testLabel" onMouseClicked="#setTestingStatusLabel" layoutX="124.0"
+                                   layoutY="11.0"
+                                   prefHeight="32.0" prefWidth="42.0" text="Test">
+                                <font>
+                                    <Font size="20.0"/>
+                                </font>
+                            </Label>
+                            <ToggleSwitch fx:id="testStatusSwitch" layoutX="50.0" layoutY="11.0"
+                                          onMouseClicked="#setTestingStatusSwitch"/>
+                        </children>
+                    </Pane>
+
+
+                    <!-- Add Truck Number fields and Buttons for Camera 1 and Camera 2 -->
+                    <VBox layoutX="450.0" layoutY="160.0" spacing="20.0" alignment="CENTER">
+                        <children>
+                            <!-- Camera 1 -->
+                            <HBox spacing="10.0" alignment="CENTER">
+                                <Label text="Truck Number (Camera 1)">
+                                    <font>
+                                        <Font size="18.0"/>
+                                    </font>
+                                </Label>
+                                <TextField fx:id="truckNumberFieldCamera1" prefWidth="120.0"/>
+                                <Button fx:id="camera1Button" text="From Camera 1"
+                                        onAction="#getTruckNumberFromCamera1"/>
+                            </HBox>
+
+                            <!-- Camera 2 -->
+                            <HBox spacing="10.0" alignment="CENTER">
+                                <Label text="Truck Number (Camera 2)">
+                                    <font>
+                                        <Font size="18.0"/>
+                                    </font>
+                                </Label>
+                                <TextField fx:id="truckNumberFieldCamera2" prefWidth="120.0"/>
+                                <Button fx:id="camera2Button" text="From Camera 2"
+                                        onAction="#getTruckNumberFromCamera2"/>
+                            </HBox>
+                        </children>
+                    </VBox>
+
+
+                    <!-- Centered Gate switches and Truck Position with adjusted spacing -->
+                    <HBox layoutX="450.0" layoutY="88.0" spacing="50.0" alignment="CENTER">
+                        <children>
+                            <!-- Gate 1 -->
+                            <HBox spacing="10.0" alignment="CENTER">
+                                <Label text="Gate 1">
+                                    <font>
+                                        <Font size="18.0"/>
+                                    </font>
+                                </Label>
+                                <ToggleSwitch fx:id="gate1Switch" onMouseClicked="#setGate1StatusSwitch"/>
+                            </HBox>
+
+                            <!-- Gate 2 -->
+                            <HBox spacing="10.0" alignment="CENTER">
+                                <Label text="Gate 2">
+                                    <font>
+                                        <Font size="18.0"/>
+                                    </font>
+                                </Label>
+                                <ToggleSwitch fx:id="gate2Switch" onMouseClicked="#setGate2StatusSwitch"/>
+                            </HBox>
+
+                            <!-- Truck Position -->
+                            <HBox spacing="10.0" alignment="CENTER">
+                                <Label text="Truck Position">
+                                    <font>
+                                        <Font size="18.0"/>
+                                    </font>
+                                </Label>
+                                <TextField fx:id="truckPositionField" editable="false" prefWidth="80.0"/>
+                            </HBox>
+                        </children>
+                    </HBox>
+
+
+                    <Pane fx:id="sensor1Pane" layoutX="279.0" layoutY="283.0" prefHeight="223.0" prefWidth="788.0">
+                        <children>
+                            <Pane layoutX="56.0" layoutY="14.0" prefHeight="46.0" prefWidth="148.0">
+                                <children>
+                                    <Label fx:id="sensor1Label" onMouseClicked="#setSensor1StatusLabel"
+                                           prefHeight="46.0"
+                                           prefWidth="92.0"
+                                           text="Sensor 1">
+                                        <font>
+                                            <Font size="20.0"/>
+                                        </font>
+                                    </Label>
+                                    <ToggleSwitch fx:id="sensor1Switch" layoutX="100.0" layoutY="11.0"
+                                                  onMouseClicked="#setSensor1StatusSwitch"/>
+                                </children>
+                            </Pane>
+                            <Pane fx:id="sensor2Pane" layoutX="337.0" layoutY="14.0" prefHeight="46.0"
+                                  prefWidth="153.0">
+                                <children>
+                                    <Label fx:id="sensor2Label" onMouseClicked="#setSensor2StatusLabel"
+                                           prefHeight="46.0"
+                                           prefWidth="92.0"
+                                           text="Sensor 2">
+                                        <font>
+                                            <Font size="20.0"/>
+                                        </font>
+                                    </Label>
+                                    <ToggleSwitch fx:id="sensor2Switch" layoutX="100.0" layoutY="11.0"
+                                                  onMouseClicked="#setSensor2StatusSwitch"/>
+                                </children>
+                            </Pane>
+                            <Pane fx:id="sensor3Pane" layoutX="603.0" layoutY="14.0" prefHeight="46.0"
+                                  prefWidth="151.0">
+                                <children>
+                                    <Label fx:id="sensor3Label" onMouseClicked="#setSensor3StatusLabel"
+                                           prefHeight="46.0"
+                                           prefWidth="92.0"
+                                           text="Sensor 3">
+                                        <font>
+                                            <Font size="20.0"/>
+                                        </font>
+                                    </Label>
+                                    <ToggleSwitch fx:id="sensor3Switch" layoutX="100.0" layoutY="11.0"
+                                                  onMouseClicked="#setSensor3StatusSwitch"/>
+                                </children>
+                            </Pane>
+                            <TextField fx:id="weighInputField" layoutX="339.0" layoutY="148.0"/>
+                            <Label layoutX="228.0" layoutY="137.0" prefHeight="46.0" prefWidth="92.0" text="Weigh:">
+                                <font>
+                                    <Font size="20.0"/>
+                                </font>
+                            </Label>
+                            <Button fx:id="weighButton" onAction="#setWeigh" layoutX="509.0" layoutY="148.0"
+                                    mnemonicParsing="false" text="Button"/>
+                        </children>
+                    </Pane>
+                </VBox>
+            </VBox>
         </children>
-      </Pane>
-
-
-      <!-- Add Truck Number fields and Buttons for Camera 1 and Camera 2 -->
-      <VBox layoutX="450.0" layoutY="160.0" spacing="20.0" alignment="CENTER">
-        <children>
-          <!-- Camera 1 -->
-          <HBox spacing="10.0" alignment="CENTER">
-            <Label text="Truck Number (Camera 1)">
-              <font>
-                <Font size="18.0"/>
-              </font>
-            </Label>
-            <TextField fx:id="truckNumberFieldCamera1" prefWidth="120.0"/>
-            <Button fx:id="camera1Button" text="From Camera 1" onAction="#getTruckNumberFromCamera1"/>
-          </HBox>
-
-          <!-- Camera 2 -->
-          <HBox spacing="10.0" alignment="CENTER">
-            <Label text="Truck Number (Camera 2)">
-              <font>
-                <Font size="18.0"/>
-              </font>
-            </Label>
-            <TextField fx:id="truckNumberFieldCamera2" prefWidth="120.0"/>
-            <Button fx:id="camera2Button" text="From Camera 2" onAction="#getTruckNumberFromCamera2"/>
-          </HBox>
-        </children>
-      </VBox>
-
-
-      <!-- Centered Gate switches and Truck Position with adjusted spacing -->
-      <HBox layoutX="450.0" layoutY="88.0" spacing="50.0" alignment="CENTER">
-        <children>
-          <!-- Gate 1 -->
-          <HBox spacing="10.0" alignment="CENTER">
-            <Label text="Gate 1">
-              <font>
-                <Font size="18.0"/>
-              </font>
-            </Label>
-            <ToggleSwitch fx:id="gate1Switch" onMouseClicked="#setGate1StatusSwitch"/>
-          </HBox>
-
-          <!-- Gate 2 -->
-          <HBox spacing="10.0" alignment="CENTER">
-            <Label text="Gate 2">
-              <font>
-                <Font size="18.0"/>
-              </font>
-            </Label>
-            <ToggleSwitch fx:id="gate2Switch" onMouseClicked="#setGate2StatusSwitch"/>
-          </HBox>
-
-          <!-- Truck Position -->
-          <HBox spacing="10.0" alignment="CENTER">
-            <Label text="Truck Position">
-              <font>
-                <Font size="18.0"/>
-              </font>
-            </Label>
-            <TextField fx:id="truckPositionField" editable="false" prefWidth="80.0"/>
-          </HBox>
-        </children>
-      </HBox>
-
-
-
-      <Pane fx:id="sensor1Pane" layoutX="279.0" layoutY="283.0" prefHeight="223.0" prefWidth="788.0">
-        <children>
-          <Pane layoutX="56.0" layoutY="14.0" prefHeight="46.0" prefWidth="148.0">
-            <children>
-              <Label fx:id="sensor1Label" onMouseClicked="#setSensor1StatusLabel" prefHeight="46.0" prefWidth="92.0"
-                     text="Sensor 1">
-                <font>
-                  <Font size="20.0"/>
-                </font>
-              </Label>
-              <ToggleSwitch fx:id="sensor1Switch" layoutX="100.0" layoutY="11.0" onMouseClicked="#setSensor1StatusSwitch"/>
-            </children>
-          </Pane>
-          <Pane fx:id="sensor2Pane" layoutX="337.0" layoutY="14.0" prefHeight="46.0" prefWidth="153.0">
-            <children>
-              <Label fx:id="sensor2Label" onMouseClicked="#setSensor2StatusLabel" prefHeight="46.0" prefWidth="92.0"
-                     text="Sensor 2">
-                <font>
-                  <Font size="20.0"/>
-                </font>
-              </Label>
-              <ToggleSwitch fx:id="sensor2Switch" layoutX="100.0" layoutY="11.0" onMouseClicked="#setSensor2StatusSwitch"/>
-            </children>
-          </Pane>
-          <Pane fx:id="sensor3Pane" layoutX="603.0" layoutY="14.0" prefHeight="46.0" prefWidth="151.0">
-            <children>
-              <Label fx:id="sensor3Label" onMouseClicked="#setSensor3StatusLabel" prefHeight="46.0" prefWidth="92.0"
-                     text="Sensor 3">
-                <font>
-                  <Font size="20.0"/>
-                </font>
-              </Label>
-              <ToggleSwitch fx:id="sensor3Switch" layoutX="100.0" layoutY="11.0" onMouseClicked="#setSensor3StatusSwitch"/>
-            </children>
-          </Pane>
-          <TextField fx:id="weighInputField" layoutX="339.0" layoutY="148.0"/>
-          <Label layoutX="228.0" layoutY="137.0" prefHeight="46.0" prefWidth="92.0" text="Weigh:">
-            <font>
-              <Font size="20.0"/>
-            </font>
-          </Label>
-          <Button fx:id="weighButton" onAction="#setWeigh" layoutX="509.0" layoutY="148.0" mnemonicParsing="false" text="Button"/>
-        </children>
-      </Pane>
-
-      <HBox spacing="10" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: #f4f4f9;">
-
-        <Button text="Open Gate 1" onMouseClicked="#openGate1"
-                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
-                minWidth="80" minHeight="40"/>
-
-        <Button text="Open Gate 2" onMouseClicked="#openGate2"
-                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
-                minWidth="80" minHeight="40"/>
-
-        <Button text="Measure Weight" onMouseClicked="#getWeight"
-                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
-                minWidth="80" minHeight="40"/>
-
-        <Button text="Close gate 1" onMouseClicked="#closeGate1"
-                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
-                minWidth="100" minHeight="40"/>
-
-        <Button text="Close gate 2" onMouseClicked="#closeGate2"
-                style="-fx-font-size: 14; -fx-background-color: #4CAF50; -fx-text-fill: white; -fx-cursor: hand;"
-                minWidth="80" minHeight="40"/>
-      </HBox>
-    </children>
-  </AnchorPane>
+    </AnchorPane>
 </Tab>

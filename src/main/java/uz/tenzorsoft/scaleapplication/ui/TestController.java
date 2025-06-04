@@ -9,7 +9,11 @@ import javafx.scene.layout.Pane;
 import lombok.RequiredArgsConstructor;
 import org.controlsfx.control.ToggleSwitch;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import uz.tenzorsoft.scaleapplication.domain.Instances;
 import uz.tenzorsoft.scaleapplication.domain.entity.LogEntity;
 import uz.tenzorsoft.scaleapplication.domain.enumerators.AttachStatus;
@@ -29,7 +33,10 @@ import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.truckPosition;
 
 @Component
+@RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/kpp")
+
 public class TestController implements BaseController {
 
     private final ExecutorService executors;
@@ -287,9 +294,48 @@ public class TestController implements BaseController {
         buttonController.openGate2();
         truckPosition = -1;
     }
+    public void kppopenGate1() {
+        buttonController.kppopenGate1();
+        truckPosition = -1;
+    }
+
+    public void kppopenGate2() {
+        buttonController.kppopenGate2();
+        truckPosition = -1;
+    }
+
+    public void openExitGate1() {
+        buttonController.openExitGate1();
+        truckPosition = -1;
+    }
+
+    public void openExitGate2() {
+        buttonController.openExitGate2();
+        truckPosition = -1;
+    }
+
 
     public void closeGate1() {
         buttonController.closeGate1();
+        truckPosition = -1;
+        currentTruck = new TruckResponse();
+        truckScalingController.reinitialize();
+        cargoConfirmationStatus = -1;
+        isWaiting = false;
+        truckNumber = "";
+    }
+
+    public void kppcloseGate1() {
+        buttonController.kppcloseGate1();
+        truckPosition = -1;
+        currentTruck = new TruckResponse();
+        truckScalingController.reinitialize();
+        cargoConfirmationStatus = -1;
+        isWaiting = false;
+        truckNumber = "";
+    }
+    public void kppcloseGate2() {
+        buttonController.kppcloseGate2();
         truckPosition = -1;
         currentTruck = new TruckResponse();
         truckScalingController.reinitialize();
@@ -308,7 +354,28 @@ public class TestController implements BaseController {
         truckNumber = "";
     }
 
+    public void closeExitGate1() {
+        buttonController.closeExitGate1();
+        truckPosition = -1;
+        currentTruck = new TruckResponse();
+        truckScalingController.reinitialize();
+        cargoConfirmationStatus = -1;
+        isWaiting = false;
+        truckNumber = "";
+    }
+
+    public void closeExitGate2() {
+        buttonController.closeExitGate2();
+        truckPosition = -1;
+        currentTruck = new TruckResponse();
+        truckScalingController.reinitialize();
+        cargoConfirmationStatus = -1;
+        isWaiting = false;
+        truckNumber = "";
+    }
+
     public void getWeight() {
         buttonController.getTruckWeigh();
     }
+
 }

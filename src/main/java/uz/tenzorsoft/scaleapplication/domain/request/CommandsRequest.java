@@ -11,9 +11,10 @@ public class CommandsRequest {
     private Long scaleId;
     private Boolean openGate1;
     private Boolean closeGate1;
-    private Boolean weighing;
     private Boolean openGate2;
     private Boolean closeGate2;
+    private Boolean kppopenGate;
+    private Boolean kppcloseGate;
 
 
 }

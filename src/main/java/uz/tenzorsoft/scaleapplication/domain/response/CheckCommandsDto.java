@@ -12,5 +12,5 @@ import lombok.Setter;
 public class CheckCommandsDto {
     private Long id;
     private String comment;
-    private boolean finished;
+    private boolean status;
 }

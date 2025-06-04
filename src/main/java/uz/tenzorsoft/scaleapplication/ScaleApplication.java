@@ -15,6 +15,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import uz.tenzorsoft.scaleapplication.domain.Instances;
 import uz.tenzorsoft.scaleapplication.service.raspberry.GpioControl;
 import uz.tenzorsoft.scaleapplication.websocket.WebSocketClient;
@@ -54,6 +55,15 @@ public class ScaleApplication extends Application {
         primaryStage.setScene(new Scene(rootNode));
         primaryStage.setResizable(false);
         primaryStage.show();
+        WebSocketClient webSocketClient = context.getBean(WebSocketClient.class);
+         try {
+             webSocketClient.connect(Instances.WEBSOCKET_URL);
+//              Boshlang'ich xabarlarni yuborish, agar kerak bo'lsa
+              webSocketClient.sendMessage("gate1");
+              webSocketClient.sendMessage("gate2");// Yoki "gate"
+         } catch (Exception e) {
+            System.err.println("WebSocket serveriga ulanishda xatolik (start): " + e.getMessage());
+         }
     }
 
     @Override

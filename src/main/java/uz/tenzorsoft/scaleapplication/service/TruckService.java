@@ -21,6 +21,7 @@ import uz.tenzorsoft.scaleapplication.domain.enumerators.ActionStatus;
 import uz.tenzorsoft.scaleapplication.domain.enumerators.AttachStatus;
 import uz.tenzorsoft.scaleapplication.domain.enumerators.TruckAction;
 import uz.tenzorsoft.scaleapplication.domain.request.TruckRequest;
+import uz.tenzorsoft.scaleapplication.domain.response.AttachIdWithStatus;
 import uz.tenzorsoft.scaleapplication.domain.response.AttachResponse;
 import uz.tenzorsoft.scaleapplication.domain.response.TruckResponse;
 import uz.tenzorsoft.scaleapplication.domain.response.sendData.ActionResponse;
@@ -38,6 +39,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import static uz.tenzorsoft.scaleapplication.domain.Settings.*;
 
 @Service
@@ -356,11 +358,11 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
         return truckRepository.findByTruckPhotosContains(truckPhotos).orElse(null);
     }
 
-    public void deleteTruckById(Long id){
-        try{
+    public void deleteTruckById(Long id) {
+        try {
             truckRepository.deleteById(id);
             tableController.addLastRecord();
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("To'liq bo'lmagan truck datani o'chirishda xatolik.");
         }
     }
@@ -379,7 +381,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             currentTruckEntity.setProducts(selectedProduct); // Set the selected product
             currentTruckEntity.setTruckNumber(currentTruck.getTruckNumber());
             List<TruckPhotosEntity> truckPhotos = new ArrayList<>();
-            if (attach!=null) {
+            if (attach != null) {
                 TruckPhotosEntity entity = truckPhotoRepository.save(
                         new TruckPhotosEntity(attachService.findById(attach.getId()), AttachStatus.ENTRANCE_PHOTO)
                 );
@@ -402,18 +404,18 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             currentTruck.setId(savedTruck == null ? null : savedTruck.getId());
         } else {
 //            1 ta malumot kelmasligi mumkin
-//            currentTruckEntity = truckRepository.findByTruckNumberAndIsFinished(currentTruck.getTruckNumber(), false).orElse(null);
-//            if (currentTruckEntity == null)
-//                throw new RuntimeException("Truck not found with truck number: " + currentTruck.getTruckNumber());
+            currentTruckEntity = truckRepository.findByTruckNumberAndIsFinished(currentTruck.getTruckNumber(), false).orElse(null);
+            if (currentTruckEntity == null)
+                throw new RuntimeException("Truck not found with truck number: " + currentTruck.getTruckNumber());
             List<TruckEntity> list = truckRepository.findByTruckNumberAndActionStatus(
                     currentTruck.getTruckNumber(), List.of(TruckAction.ENTRANCE, TruckAction.MANUAL_ENTRANCE),
                     false, false);
             if (list.isEmpty()) {
-                log.error("unable to find trucks with number: {}", currentTruck.getTruckNumber());
+                log.error("Unable to find trucks with number: {}", currentTruck.getTruckNumber());
                 return;
             }
-            currentTruckEntity = list.get(0);
-            currentTruckEntity.getTruckPhotos().removeIf(photo -> photo.getAttachStatus() == AttachStatus.EXIT_PHOTO);
+            currentExitTruckEntity = list.get(0);
+            currentExitTruckEntity.getTruckPhotos().removeIf(photo -> photo.getAttachStatus() == AttachStatus.EXIT_PHOTO);
 
             List<TruckPhotosEntity> truckPhotos = new ArrayList<>();
             if (attach != null) {
@@ -421,8 +423,8 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                         new TruckPhotosEntity(attachService.findById(attach.getId()), AttachStatus.EXIT_PHOTO)
                 );
 
-            truckPhotos.add(entity);
-        }
+                truckPhotos.add(entity);
+            }
 //            for (AttachIdWithStatus attach : currentTruck.getAttaches()) {
 //                if (attach.getStatus().equals(AttachStatus.EXIT_PHOTO)) {
 //                    break;
@@ -432,8 +434,8 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             exitedAction.setAction(currentTruck.getExitedStatus());
             exitedAction.setOnDuty(Instances.currentUser);
             truckActionRepository.save(exitedAction);
-            currentTruckEntity.getTruckActions().add(exitedAction);
-            currentTruckEntity.getTruckPhotos().addAll(truckPhotos);
+            currentExitTruckEntity.getTruckActions().add(exitedAction);
+            currentExitTruckEntity.getTruckPhotos().addAll(truckPhotos);
             truckRepository.save(currentTruckEntity);
         }
     }
@@ -450,6 +452,17 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
         }
         return currentTruckEntity;
     }
+    public TruckEntity saveCurrentExitTruck(TruckResponse currentTruck, boolean isFinished) {
+        currentExitTruckEntity.setIsFinished(isFinished);
+        currentExitTruckEntity.setIsSentToCloud(false);
+        try {
+            currentExitTruckEntity = truckRepository.save(currentExitTruckEntity);
+        } catch (Exception e) {
+            logService.save(new LogEntity(5L, Instances.truckExitNumber, "00015: (" + getClass().getName() + ") " + e.getMessage()));
+            System.err.println(e.getMessage());
+        }
+        return currentExitTruckEntity;
+    }
 
     @Override
     public TruckResponse entityToResponse(TruckEntity entity) {
@@ -465,10 +478,10 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
     public void saveTruckAttaches(TruckResponse currentTruck, AttachResponse response, AttachStatus attachStatus) {
         try {
 
-            //        currentTruckEntity = truckRepository.findByTruckNumberAndIsFinished(currentTruck.getTruckNumber(), false)
-//                .orElse(new TruckEntity());
-//        currentTruckEntity.setTruckNumber(currentTruck.getTruckNumber());
-            if (response != null){
+                    currentTruckEntity = truckRepository.findByTruckNumberAndIsFinished(currentTruck.getTruckNumber(), false)
+                            .orElse(new TruckEntity());
+            currentTruckEntity.setTruckNumber(currentTruck.getTruckNumber());
+            if (response != null) {
 
                 if (currentTruckEntity == null || currentTruckEntity.getTruckPhotos() == null) {
                     log.error("Truck entity or its photos are null. Cannot proceed.");
@@ -501,7 +514,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             }
 
 
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             System.out.println("Mana saveTruckAttaches() metodida xato tashadi:  NullPointerException");
         } catch (Exception e) {
             System.out.println("Mana saveTruckAttaches() metodida xato tashadi:  Exception");
@@ -527,10 +540,10 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                 currentTruck.getExitedAt(),
                 currentTruck.getExitedWeight()
         );
-        currentTruckEntity.setIsSentToCloud(false);
-        currentTruckEntity.setNextEntranceTime(currentTruck.getExitedAt().plusMinutes(EXIT_TIMEOUT));
+        currentExitTruckEntity.setIsSentToCloud(false);
+        currentExitTruckEntity.setNextEntranceTime(currentTruck.getExitedAt().plusMinutes(EXIT_TIMEOUT));
         System.out.println("Chiqish vaqti: " + EXIT_TIMEOUT);
-        truckRepository.save(currentTruckEntity);
+        truckRepository.save(currentExitTruckEntity);
         log.info("Truck exited action saved for status: {}", currentTruck.getExitedStatus());
     }
 
@@ -569,7 +582,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
 //        currentTruckEntity.setNextEntranceTime(currentTruck.getEnteredAt().plusMinutes(5));
 //        truckRepository.save(currentTruckEntity);
 //    }
-//
+
 //    public void saveTruckExitedAction(TruckResponse currentTruck) {
 //        for (TruckActionEntity action : currentTruckEntity.getTruckActions()) {
 //            if (action.getAction() == currentTruck.getExitedStatus()) {
@@ -619,7 +632,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
 
 
     public List<TruckEntity> findNotSentDataToMyCoal() {
-        return truckRepository.findByIsSentToMyCoalAndIsFinishedAndIsDeleted(false, true,false);
+        return truckRepository.findByIsSentToMyCoalAndIsFinishedAndIsDeleted(false, true, false);
     }
 
     public boolean isNumberExists(String truckNumber) {
@@ -846,5 +859,106 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
 
     public TruckEntity saveTruck(TruckEntity truck) {
         return truckRepository.save(truck);
+    }
+
+    /**
+     * API dan kelgan ma'lumotlarni bazaga saqlash yoki yangilash
+     */
+    public TruckEntity createOrUpdateFromApi(String carNumber, String ownerPinfl, String driverName,
+                                             String productName, Double quantity, String model) {
+        try {
+            // Mavjud truck mavjudligini tekshirish
+            TruckEntity existingTruck = truckRepository.findByTruckNumber(carNumber);
+
+            if (existingTruck != null) {
+                // Mavjud truck ma'lumotlarini yangilash
+                existingTruck.setOwnerPinfl(ownerPinfl);
+                existingTruck.setDriverName(driverName);
+                existingTruck.setProductName(productName);
+                existingTruck.setQuantity(quantity);
+                existingTruck.setModel(model);
+
+                log.info("Truck ma'lumotlari yangilandi: {}", carNumber);
+                return truckRepository.save(existingTruck);
+            } else {
+                // Yangi truck yaratish
+                TruckEntity newTruck = new TruckEntity();
+                newTruck.setTruckNumber(carNumber);
+                newTruck.setOwnerPinfl(ownerPinfl);
+                newTruck.setDriverName(driverName);
+                newTruck.setProductName(productName);
+                newTruck.setQuantity(quantity);
+                newTruck.setModel(model);
+                newTruck.setCreatedAt(LocalDateTime.now());
+                newTruck.setIsDeleted(false);
+                newTruck.setIsFinished(true); // API dan kelgan ma'lumotlar template sifatida ishlatiladi
+                newTruck.setIsSentToCloud(true); // Bu API ma'lumotlari
+
+                // Default TruckActionEntity yaratish va bog'lash
+                TruckActionEntity defaultAction = new TruckActionEntity();
+                defaultAction.setAction(TruckAction.NO_ACTION); // Misol uchun, default holat
+                defaultAction.setActionStatus(ActionStatus.NEW); // Misol uchun, default status
+                newTruck.setTruckActions(List.of(defaultAction));
+
+                TruckEntity savedTruck = truckRepository.save(newTruck);
+                truckActionRepository.save(defaultAction); // TruckActionEntity ni ham saqlash
+
+                log.info("Yangi truck yaratildi: {}", carNumber);
+                return savedTruck;
+            }
+        } catch (Exception e) {
+            log.error("Error creating/updating truck from API: {}", e.getMessage());
+            logService.save(new LogEntity(5L, carNumber, "API dan truck yaratish/yangilashda xatolik: " + e.getMessage()));
+            return null;
+        }
+    }
+    /**
+     * Truck raqami avtorizatsiya qilinganligini tekshirish
+     */
+    public boolean isAuthorizedTruck(String truckNumber) {
+        try {
+            TruckEntity truck = truckRepository.findByTruckNumber(truckNumber);
+            return truck != null;
+        } catch (Exception e) {
+            log.error("Error checking truck authorization: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * API dan truck ma'lumotlarini olish
+     */
+    public TruckEntity getTruckApiData(String truckNumber) {
+        try {
+            return truckRepository.findByTruckNumber(truckNumber);
+        } catch (Exception e) {
+            log.error("Error getting truck API data: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Truck ma'lumotlarini API dan yangilash
+     */
+    public void updateTruckWithApiData(String truckNumber) {
+        try {
+            TruckEntity existingTruck = truckRepository.findByTruckNumber(truckNumber);
+            if (existingTruck != null) {
+                log.info("Truck ma'lumotlari topildi: {} - Driver: {}, Product: {}, Model: {}, Quantity: {}",
+                        truckNumber,
+                        existingTruck.getDriverName(),
+                        existingTruck.getProductName(),
+                        existingTruck.getModel(),
+                        existingTruck.getQuantity());
+            } else {
+                log.warn("Truck topilmadi: {}", truckNumber);
+            }
+        } catch (Exception e) {
+            log.error("Error updating truck with API data: {}", e.getMessage());
+        }
+    }
+
+    public TruckEntity findByTruckNumber(String truckNumber) {
+        return truckRepository.findByTruckNumber(truckNumber);
     }
 }

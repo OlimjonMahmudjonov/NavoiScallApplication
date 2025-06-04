@@ -9,68 +9,73 @@
 
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.Font?>
-<GridPane fx:id="rootPane" prefHeight="100.0" prefWidth="400.0"
-          style="-fx-border-color: black; -fx-padding: 10; -fx-hgap: 10; -fx-vgap: 10;"
-          alignment="CENTER"
-          xmlns="http://javafx.com/javafx/23.0.1"
-          xmlns:fx="http://javafx.com/fxml/1"
-          fx:controller="uz.tenzorsoft.scaleapplication.ui.ButtonController">
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Label?>
+<AnchorPane fx:id="rootPane" prefWidth="360.0"
+            xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="uz.tenzorsoft.scaleapplication.ui.ButtonController">
+    <children>
 
-  <columnConstraints>
-    <ColumnConstraints hgrow="ALWAYS"/>
-    <ColumnConstraints hgrow="ALWAYS"/>
-  </columnConstraints>
-
-  <rowConstraints>
-    <RowConstraints vgrow="NEVER"/> <!-- Title -->
-    <RowConstraints vgrow="ALWAYS"/> <!-- 1-shlagbaum -->
-    <RowConstraints vgrow="ALWAYS"/> <!-- 2-shlagbaum -->
-  </rowConstraints>
-
-  <Text text="Qo'lda boshqarish (Kirish)" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2"
-        textAlignment="CENTER" GridPane.halignment="CENTER">
-    <font>
-      <Font size="16.0"/>
-    </font>
-  </Text>
-
-  <Button fx:id="button1" mnemonicParsing="false" onMouseClicked="#openGate1Manually"
-          style="-fx-font-size: 1.2em; -fx-background-color: #64ff4b; -fx-border-color: black; -fx-border-radius: 7;
+        <VBox  AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.topAnchor="0">
+            <VBox alignment="CENTER" AnchorPane.rightAnchor="0" AnchorPane.leftAnchor="0"
+                  style="-fx-border-color: black; -fx-border-width: 1;">
+                <Text text="Qo'lda ochish"
+                      textAlignment="CENTER">
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Text>
+            </VBox>
+            <HBox spacing="20" alignment="CENTER"
+                  style="-fx-border-color: black; -fx-border-width: 1; -fx-padding: 5">
+                <VBox spacing="5">
+                    <Label text="1-shlagbaum" style="-fx-font-size: 20px;"/>
+                    <HBox spacing="10">
+                        <Button fx:id="button5" mnemonicParsing="false" onMouseClicked="#closeGate1"
+                                style="-fx-font-size: 1.2em; -fx-background-color: #ff3d3d; -fx-border-color: black; -fx-border-radius: 7;
                  -fx-background-radius: 10; -fx-border-width: 0.8; -fx-alignment: center;"
-          text="1-shlagbaumni ochish" maxWidth="Infinity" prefHeight="35"
-          GridPane.columnIndex="0" GridPane.rowIndex="1">
-    <cursor>
-      <Cursor fx:constant="HAND"/>
-    </cursor>
-  </Button>
+                                text="yopish" maxWidth="Infinity" prefHeight="20">
+                            <cursor>
+                                <Cursor fx:constant="HAND"/>
+                            </cursor>
+                        </Button>
 
-  <Button fx:id="button5" mnemonicParsing="false" onMouseClicked="#closeGate1"
-          style="-fx-font-size: 1.2em; -fx-background-color: #ff3d3d; -fx-border-color: black; -fx-border-radius: 7;
+                        <Button fx:id="button1" mnemonicParsing="false" onMouseClicked="#openGate1Manually"
+                                style="-fx-font-size: 1.2em; -fx-background-color: #64ff4b; -fx-border-color: black; -fx-border-radius: 7;
                  -fx-background-radius: 10; -fx-border-width: 0.8; -fx-alignment: center;"
-          text="1-shlagbaumni yopish" maxWidth="Infinity" prefHeight="35"
-          GridPane.columnIndex="1" GridPane.rowIndex="1">
-    <cursor>
-      <Cursor fx:constant="HAND"/>
-    </cursor>
-  </Button>
+                                text="ochish" maxWidth="Infinity" prefHeight="20">
+                            <cursor>
+                                <Cursor fx:constant="HAND"/>
+                            </cursor>
+                        </Button>
+                    </HBox>
+                </VBox>
+                <VBox spacing="5">
+                    <Label text="2-shlagbaum" style="-fx-font-size: 20px;"/>
+                    <HBox spacing="10">
+                        <Button fx:id="button4" mnemonicParsing="false" onMouseClicked="#closeGate2"
+                                style="-fx-font-size: 1.2em; -fx-background-color: #ff3d3d; -fx-border-color: black; -fx-border-radius: 7;
+                 -fx-background-radius: 10; -fx-border-width: 0.8; -fx-alignment: center;"
+                                text="yopish" maxWidth="Infinity" prefHeight="20">
+                            <cursor>
+                                <Cursor fx:constant="HAND"/>
+                            </cursor>
+                        </Button>
 
-  <Button fx:id="button2" mnemonicParsing="false" onMouseClicked="#openGate2Manually"
-          style="-fx-font-size: 1.2em; -fx-background-color: #64ff4b; -fx-border-color: black; -fx-border-radius: 7;
+                        <Button fx:id="button2" mnemonicParsing="false" onMouseClicked="#openGate2Manually"
+                                style="-fx-font-size: 1.2em; -fx-background-color: #64ff4b; -fx-border-color: black; -fx-border-radius: 7;
                  -fx-background-radius: 10; -fx-border-width: 0.8; -fx-alignment: center;"
-          text="2-shlagbaumni ochish" maxWidth="Infinity" prefHeight="35"
-          GridPane.columnIndex="0" GridPane.rowIndex="2">
-    <cursor>
-      <Cursor fx:constant="HAND"/>
-    </cursor>
-  </Button>
-
-  <Button fx:id="button4" mnemonicParsing="false" onMouseClicked="#closeGate2"
-          style="-fx-font-size: 1.2em; -fx-background-color: #ff3d3d; -fx-border-color: black; -fx-border-radius: 7;
-                 -fx-background-radius: 10; -fx-border-width: 0.8; -fx-alignment: center;"
-          text="2-shlagbaumni yopish" maxWidth="Infinity" prefHeight="35"
-          GridPane.columnIndex="1" GridPane.rowIndex="2">
-    <cursor>
-      <Cursor fx:constant="HAND"/>
-    </cursor>
-  </Button>
-</GridPane>
+                                text="ochish" maxWidth="Infinity" prefHeight="20">
+                            <cursor>
+                                <Cursor fx:constant="HAND"/>
+                            </cursor>
+                        </Button>
+                    </HBox>
+                </VBox>
+            </HBox>
+        </VBox>
+    </children>
+</AnchorPane>

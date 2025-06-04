@@ -20,12 +20,15 @@ public interface TruckActionRepository extends JpaRepository<TruckActionEntity, 
             "GROUP BY ta.action, CAST(ta.createdAt AS date)")
     List<Object[]> findTruckWeightsByDate(LocalDate startDate, LocalDate endDate);
 
-    @Query("""
-    SELECT ta.action, SUM(ta.weight)
-    FROM truck_actions ta
-    WHERE ta.actionStatus = :status AND ta.createdAt BETWEEN :fromDate AND :toDate
-    GROUP BY ta.action
-""")
+    /**
+     * Status va sana bo'yicha og'irliklar
+     */
+    @Query("SELECT ta.action, SUM(ta.weight) " +
+            "FROM truck_actions ta " +
+            "WHERE ta.actionStatus = :status " +
+            "AND ta.createdAt BETWEEN :fromDate AND :toDate " +
+            "AND ta.weight IS NOT NULL " +
+            "GROUP BY ta.action")
     List<Object[]> findTruckWeightsByDateAndStatus(@Param("fromDate") LocalDateTime fromDate,
                                                    @Param("toDate") LocalDateTime toDate,
                                                    @Param("status") ActionStatus status);

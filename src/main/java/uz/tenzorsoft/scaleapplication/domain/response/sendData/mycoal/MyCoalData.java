@@ -10,18 +10,22 @@ import lombok.Setter;
 @Setter
 @Getter
 public class MyCoalData {
-    private Long id;
-    private Long np;
-    private Long tarozi_id;
-    private String rfid;
-    private String avto_number;
-    private String ful_name;
-    private String tex_pass_number;
-    private String org_name_buyer;
-    private String org_name_seller;
-    private ProductResponse product;
-    private CheckResponse check;
-    private AccordResponse accord;
-    private Doverennost doverennost;
-    private Heft heft;
+    private Long localId;
+    private Long scaleId;
+//    private Long tarozi_id;
+//    private String rfid;
+//    private String avto_number;
+//    private String ful_name;
+//    private String tex_pass_number;
+//    private String org_name_buyer;
+//    private String org_name_seller;
+    private Double brutto;
+    private Double tara;
+//    private Double netto_arrival;
+    private Double netto;
+//    private ProductResponse product;
+//    private CheckResponse check;
+//    private AccordResponse accord;
+//    private Doverennost doverennost;
+//    private Heft heft;
 }

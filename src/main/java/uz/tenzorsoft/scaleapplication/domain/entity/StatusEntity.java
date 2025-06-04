@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @Setter
 @Entity(name = "statuses")
 public class StatusEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,6 +28,8 @@ public class StatusEntity {
     private boolean gate2 = false;
     private boolean gateExit1 = false;
     private boolean gateExit2 = false;
+    private boolean kppgate1 = false;
+    private boolean kppgate2 = false;
     private boolean camera1 = false;
     private boolean camera2 = false;
     private boolean camera3 = false;

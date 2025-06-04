@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.controlsfx.control.ToggleSwitch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import uz.tenzorsoft.scaleapplication.domain.data.TableViewData;
 import uz.tenzorsoft.scaleapplication.repository.TruckActionRepository;
@@ -31,6 +32,10 @@ import uz.tenzorsoft.scaleapplication.repository.TruckRepository;
 import uz.tenzorsoft.scaleapplication.service.ConfigUtilsService;
 import uz.tenzorsoft.scaleapplication.service.ExcelService;
 import uz.tenzorsoft.scaleapplication.service.PrintCheck;
+import uz.tenzorsoft.scaleapplication.service.raspberry.GpioControl;
+//import uz.tenzorsoft.scaleapplication.domain.dto.KppAccessRequest;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,14 +44,10 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
-import static uz.tenzorsoft.scaleapplication.domain.Instances.configurations;
+import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
 import static uz.tenzorsoft.scaleapplication.domain.Settings.*;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_1;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_2;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_3;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_EXIT_1;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_EXIT_2;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_EXIT_3;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.*;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_CLOSE_GATE_EXIT_2;
 
 @Component
 @RequiredArgsConstructor
@@ -57,14 +58,102 @@ public class MenuBarController implements BaseController {
     private final TruckRepository truckRepository;
     private final TruckActionRepository truckActionRepository;
     private final ControlPane controlPane;
+    private final GpioControl gpioControl;
+
+    @Autowired
+    @Lazy
+    private ConnectionsController connectionsController;
+
+
 
     @Autowired
     private TableController tableController;
 
-    private void initialize() {
+//    @FXML
+//    private void handleKppRequestsMenuAction() {
+//        if (kppRequestService == null) {
+//            showAlert(Alert.AlertType.ERROR, "Xizmat Topilmadi", "KPP So'rovlar xizmati yuklanmagan.");
+//            return;
+//        }
+//        if (gpioControl == null) { // GpioControl mavjudligini tekshirish
+//            showAlert(Alert.AlertType.ERROR, "Xizmat Topilmadi", "GPIO Boshqaruv xizmati yuklanmagan.");
+//            return;
+//        }
+//
+//        Stage dialogStage = new Stage();
+//        dialogStage.initModality(Modality.APPLICATION_MODAL);
+//        dialogStage.setTitle("KPP Kirish So'rovlari");
+//
+//        ListView<KppAccessRequest> requestListView = new ListView<>();
+//        requestListView.setItems(kppRequestService.getAllKppRequests()); // ObservableList ni bog'lash
+//
+//        requestListView.setCellFactory(lv -> new ListCell<KppAccessRequest>() {
+//            private final Button approveButton = new Button("Tasdiqlash va Ochish");
+//            private final HBox hbox = new HBox(15); // Elementlar orasidagi masofa
+//            private final Label requestTextLabel = new Label();
+//
+//            {
+//                hbox.setAlignment(Pos.CENTER_LEFT);
+//                approveButton.setOnAction(event -> {
+//                    KppAccessRequest request = getItem();
+//                    if (request != null && !request.isApproved()) {
+//                        // KppRequestService.approveRequestAndOpenGate endi GpioControl ni o'zida ishlatadi
+//                        boolean success = kppRequestService.approveRequestAndOpenGate(request.getId());
+//                        if (!success) {
+//                            showAlert(Alert.AlertType.ERROR, "Xatolik", "KPP darvozasini ochishda muammo yuz berdi. Loglarni tekshiring.");
+//                        }
+//                        // UI avtomatik yangilanishi kerak (BooleanProperty tufayli)
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            protected void updateItem(KppAccessRequest request, boolean empty) {
+//                super.updateItem(request, empty);
+//                if (empty || request == null) {
+//                    setText(null);
+//                    setGraphic(null);
+//                    // Eski bog'lanishlarni tozalash (agar bo'lsa)
+//                    if (getGraphic() instanceof HBox) {
+//                        Node buttonNode = ((HBox) getGraphic()).getChildren().get(1);
+//                        if(buttonNode instanceof Button) {
+//                            buttonNode.visibleProperty().unbind();
+//                            buttonNode.managedProperty().unbind();
+//                        }
+//                    }
+//                } else {
+//                    requestTextLabel.setText(request.toString());
+//
+//                    // Tugmani faqat tasdiqlanmagan so'rovlar uchun sozlash
+//                    approveButton.visibleProperty().bind(request.approvedProperty().not());
+//                    approveButton.managedProperty().bind(request.approvedProperty().not());
+//
+//                    hbox.getChildren().setAll(requestTextLabel, approveButton);
+//                    setGraphic(hbox);
+//                }
+//            }
+//        });
+//
+//        Button clearApprovedBtn = new Button("Tasdiqlanganlarni O'chirish");
+//        clearApprovedBtn.setOnAction(e -> kppRequestService.clearApprovedRequests());
+//
+//        Label titleLabel = new Label("Aktiv KPP So'rovlari:");
+//        titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+//
+//        VBox layout = new VBox(10, titleLabel, requestListView, clearApprovedBtn);
+//        layout.setPadding(new Insets(15));
+//        layout.setPrefSize(650, 450);
+//
+//        Scene scene = new Scene(layout);
+//        dialogStage.setScene(scene);
+//        dialogStage.showAndWait();
+//    }
+    public void initialize() {
+
         camera1Field.setText(CAMERA_1);
         cameraRezervField1.setText(CAMERA_REZERV1);
         camera2Field.setText(CAMERA_2);
+
 
         camera3Field.setText(CAMERA_3);
         camera4Field.setText(CAMERA_4);
@@ -74,15 +163,26 @@ public class MenuBarController implements BaseController {
         portFieldController.setText(CONTROLLER_PORT.toString());
         timeoutField.setText(CONTROLLER_CONNECT_TIMEOUT.toString());
 
+        kppkirishshalgbaum.setText(KPP_CLOSE_GATE1_TIMEOUT + "");
+        kppchiqishshalgbaum.setText(KPP_CLOSE_GATE2_TIMEOUT +"");
+        kpppinInIn.setText(KPP_PIN_IN_IN != null ? KPP_PIN_IN_IN.toString() : "");
+        kpppinInOut.setText(KPP_PIN_IN_OUT != null ? KPP_PIN_IN_OUT.toString() : "");
+        kpppinOutIn.setText(KPP_EXIT_PIN_IN_IN != null ? KPP_EXIT_PIN_IN_IN.toString() : "");
+        kpppinOutOut.setText(KPP_EXIT_PIN_IN_OUT != null ? KPP_EXIT_PIN_IN_OUT.toString() : "");
+
         firstShlagbaumField.setText("" + CLOSE_GATE1_TIMEOUT);
         secondShlagbaumField.setText("" + CLOSE_GATE2_TIMEOUT);
-        pinIn.setText(PIN_IN != null ? PIN_IN.toString() : "");
-        pinIn2.setText(PIN_IN2 != null ? PIN_IN2.toString() : "");
+        pinInIn.setText(PIN_IN_IN != null ? PIN_IN_IN.toString() : "");
+        pinInOut.setText(PIN_IN_OUT != null ? PIN_IN_OUT.toString() : "");
+        pinInIn2.setText(PIN_IN_IN2 != null ? PIN_IN_IN2.toString() : "");
+        pinInOut2.setText(PIN_IN_OUT2 != null ? PIN_IN_OUT2.toString() : "");
 
         firstShlagbaumFieldExit.setText("" + CLOSE_GATE1_EXIT_TIMEOUT);
         secondShlagbaumFieldExit.setText("" + CLOSE_GATE2_EXIT_TIMEOUT);
-        pinOut.setText(PIN_OUT != null ? PIN_OUT.toString() : "");
-        pinOut2.setText(PIN_OUT2 != null ? PIN_OUT2.toString() : "");
+        pinOutIn.setText(PIN_OUT_IN != null ? PIN_OUT_IN.toString() : "");
+        pinOutOut.setText(PIN_OUT_OUT != null ? PIN_OUT_OUT.toString() : "");
+        pinOutIn2.setText(PIN_OUT_IN2 != null ? PIN_OUT_IN2.toString() : "");
+        pinOutOut2.setText(PIN_OUT_OUT2 != null ? PIN_OUT_OUT2.toString() : "");
 
         massTimeField.setText(SCALE_TIMEOUT != null ? SCALE_TIMEOUT.toString() : "");
         portField.setText(SCALE_PORT);
@@ -102,18 +202,44 @@ public class MenuBarController implements BaseController {
 
     private Node incoms() {
         AnchorPane camera = showCameraPopup();
+//        Node shlagbaum = showshlagbaumPopup();
         Node node = showShlagbaumPopup();
         Node node1 = showTaroziPopup();
+        Node node2 = showKPPINPopup();
         AnchorPane sensor = sensorIn();
-        return new AnchorPane(new VBox(5, camera, node, node1, sensor));
+        return new AnchorPane(new VBox(5, node2, camera,  node, node1, sensor));
     }
 
     private Node outs() {
         AnchorPane camera = showCameraPopupOut();
         Node node = showShlagbaumPopupOut();
         Node node1 = showTaroziPopupOut();
+        Node node2 = showKPPOutPopup();
         AnchorPane sensor = sensorOut();
-        return new AnchorPane(new VBox(5, camera, node, node1, sensor));
+        return new AnchorPane(new VBox(5,node2, camera, node, node1, sensor));
+    }
+
+    private void setSensorPins() {
+        RASP_SENSOR_1 = SENSOR_IN1;
+        RASP_SENSOR_2 = SENSOR_IN2;
+        RASP_SENSOR_3 = SENSOR_IN3;
+
+        RASP_SENSOR_EXIT_1 = SENSOR_OUT1;
+        RASP_SENSOR_EXIT_2 = SENSOR_OUT2;
+        RASP_SENSOR_EXIT_3 = SENSOR_OUT3;
+
+        RASP_OPEN_GATE_1 = PIN_IN_IN;
+        RASP_CLOSE_GATE_1 = PIN_IN_OUT;
+        RASP_OPEN_GATE_2 = PIN_IN_IN2;
+        RASP_CLOSE_GATE_2 = PIN_IN_OUT2;
+
+        RASP_OPEN_GATE_EXIT_1 = PIN_OUT_IN;
+        RASP_CLOSE_GATE_EXIT_1 = PIN_OUT_OUT;
+        RASP_OPEN_GATE_EXIT_2 = PIN_OUT_IN2;
+        RASP_CLOSE_GATE_EXIT_2 = PIN_OUT_OUT2;
+
+        STATUS_PINS = new int[]{RASP_SENSOR_1, RASP_SENSOR_2, RASP_SENSOR_3, RASP_SENSOR_EXIT_1, RASP_SENSOR_EXIT_2, RASP_SENSOR_EXIT_3};
+        CONTROL_PINS = new int[]{RASP_GREEN_LIGHT_1, RASP_GREEN_LIGHT_2, RASP_OPEN_GATE_1, RASP_CLOSE_GATE_1, RASP_OPEN_GATE_2, RASP_CLOSE_GATE_2, RASP_GREEN_LIGHT_EXIT_1, RASP_GREEN_LIGHT_EXIT_2, RASP_OPEN_GATE_EXIT_1, RASP_CLOSE_GATE_EXIT_1, RASP_OPEN_GATE_EXIT_2, RASP_CLOSE_GATE_EXIT_2};
     }
 
     @FXML
@@ -130,7 +256,9 @@ public class MenuBarController implements BaseController {
 
         ChangeListener<String> changeListener = (observable, oldValue, newValue) -> {
             saveButton.setDisable(
-                    camera1Field.getText().equals(CAMERA_1) &&
+                    kppkirishshalgbaum.getText().equals(KPP_CLOSE_GATE1_TIMEOUT) &&
+                            kppchiqishshalgbaum.getText().equals(KPP_CLOSE_GATE2_TIMEOUT) &&
+                            camera1Field.getText().equals(CAMERA_1) &&
                             cameraRezervField1.getText().equals(CAMERA_REZERV1) &&
                             camera2Field.getText().equals(CAMERA_2) &&
                             camera3Field.getText().equals(CAMERA_3) &&
@@ -141,12 +269,20 @@ public class MenuBarController implements BaseController {
                             timeoutField.getText().equals(CONTROLLER_CONNECT_TIMEOUT) &&
                             firstShlagbaumField.getText().equals(CLOSE_GATE1_TIMEOUT) &&
                             secondShlagbaumField.getText().equals(CLOSE_GATE2_TIMEOUT) &&
-                            pinIn.getText().equals(PIN_IN) &&
-                            pinIn2.getText().equals(PIN_IN2) &&
+                            pinInIn.getText().equals(PIN_IN_IN) &&
+                            pinInOut.getText().equals(PIN_IN_OUT) &&
+                            pinInIn2.getText().equals(PIN_IN_IN2) &&
+                            pinInOut2.getText().equals(PIN_IN_OUT2) &&
+                            kpppinInIn.getText().equals(KPP_PIN_IN_IN) &&
+                            kpppinInOut.getText().equals(KPP_PIN_IN_OUT) &&
+                            kpppinOutIn.getText().equals((KPP_EXIT_PIN_IN_IN))&&
+                            kpppinOutOut.getText().equals((KPP_EXIT_PIN_IN_OUT))&&
                             firstShlagbaumFieldExit.getText().equals(CLOSE_GATE1_EXIT_TIMEOUT) &&
                             secondShlagbaumFieldExit.getText().equals(CLOSE_GATE2_EXIT_TIMEOUT) &&
-                            pinOut.getText().equals(PIN_OUT) &&
-                            pinOut2.getText().equals(PIN_OUT2) &&
+                            pinOutIn.getText().equals(PIN_OUT_IN) &&
+                            pinOutOut.getText().equals(PIN_OUT_OUT) &&
+                            pinOutIn2.getText().equals(PIN_OUT_IN2) &&
+                            pinOutOut2.getText().equals(PIN_OUT_OUT2) &&
                             massTimeField.getText().equals(SCALE_TIMEOUT) &&
                             portField.getText().equals(SCALE_PORT) &&
                             massTimeFieldOut.getText().equals(EXIT_TIMEOUT) &&
@@ -161,6 +297,8 @@ public class MenuBarController implements BaseController {
             );
         };
 
+        kppkirishshalgbaum.textProperty().addListener(changeListener);
+        kppchiqishshalgbaum.textProperty().addListener(changeListener);
         camera1Field.textProperty().addListener(changeListener);
         cameraRezervField1.textProperty().addListener(changeListener);
         camera2Field.textProperty().addListener(changeListener);
@@ -172,12 +310,20 @@ public class MenuBarController implements BaseController {
         timeoutField.textProperty().addListener(changeListener);
         firstShlagbaumField.textProperty().addListener(changeListener);
         secondShlagbaumField.textProperty().addListener(changeListener);
-        pinIn.textProperty().addListener(changeListener);
-        pinIn2.textProperty().addListener(changeListener);
+        pinInIn.textProperty().addListener(changeListener);
+        pinInOut.textProperty().addListener(changeListener);
+        pinInIn2.textProperty().addListener(changeListener);
+        pinInOut2.textProperty().addListener(changeListener);
+        kpppinInIn.textProperty().addListener(changeListener);
+        kpppinInOut.textProperty().addListener(changeListener);
+        kpppinOutIn.textProperty().addListener(changeListener);
+        kpppinOutOut.textProperty().addListener(changeListener);
         firstShlagbaumFieldExit.textProperty().addListener(changeListener);
         secondShlagbaumFieldExit.textProperty().addListener(changeListener);
-        pinOut.textProperty().addListener(changeListener);
-        pinOut2.textProperty().addListener(changeListener);
+        pinOutIn.textProperty().addListener(changeListener);
+        pinOutOut.textProperty().addListener(changeListener);
+        pinOutIn2.textProperty().addListener(changeListener);
+        pinOutOut2.textProperty().addListener(changeListener);
         massTimeField.textProperty().addListener(changeListener);
         portField.textProperty().addListener(changeListener);
         massTimeFieldOut.textProperty().addListener(changeListener);
@@ -192,6 +338,20 @@ public class MenuBarController implements BaseController {
 
         saveButton.setDisable(true);
         saveButton.setOnAction(event -> {
+            gpioControl.soutStatuses();
+            // gpioControl.removeAllPins();
+            //  gpioControl.soutStatuses();
+            //   gpioControl.shutdown();
+//            gpioControl.shutdownCompletely();
+            //  gpioControl.initialize();
+
+            KPP_CLOSE_GATE1_TIMEOUT = Integer.parseInt(kppkirishshalgbaum.getText());
+            KPP_CLOSE_GATE2_TIMEOUT = Integer.parseInt(kppkirishshalgbaum.getText());
+            KPP_PIN_IN_IN = Integer.parseInt(pinInIn.getText());
+            KPP_PIN_IN_OUT = Integer.parseInt(pinInOut.getText());
+            KPP_EXIT_PIN_IN_IN = Integer.parseInt(pinOutIn.getText());
+            KPP_EXIT_PIN_IN_OUT = Integer.parseInt(pinOutOut.getText());
+
             CAMERA_1 = camera1Field.getText();
             CAMERA_REZERV1 = cameraRezervField1.getText();
             CAMERA_2 = camera2Field.getText();
@@ -203,12 +363,16 @@ public class MenuBarController implements BaseController {
             CONTROLLER_CONNECT_TIMEOUT = Integer.parseInt(timeoutField.getText());
             CLOSE_GATE1_TIMEOUT = Integer.parseInt(firstShlagbaumField.getText());
             CLOSE_GATE2_TIMEOUT = Integer.parseInt(secondShlagbaumField.getText());
-            PIN_IN = Integer.parseInt(pinIn.getText());
-            PIN_IN2 = Integer.parseInt(pinIn2.getText());
+            PIN_IN_IN = Integer.parseInt(pinInIn.getText());
+            PIN_IN_OUT = Integer.parseInt(pinInOut.getText());
+            PIN_IN_IN2 = Integer.parseInt(pinInIn2.getText());
+            PIN_IN_OUT2 = Integer.parseInt(pinInOut2.getText());
             CLOSE_GATE1_EXIT_TIMEOUT = Integer.parseInt(firstShlagbaumFieldExit.getText());
             CLOSE_GATE2_EXIT_TIMEOUT = Integer.parseInt(secondShlagbaumFieldExit.getText());
-            PIN_OUT = Integer.parseInt(pinOut.getText());
-            PIN_OUT2 = Integer.parseInt(pinOut2.getText());
+            PIN_OUT_IN = Integer.parseInt(pinOutIn.getText());
+            PIN_OUT_OUT = Integer.parseInt(pinOutOut.getText());
+            PIN_OUT_IN2 = Integer.parseInt(pinOutIn2.getText());
+            PIN_OUT_OUT2 = Integer.parseInt(pinOutOut2.getText());
             SCALE_TIMEOUT = Integer.parseInt(massTimeField.getText());
             SCALE_PORT = portField.getText();
             EXIT_TIMEOUT = Integer.parseInt(massTimeFieldOut.getText());
@@ -221,6 +385,13 @@ public class MenuBarController implements BaseController {
             SENSOR_OUT2 = Integer.parseInt(sensorPinOut2.getText());
             SENSOR_OUT3 = Integer.parseInt(sensorPinOut3.getText());
 
+
+            configurations.setKppcloseGate1Timeout(Integer.parseInt(kppkirishshalgbaum.getText()));
+            configurations.setKpppinInIn(Integer.parseInt(kpppinInIn.getText()));
+            configurations.setKpppinInOut(Integer.parseInt(kpppinInOut.getText()));
+            configurations.setKpppinOutIn(Integer.parseInt(kpppinOutIn.getText()));
+            configurations.setKpppinOutOut(Integer.parseInt(kpppinOutOut.getText()));
+            configurations.setKppcloseGate2Timeout(Integer.parseInt(kppchiqishshalgbaum.getText()));
             configurations.setCamera1(camera1Field.getText());
             configurations.setCamera2(camera2Field.getText());
             configurations.setCamera3(camera3Field.getText());
@@ -231,12 +402,16 @@ public class MenuBarController implements BaseController {
             configurations.setControllerPort(Integer.parseInt(portFieldController.getText()));
             configurations.setCloseGate1Timeout(Integer.parseInt(firstShlagbaumField.getText()));
             configurations.setCloseGate2Timeout(Integer.parseInt(secondShlagbaumField.getText()));
-            configurations.setPinIn(Integer.parseInt(pinIn.getText()));
-            configurations.setPinIn2(Integer.parseInt(pinIn2.getText()));
+            configurations.setPinInIn(Integer.parseInt(pinInIn.getText()));
+            configurations.setPinInOut(Integer.parseInt(pinInOut.getText()));
+            configurations.setPinInIn2(Integer.parseInt(pinInIn2.getText()));
+            configurations.setPinInOut2(Integer.parseInt(pinInOut2.getText()));
             configurations.setCloseGateExit1Timeout(Integer.parseInt(firstShlagbaumFieldExit.getText()));
             configurations.setCloseGateExit2Timeout(Integer.parseInt(secondShlagbaumFieldExit.getText()));
-            configurations.setPinOut(Integer.parseInt(pinOut.getText()));
-            configurations.setPinOut2(Integer.parseInt(pinOut2.getText()));
+            configurations.setPinOutIn(Integer.parseInt(pinOutIn.getText()));
+            configurations.setPinOutOut(Integer.parseInt(pinOutOut.getText()));
+            configurations.setPinOutIn2(Integer.parseInt(pinOutIn2.getText()));
+            configurations.setPinOutOut2(Integer.parseInt(pinOutOut2.getText()));
             configurations.setScaleTimeout(Integer.parseInt(massTimeField.getText()));
             configurations.setScalePort(portField.getText());
             configurations.setExitTimeout(Integer.parseInt(massTimeFieldOut.getText()));
@@ -257,6 +432,14 @@ public class MenuBarController implements BaseController {
 //            configurations.setPassword(passwordField.getText());
             configUtilsService.saveConfig(configurations);
             // Add save logic here
+            setSensorPins();
+
+            gpioControl.initialize();
+            gpioControl.getSensorStatuses();
+
+            connectionsController.updateConnections();
+            connectionsController.showConnections();
+
             popupStage.close();
         });
         cancelButton.setOnAction(event -> {
@@ -308,6 +491,25 @@ public class MenuBarController implements BaseController {
         RASP_SENSOR_EXIT_1 = SENSOR_OUT1;
         RASP_SENSOR_EXIT_2 = SENSOR_OUT2;
         RASP_SENSOR_EXIT_3 = SENSOR_OUT3;
+
+        RASP_OPEN_GATE_1 = PIN_IN_IN;
+        RASP_CLOSE_GATE_1 = PIN_IN_OUT;
+        RASP_OPEN_GATE_2 = PIN_IN_IN2;
+        RASP_CLOSE_GATE_2 = PIN_IN_OUT2;
+
+        RASP_OPEN_GATE_EXIT_1 = PIN_OUT_IN;
+        RASP_CLOSE_GATE_EXIT_1 = PIN_OUT_OUT;
+        RASP_OPEN_GATE_EXIT_2 = PIN_OUT_IN2;
+        RASP_CLOSE_GATE_EXIT_2 = PIN_OUT_OUT2;
+
+        KPP_OPEN_GATE_EXIT_1 = KPP_PIN_IN_IN;
+        KPP_OPEN_GATE_EXIT_2 = KPP_EXIT_PIN_IN_IN;
+        KPP_CLOSE_GATE_EXIT_1 = KPP_PIN_IN_OUT;
+        KPP_CLOSE_GATE_EXIT_2 = KPP_EXIT_PIN_IN_OUT;
+
+        STATUS_PINS = new int[]{RASP_SENSOR_1, RASP_SENSOR_2, RASP_SENSOR_3, RASP_SENSOR_EXIT_1, RASP_SENSOR_EXIT_2, RASP_SENSOR_EXIT_3};
+        CONTROL_PINS = new int[]{RASP_GREEN_LIGHT_1, RASP_GREEN_LIGHT_2, RASP_OPEN_GATE_1, RASP_CLOSE_GATE_1, RASP_OPEN_GATE_2, RASP_CLOSE_GATE_2, RASP_GREEN_LIGHT_EXIT_1, RASP_GREEN_LIGHT_EXIT_2, RASP_OPEN_GATE_EXIT_1, RASP_CLOSE_GATE_EXIT_1, RASP_OPEN_GATE_EXIT_2, RASP_CLOSE_GATE_EXIT_2};
+
     }
 
 
@@ -327,6 +529,8 @@ public class MenuBarController implements BaseController {
     private void onCameraMenuSelected() {
         showCameraPopup();
     }
+
+
 
     @FXML
     private void onAboutMenuSelected() {
@@ -498,6 +702,7 @@ public class MenuBarController implements BaseController {
     TextField cameraRezervField1 = new TextField();
     TextField camera2Field = new TextField();
 
+
     private AnchorPane showCameraPopup() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
@@ -514,6 +719,7 @@ public class MenuBarController implements BaseController {
         // Yuk Kamerasi
         Label camera2Label = new Label("2-kamera yuk IP manzili:");
         camera2Field.setPrefWidth(80);
+
 
         VBox v = new VBox(5, rezervCam, cameraRezervField1);
         // Layout
@@ -537,9 +743,46 @@ public class MenuBarController implements BaseController {
         return layout;
     }
 
+//    private TextField kppkirishshalgbaum = new TextField();
+//    private TextField kppchiqishshalgbaumr = new TextField();
+//
+//    private Node showshlagbaumPopup() {
+//        Stage popupStage = new Stage();
+//        popupStage.initModality(Modality.APPLICATION_MODAL);
+//
+//        //KPP kirish shlagbaum
+//        Label shlagbaum = new Label("KPP Shlagbaum");
+//
+//        Label shlagbaumLabel1 = new Label("KPP  kirish shlagbaum pin:");
+//        kppkirishshalgbaum.setPrefWidth(80);
+//
+//        Label shlagbaumLabel2 = new Label("KPP  chiqish shlagbaum pin:");
+//        kppkirishshalgbaum.setPrefWidth(80);
+//
+//
+//        // Layout
+//        VBox h = new VBox(5, shlagbaum, shlagbaumLabel1);
+//        new HBox(20,
+//                new VBox(5,
+//                        new VBox(5,
+//                                shlagbaumLabel1, kppkirishshalgbaum),
+//                        new VBox(5,
+//                                shlagbaumLabel2, kppchiqishshalgbaumr)
+//                )
+//        );
+//        h.setAlignment(Pos.CENTER);
+//        AnchorPane layout = new AnchorPane(anchorSet(h, 0., 0., 0., 0.));
+////        layout.setSpacing(15);
+//        layout.setPadding(new Insets(15));
+//        layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
+//
+//        return layout;
+//    }
+
     private TextField camera3Field = new TextField();
     private TextField camera4Field = new TextField();
     private TextField cameraRezervField2 = new TextField();
+
 
     private AnchorPane showCameraPopupOut() {
         Stage popupStage = new Stage();
@@ -703,32 +946,38 @@ public class MenuBarController implements BaseController {
 
     private TextField firstShlagbaumField = new TextField();
     private TextField secondShlagbaumField = new TextField();
-    private TextField pinIn = new TextField();
-    private TextField pinIn2 = new TextField();
+    private TextField pinInIn = new TextField();
+    private TextField pinInOut = new TextField();
+    private TextField pinInIn2 = new TextField();
+    private TextField pinInOut2 = new TextField();
 
     private Node showShlagbaumPopup() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
 
         // Form Elements
-        Label firstShlagbaumLabel = new Label("1-shlagbaum yopilish vaqti (ms):");
+        Label firstShlagbaumLabel = new Label("1 yopilish vaqti (ms):");
         Label shlakbaum = new Label("Shlagbaum");
         firstShlagbaumField.setPrefWidth(80);
 
-        Label secondShlagbaumLabel = new Label("2-shlagbaum yopilish vaqti (ms):");
+        Label secondShlagbaumLabel = new Label("2 yopilish vaqti (ms):");
         secondShlagbaumField.setPrefWidth(80);
 
-        Label pinLabel = new Label("Pin");
-        pinIn.setPrefWidth(40);
+        Label pinLabelIn = new Label("Pin In");
+        Label pinLabelOut = new Label("Pin Out");
+        Label pinLabelIn2 = new Label("Pin In");
+        Label pinLabelOut2 = new Label("Pin Out");
+        pinInIn.setPrefWidth(40);
+        pinInIn2.setPrefWidth(40);
+        pinInOut2.setPrefWidth(40);
 
-        Label pinLabel2 = new Label("Pin");
-        pinIn2.setPrefWidth(40);
+        pinInOut.setPrefWidth(40);
         secondShlagbaumField.setPrefWidth(80);
 
         // Layout
         VBox v = new VBox(5, shlakbaum, new VBox(5,
-                new HBox(20, new VBox(5, firstShlagbaumLabel, firstShlagbaumField), new VBox(5, pinLabel, pinIn)),
-                new HBox(20, new VBox(5, secondShlagbaumLabel, secondShlagbaumField), new VBox(5, pinLabel2, pinIn2))
+                new HBox(20, new VBox(5, firstShlagbaumLabel, firstShlagbaumField), new VBox(5, pinLabelIn, pinInIn), new VBox(5, pinLabelOut, pinInOut)),
+                new HBox(20, new VBox(5, secondShlagbaumLabel, secondShlagbaumField), new VBox(5, pinLabelIn2, pinInIn2), new VBox(5, pinLabelOut2, pinInOut2))
         ));
         v.setAlignment(Pos.CENTER);
         AnchorPane layout = new AnchorPane(
@@ -742,32 +991,97 @@ public class MenuBarController implements BaseController {
 
     private TextField firstShlagbaumFieldExit = new TextField();
     private TextField secondShlagbaumFieldExit = new TextField();
-    private TextField pinOut = new TextField();
-    TextField pinOut2 = new TextField();
+    private TextField pinOutIn = new TextField();
+    private TextField pinOutOut = new TextField();
+    private TextField pinOutIn2 = new TextField();
+    private TextField pinOutOut2 = new TextField();
 
     private Node showShlagbaumPopupOut() {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
 
-        Label firstShlagbaumLabelExit = new Label("1-shlagbaum yopilish vaqti (ms):");
+        Label firstShlagbaumLabelExit = new Label("1 yopilish vaqti (ms):");
         Label shlagbaum = new Label("Shlagbaum");
         firstShlagbaumFieldExit.setPrefWidth(80);
-        Label secondShlagbaumLabelExit = new Label("2-shlagbaum yopilish vaqti (ms):");
+        Label secondShlagbaumLabelExit = new Label("2 yopilish vaqti (ms):");
         secondShlagbaumFieldExit.setPrefWidth(80);
-        Label pinLabel = new Label("Pin");
-        pinOut.setPrefWidth(40);
-        Label pinLabel2 = new Label("Pin");
+        Label pinLabelIn = new Label("Pin In");
+        Label pinLabelOut = new Label("Pin Out");
+        Label pinLabelIn2 = new Label("Pin In");
+        Label pinLabelOut2 = new Label("Pin Out");
 
-        pinOut2.setPrefWidth(40);
+        pinOutIn.setPrefWidth(40);
+        pinOutOut.setPrefWidth(40);
+        pinOutIn2.setPrefWidth(40);
+        pinOutOut2.setPrefWidth(40);
 
         VBox v = new VBox(5, shlagbaum, new VBox(5,
-                new HBox(20, new VBox(5, firstShlagbaumLabelExit, firstShlagbaumFieldExit), new VBox(5, pinLabel, pinOut)),
-                new HBox(20, new VBox(5, secondShlagbaumLabelExit, secondShlagbaumFieldExit), new VBox(5, pinLabel2, pinOut2))
+                new HBox(20, new VBox(5, firstShlagbaumLabelExit, firstShlagbaumFieldExit), new VBox(5, pinLabelIn, pinOutIn), new VBox(5, pinLabelOut, pinOutOut)),
+                new HBox(20, new VBox(5, secondShlagbaumLabelExit, secondShlagbaumFieldExit), new VBox(5, pinLabelIn2, pinOutIn2), new VBox(5, pinLabelOut2, pinOutOut2))
         ));
         v.setAlignment(Pos.CENTER);
         AnchorPane layout = new AnchorPane(
                 anchorSet(v,
                         0., 0., 0., 0.));
+        layout.setPadding(new Insets(15));
+        layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
+
+        return layout;
+    }
+
+    private TextField kppkirishshalgbaum = new TextField();
+    private TextField kpppinInIn = new TextField();
+    private TextField kpppinInOut = new TextField();
+    private TextField kpppinOutIn = new TextField();
+    private TextField kpppinOutOut = new TextField();
+    private TextField kppchiqishshalgbaum = new TextField();
+
+    private Node showKPPINPopup() {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+
+        Label kppfirstShlagbaumLabelExit = new Label("1 yopilish vaqti (ms):");
+        Label shlagbaum = new Label("KPP Shlagbaum");
+        kppkirishshalgbaum.setPrefWidth(80);
+        Label pinLabelIn = new Label("Pin In");
+        Label pinLabelOut = new Label("Pin Out");
+
+        kpppinInIn.setPrefWidth(40);
+        kpppinInOut.setPrefWidth(40);
+
+        VBox v = new VBox(5, shlagbaum, new VBox(5,
+                new HBox(20, new VBox(5, kppfirstShlagbaumLabelExit, kppkirishshalgbaum), new VBox(5, pinLabelIn, kpppinInIn), new VBox(5, pinLabelOut, kpppinInOut))
+        ));
+        v.setAlignment(Pos.CENTER);
+        AnchorPane layout = new AnchorPane(
+                anchorSet(v, 0., 0., 0., 0.)
+        );
+        layout.setPadding(new Insets(15));
+        layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
+
+        return layout;
+    }
+
+    private Node showKPPOutPopup() {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+
+        Label kppfirstShlagbaumLabelExit = new Label("1 yopilish vaqti (ms):");
+        Label shlagbaum = new Label("KPP Shlagbaum");
+        kppchiqishshalgbaum.setPrefWidth(80);
+        Label pinLabelIn = new Label("Pin In");
+        Label pinLabelOut = new Label("Pin Out");
+
+        kpppinOutIn.setPrefWidth(40);
+        kpppinOutOut.setPrefWidth(40);
+
+        VBox v = new VBox(5, shlagbaum, new VBox(5,
+                new HBox(20, new VBox(5, kppfirstShlagbaumLabelExit, kppchiqishshalgbaum), new VBox(5, pinLabelIn, kpppinOutIn), new VBox(5, pinLabelOut, kpppinOutOut))
+        ));
+        v.setAlignment(Pos.CENTER);
+        AnchorPane layout = new AnchorPane(
+                anchorSet(v, 0., 0., 0., 0.)
+        );
         layout.setPadding(new Insets(15));
         layout.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #c3c3c3; -fx-border-radius: 5; -fx-background-radius: 5;");
 

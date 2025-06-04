@@ -107,4 +107,5 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
                                                   @Param("status") ActionStatus status);
 
 
+    TruckEntity findByTruckNumber(String carNumber);
 }

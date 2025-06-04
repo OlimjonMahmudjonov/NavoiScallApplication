@@ -19,8 +19,15 @@ public class Configurations implements Serializable {
 
     private Integer closeGate1Timeout;
     private Integer closeGate2Timeout;
-    private Integer pinIn;
-    private Integer pinIn2;
+    private Integer pinInIn;
+    private Integer pinInOut;
+    private Integer pinInIn2;
+    private Integer pinInOut2;
+
+    private Integer pinOutIn;
+    private Integer pinOutOut;
+    private Integer pinOutIn2;
+    private Integer pinOutOut2;
 
     private Integer sensorIn1;
     private Integer sensorIn2;
@@ -52,6 +59,14 @@ public class Configurations implements Serializable {
     private String camera4;
     private String cameraRezerv1;
     private String cameraRezerv2;
+
+    private Integer kppcloseGate1Timeout;
+    private Integer kppcloseGate2Timeout;
+    private Integer kpppinInIn;
+    private Integer kpppinInOut;
+    private Integer kpppinOutIn;
+    private Integer kpppinOutOut;
+
 
     private Integer raspberryUsing = 0;
 }

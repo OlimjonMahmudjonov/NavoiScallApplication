@@ -8,15 +8,17 @@ import com.pi4j.io.gpio.digital.*;
 import com.pi4j.platform.Platform;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uz.tenzorsoft.scaleapplication.domain.entity.LogEntity;
 import uz.tenzorsoft.scaleapplication.domain.enumerators.PinState;
 import uz.tenzorsoft.scaleapplication.service.LogService;
 
-import java.util.HashMap;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.function.Consumer;
 
 import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.*;
 
 @Service
 @RequiredArgsConstructor
@@ -53,12 +55,12 @@ public class GpioControl {
 
     private void setStatusListeners() {
         Map<Integer, Consumer<Boolean>> pinToSensorMap = Map.of(
-                17, (status) -> sensor1Connection = status,
-                22, (status) -> sensor2Connection = status,
-                27, (status) -> sensor3Connection = status,
-                30, (status) -> sensorExit1Connection = status,
-                31, (status) -> sensorExit2Connection = status,
-                32, (status) -> sensorExit3Connection = status
+                RASP_SENSOR_1, (status) -> sensor1Connection = status,
+                RASP_SENSOR_2, (status) -> sensor2Connection = status,
+                RASP_SENSOR_3, (status) -> sensor3Connection = status,
+                RASP_SENSOR_EXIT_1, (status) -> sensorExit1Connection = status,
+                RASP_SENSOR_EXIT_2, (status) -> sensorExit2Connection = status,
+                RASP_SENSOR_EXIT_3, (status) -> sensorExit3Connection = status
         );
 
         for (int pin : STATUS_PINS) {
@@ -157,6 +159,8 @@ public class GpioControl {
         sensor3Connection = false;
         gate1Connection = false;
         gate2Connection = false;
+        kppgate1Connection = false;
+        kppgate2Connection = false;
         sensorExit1Connection = false;
         sensorExit2Connection = false;
         sensorExit3Connection = false;
@@ -166,7 +170,7 @@ public class GpioControl {
 //        if (pi4jIn != null) pi4jIn.shutdown();
     }
 
-//    public void shutdownCompletely() {
+    //    public void shutdownCompletely() {
 //        if (pi4jOut != null) pi4jOut.shutdown();
 //        if (pi4jIn != null) pi4jIn.shutdown();
 //    }
@@ -201,23 +205,92 @@ public class GpioControl {
 
 
     public void getSensorStatuses() {
-        for (int pin : STATUS_PINS) {
+        for (int i = 0; i < STATUS_PINS.length; i++) {
             try {
-                DigitalInput input = inputPins.get(pin);
+                DigitalInput input = inputPins.get(STATUS_PINS[i]);
                 if (input != null) {
-                    switch (pin) {
-                        case 17 -> sensor1Connection = input.isHigh();
-                        case 22 -> sensor2Connection = input.isHigh();
-                        case 27 -> sensor3Connection = input.isHigh();
-                        case 14 -> sensorExit1Connection = input.isHigh();
-                        case 15 -> sensorExit2Connection = input.isHigh();
-                        case 18 -> sensorExit3Connection = input.isHigh();
+                    switch (i) {
+                        case 0 -> {
+                            sensor1Connection = input.isHigh();
+                            System.out.println(input.isHigh());
+                        }
+
+                        case 1 -> {
+                            sensor2Connection = input.isHigh();
+                            System.out.println(input.isHigh());
+                        }
+                        case 2 -> {
+                            sensor3Connection = input.isHigh();
+                            System.out.println(input.isHigh());
+                        }
+                        case 3 -> {
+                            sensorExit1Connection = input.isHigh();
+                            System.out.println(input.isHigh());
+                        }
+                        case 4 -> {
+                            sensorExit2Connection = input.isHigh();
+                            System.out.println(input.isHigh());
+                        }
+                        case 5 -> {
+                            sensorExit3Connection = input.isHigh();
+                            System.out.println(input.isHigh());
+                        }
                     }
                 }
             } catch (Exception e) {
                 System.out.println("mana hato");
             }
         }
+    }
+
+    public void removeAllPins() {
+        if (pi4jOut != null && outputPins != null && !outputPins.isEmpty()) {
+            for (int controlPin : CONTROL_PINS) {
+                pi4jOut.registry().remove("pin-" + controlPin);
+            }
+            outputPins.clear();
+        }
+        if (pi4jIn != null && inputPins != null && !inputPins.isEmpty()) {
+            for (int controlPin : STATUS_PINS) {
+                pi4jIn.registry().remove("pin-" + controlPin);
+            }
+            inputPins.clear();
+        }
+    }
+
+    public void soutStatuses() {
+
+        for (int pin : STATUS_PINS) {
+            String directionPath = "/sys/class/gpio/gpio" + pin + "/direction";
+
+            try {
+                // Fayldan yo'nalishni o'qish (in/out)
+                String direction = Files.readString(Paths.get(directionPath)).trim();
+                System.out.println(pin + " -> " + direction);
+            } catch (IOException e) {
+                System.out.println(pin + " -> not exported or inaccessible");
+            }
+        }
+        for (int pin : CONTROL_PINS) {
+            String directionPath = "/sys/class/gpio/gpio" + pin + "/direction";
+
+            try {
+                // Fayldan yo'nalishni o'qish (in/out)
+                String direction = Files.readString(Paths.get(directionPath)).trim();
+                System.out.println(pin + " -> " + direction);
+            } catch (IOException e) {
+                System.out.println(pin + " -> not exported or inaccessible");
+            }
+        }
+//        for (int i = 0; i < CONTROL_PINS.length; i++) {
+//            DigitalOutput output = outputPins.get(CONTROL_PINS[i]);
+//            if (output != null)
+//                System.out.println(output.isHigh() ? CONTROL_PINS[i] + "-High" : CONTROL_PINS[i] + "-Low");
+//        }
+    }
+
+    public boolean isOutputPinInitialized(int pinAddress) {
+        return outputPins.containsKey(pinAddress) && outputPins.get(pinAddress) != null;
     }
 }
 

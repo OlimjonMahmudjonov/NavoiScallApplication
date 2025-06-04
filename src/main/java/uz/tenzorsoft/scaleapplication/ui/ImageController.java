@@ -6,8 +6,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -23,14 +21,13 @@ import uz.tenzorsoft.scaleapplication.service.LogService;
 import uz.tenzorsoft.scaleapplication.service.TruckService;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class ImageController implements BaseController{
+public class ImageController implements BaseController {
 
     private final TruckService truckService;
     private final LogService logService;
@@ -41,23 +38,29 @@ public class ImageController implements BaseController{
     private MainController mainController;
 
     @FXML
-    private ImageView imageView1, imageView2, imageView3, imageView4;
+    private ImageView imageView1, imageView2, imageView3, imageView4, imageViewIn, imageViewOut;
 
 
     @FXML
     public void initialize() {
 
         Image image = new Image("/images/no-image.jpg");
+        Image in = new Image("/images/in/-1.png");
+        Image out = new Image("/images/out/-1.png");
 
         imageView1.setImage(image);
         imageView2.setImage(image);
         imageView3.setImage(image);
         imageView4.setImage(image);
+        imageViewIn.setImage(in);
+        imageViewOut.setImage(out);
         images = new ArrayList<>();
         images.add(imageView1);
         images.add(imageView2);
         images.add(imageView3);
         images.add(imageView4);
+        images.add(imageViewIn);
+        images.add(imageViewOut);
 
 //        double imageRatio = 0.95;
 //        for (ImageView imageView : images) {
@@ -88,7 +91,7 @@ public class ImageController implements BaseController{
 
             } catch (Exception e) {
                 showAlert(Alert.AlertType.ERROR, "Xatolik", e.getMessage());
-                logService.save(new LogEntity(5L, Instances.truckNumber, "00032: (" + getClass().getName() + ") " +e.getMessage()));
+                logService.save(new LogEntity(5L, Instances.truckNumber, "00032: (" + getClass().getName() + ") " + e.getMessage()));
             }
         }
     }
@@ -116,5 +119,12 @@ public class ImageController implements BaseController{
         });
     }
 
+    public void setIncomePhoto(Image image) {
+        this.images.get(4).setImage(image);
+    }
+
+    public void setOutPhoto(Image image) {
+        this.images.get(5).setImage(image);
+    }
 
 }

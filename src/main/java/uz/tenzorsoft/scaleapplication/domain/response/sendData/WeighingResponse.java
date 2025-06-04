@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 public class WeighingResponse extends BaseResponse {
 
     private Long scaleId;
-
     private String truckNumber;
     private CargoStatus cargoStatus;
     private Double weight;

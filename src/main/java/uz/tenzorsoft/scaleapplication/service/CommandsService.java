@@ -25,9 +25,10 @@ public class  CommandsService {
         commands.setScaleId(newCommand.getScaleId());
         commands.setOpenGate1(newCommand.getOpenGate1());
         commands.setCloseGate1(newCommand.getCloseGate1());
-        commands.setWeighing(newCommand.getWeighing());
         commands.setOpenGate2(newCommand.getOpenGate2());
         commands.setCloseGate2(newCommand.getCloseGate2());
+        commands.setKppopenGate(newCommand.getKppopenGate()); // KPP uchun ochish
+        commands.setKppcloseGate(newCommand.getKppcloseGate()); // KPP uchun yopish
         commandsRepository.save(commands);
         handleCommands(commands);
         return commands;

@@ -13,7 +13,23 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uz.tenzorsoft.scaleapplication.domain.response.UserResponse;
 import uz.tenzorsoft.scaleapplication.service.CloudService;
+import uz.tenzorsoft.scaleapplication.service.ConfigUtilsService;
 import uz.tenzorsoft.scaleapplication.service.UserService;
+
+import static uz.tenzorsoft.scaleapplication.domain.Settings.*;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.PIN_IN_IN;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.PIN_IN_IN2;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.PIN_IN_OUT;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.PIN_IN_OUT2;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.PIN_OUT_IN;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.PIN_OUT_IN2;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.PIN_OUT_OUT;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.PIN_OUT_OUT2;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.SENSOR_OUT1;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.SENSOR_OUT2;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.SENSOR_OUT3;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.*;
+import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_CLOSE_GATE_EXIT_2;
 
 @Component
 @RequiredArgsConstructor

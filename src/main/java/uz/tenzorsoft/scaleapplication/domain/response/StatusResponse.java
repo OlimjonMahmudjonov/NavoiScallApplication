@@ -13,6 +13,8 @@ public class StatusResponse {
     private Boolean controller;
     private Boolean gate1;
     private Boolean gate2;
+    private Boolean kppgate1;
+    private Boolean kppgate2;
     private Boolean camera1;
     private Boolean camera2;
     private Boolean camera3;

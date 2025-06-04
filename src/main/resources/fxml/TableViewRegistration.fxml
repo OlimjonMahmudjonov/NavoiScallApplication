@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+
+
+
+<TableView fx:id="tableData" editable="true" prefHeight="694.0" minWidth="700" prefWidth="1180.0"
+           style="-fx-background-color: #f0f0f0;"
+           xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="uz.tenzorsoft.scaleapplication.ui.TableRegistrationController">
+    <columns>
+        <!-- Agar id kerak bo‘lmasa, olib tashlashingiz mumkin -->
+        <TableColumn fx:id="carNumberCol" prefWidth="200.0" text="Moshina" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="ownerPinflCol" prefWidth="200.0" text="Egasini PNFL" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="quantityCol" prefWidth="200.0" text="Miqdor" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="driverNameCol" prefWidth="200.0" text="Haydovchi" style="-fx-alignment: CENTER;" />
+        <TableColumn fx:id="productNameCol" prefWidth="200.0" text="Mahsulot" style="-fx-alignment: CENTER;" />
+    </columns>
+</TableView>
+
