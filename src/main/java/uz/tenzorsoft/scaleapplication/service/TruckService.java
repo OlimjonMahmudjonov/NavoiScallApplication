@@ -26,6 +26,7 @@ import uz.tenzorsoft.scaleapplication.domain.response.AttachResponse;
 import uz.tenzorsoft.scaleapplication.domain.response.TruckResponse;
 import uz.tenzorsoft.scaleapplication.domain.response.sendData.ActionResponse;
 import uz.tenzorsoft.scaleapplication.domain.response.sendData.WebViewDto;
+import uz.tenzorsoft.scaleapplication.repository.ProductRepository;
 import uz.tenzorsoft.scaleapplication.repository.TruckActionRepository;
 import uz.tenzorsoft.scaleapplication.repository.TruckPhotoRepository;
 import uz.tenzorsoft.scaleapplication.repository.TruckRepository;
@@ -53,6 +54,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
     private final UserService userService;
     private final CargoService cargoService;
     private final LogService logService;
+    private final ProductRepository productRepository;
 
     @Setter
     @Getter
@@ -112,11 +114,11 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
 
         List<TruckPhotosEntity> truckPhotos = new ArrayList<>();
 
-//        truck.getAttaches().forEach(attach -> {
-//            truckPhotos.add(new TruckPhotosEntity(
-//                    attachService.findById(attach.getId()), attach.getStatus()
-//            ));
-//        });
+        truck.getAttaches().forEach(attach -> {
+            truckPhotos.add(new TruckPhotosEntity(
+                    attachService.findById(attach.getId()), attach.getStatus()
+            ));
+        });
 
         Set<Long> attachIds = new HashSet<>();
         System.out.println("truck.getAttaches().size() = " + truck.getAttaches().size());
@@ -864,54 +866,262 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
     /**
      * API dan kelgan ma'lumotlarni bazaga saqlash yoki yangilash
      */
+    @Transactional
     public TruckEntity createOrUpdateFromApi(String carNumber, String ownerPinfl, String driverName,
                                              String productName, Double quantity, String model) {
         try {
-            // Mavjud truck mavjudligini tekshirish
-            TruckEntity existingTruck = truckRepository.findByTruckNumber(carNumber);
-
-            if (existingTruck != null) {
-                // Mavjud truck ma'lumotlarini yangilash
-                existingTruck.setOwnerPinfl(ownerPinfl);
-                existingTruck.setDriverName(driverName);
-                existingTruck.setProductName(productName);
-                existingTruck.setQuantity(quantity);
-                existingTruck.setModel(model);
-
-                log.info("Truck ma'lumotlari yangilandi: {}", carNumber);
-                return truckRepository.save(existingTruck);
-            } else {
-                // Yangi truck yaratish
-                TruckEntity newTruck = new TruckEntity();
-                newTruck.setTruckNumber(carNumber);
-                newTruck.setOwnerPinfl(ownerPinfl);
-                newTruck.setDriverName(driverName);
-                newTruck.setProductName(productName);
-                newTruck.setQuantity(quantity);
-                newTruck.setModel(model);
-                newTruck.setCreatedAt(LocalDateTime.now());
-                newTruck.setIsDeleted(false);
-                newTruck.setIsFinished(true); // API dan kelgan ma'lumotlar template sifatida ishlatiladi
-                newTruck.setIsSentToCloud(true); // Bu API ma'lumotlari
-
-                // Default TruckActionEntity yaratish va bog'lash
-                TruckActionEntity defaultAction = new TruckActionEntity();
-                defaultAction.setAction(TruckAction.NO_ACTION); // Misol uchun, default holat
-                defaultAction.setActionStatus(ActionStatus.NEW); // Misol uchun, default status
-                newTruck.setTruckActions(List.of(defaultAction));
-
-                TruckEntity savedTruck = truckRepository.save(newTruck);
-                truckActionRepository.save(defaultAction); // TruckActionEntity ni ham saqlash
-
-                log.info("Yangi truck yaratildi: {}", carNumber);
-                return savedTruck;
+            // Input validation
+            if (carNumber == null || carNumber.trim().isEmpty()) {
+                log.warn("Car number bo'sh yoki null");
+                return null;
             }
+
+            carNumber = carNumber.trim().toUpperCase();
+
+            // Duplicate processing ni oldini olish
+            synchronized(carNumber.intern()) {
+
+                // Multiple results muammosini hal qilish
+                List<TruckEntity> existingTrucks = truckRepository.findAllByTruckNumberAndIsDeletedFalse(carNumber);
+
+                TruckEntity existingTruck = null;
+
+                if (!existingTrucks.isEmpty()) {
+                    // Agar bir nechta bo'lsa, birinchisini olish
+                    existingTruck = existingTrucks.get(0);
+
+                    // Agar duplicate lar bo'lsa, log yozish
+                    if (existingTrucks.size() > 1) {
+                        log.warn("Duplicate trucks topildi carNumber {} uchun: {} ta record", carNumber, existingTrucks.size());
+
+                        // Qolgan duplicate larni o'chirish (ixtiyoriy)
+                        for (int i = 1; i < existingTrucks.size(); i++) {
+                            TruckEntity duplicateTruck = existingTrucks.get(i);
+                            duplicateTruck.setIsDeleted(true);
+                            truckRepository.save(duplicateTruck);
+                            log.info("Duplicate truck o'chirildi: ID {}", duplicateTruck.getId());
+                        }
+                    }
+                }
+
+                if (existingTruck != null) {
+                    log.info("Mavjud truck yangilanmoqda: {}", carNumber);
+
+                    // Update existing truck - faqat null bo'lmagan qiymatlar
+                    if (ownerPinfl != null && !ownerPinfl.trim().isEmpty()) {
+                        existingTruck.setOwnerPinfl(ownerPinfl.trim());
+                    }
+
+                    if (driverName != null && !driverName.trim().isEmpty()) {
+                        existingTruck.setDriverName(driverName.trim());
+                    } else {
+                        log.debug("Driver name null yoki bo'sh: {}", carNumber);
+                    }
+
+                    // Product handling with fallback logic
+                    ProductsEntity productToSet = null;
+
+                    if (productName != null && !productName.trim().isEmpty()) {
+                        try {
+                            Optional<ProductsEntity> productOpt = productRepository.findByNameIgnoreCase(productName.trim());
+                            if (productOpt.isPresent()) {
+                                productToSet = productOpt.get();
+                                log.debug("Product topildi va o'rnatildi: {} -> {}", carNumber, productName);
+                            } else {
+                                log.warn("Product topilmadi: {}, oxirgi productni o'rnatamiz", productName);
+                                // Oxirgi productni olish
+                                productToSet = getLastProduct();
+                            }
+                        } catch (Exception e) {
+                            log.error("Product qidirishda xatolik: {}, oxirgi productni o'rnatamiz", e.getMessage());
+                            productToSet = getLastProduct();
+                        }
+                    } else {
+                        log.debug("Product name null yoki bo'sh: {}, birinchi productni o'rnatamiz", carNumber);
+                        // Birinchi productni olish
+                        productToSet = getFirstProduct();
+                    }
+
+                    // Product o'rnatish
+                    if (productToSet != null) {
+                        existingTruck.setProducts(productToSet);
+                        log.debug("Product o'rnatildi: {} -> {} (ID: {})", carNumber, productToSet.getName(), productToSet.getId());
+                    } else {
+                        log.warn("Hech qanday product topilmadi, bo'sh list o'rnatildi: {}", carNumber);
+                        existingTruck.setProducts(null);
+                    }
+
+                    if (quantity != null && quantity > 0) {
+                        existingTruck.setQuantity(quantity);
+                    }
+
+                    if (model != null && !model.trim().isEmpty()) {
+                        existingTruck.setModel(model.trim());
+                    }
+
+
+                    TruckEntity savedTruck = truckRepository.save(existingTruck);
+                    log.info("Truck muvaffaqiyatli yangilandi: {}", carNumber);
+                    return savedTruck;
+
+                } else {
+                    log.info("Yangi truck yaratilmoqda: {}", carNumber);
+
+                    // Create new truck
+                    TruckEntity newTruck = new TruckEntity();
+                    newTruck.setTruckNumber(carNumber);
+                    newTruck.setOwnerPinfl(ownerPinfl != null ? ownerPinfl.trim() : null);
+                    newTruck.setDriverName(driverName != null ? driverName.trim() : null);
+                    newTruck.setQuantity(quantity);
+                    newTruck.setModel(model != null ? model.trim() : null);
+                    newTruck.setCreatedAt(LocalDateTime.now());
+                    newTruck.setIsDeleted(false);
+
+                    // Product handling for new truck with fallback logic
+                    ProductsEntity productToSet = null;
+
+                    if (productName != null && !productName.trim().isEmpty()) {
+                        try {
+                            Optional<ProductsEntity> productOpt = productRepository.findByNameIgnoreCase(productName.trim());
+                            if (productOpt.isPresent()) {
+                                productToSet = productOpt.get();
+                                log.debug("Yangi truck uchun product topildi: {} -> {}", carNumber, productName);
+                            } else {
+                                log.warn("Product topilmadi yangi truck uchun: {}, oxirgi productni o'rnatamiz", productName);
+                                productToSet = getLastProduct();
+                            }
+                        } catch (Exception e) {
+                            log.error("Yangi truck uchun product qidirishda xatolik: {}, oxirgi productni o'rnatamiz", e.getMessage());
+                            productToSet = getLastProduct();
+                        }
+                    } else {
+                        log.debug("Yangi truck uchun product name null yoki bo'sh: {}, birinchi productni o'rnatamiz", carNumber);
+                        productToSet = getFirstProduct();
+                    }
+
+                    // Product o'rnatish
+                    if (productToSet != null) {
+                        newTruck.setProducts(productToSet);
+                        log.debug("Yangi truck uchun product o'rnatildi: {} -> {} (ID: {})", carNumber, productToSet.getName(), productToSet.getId());
+                    } else {
+                        log.warn("Yangi truck uchun hech qanday product topilmadi: {}", carNumber);
+                        newTruck.setProducts(null);
+                    }
+
+                    TruckEntity savedTruck = truckRepository.save(newTruck);
+                    log.info("Yangi truck yaratildi: {}", carNumber);
+
+                    // Create default action
+                    try {
+                        TruckActionEntity defaultAction = new TruckActionEntity();
+                        defaultAction.setAction(TruckAction.NO_ACTION);
+                        defaultAction.setActionStatus(ActionStatus.NEW);
+//                        defaultAction.setTruck(savedTruck);
+                        defaultAction.setCreatedAt(LocalDateTime.now());
+
+                        truckActionRepository.save(defaultAction);
+                    } catch (Exception e) {
+                        log.error("Default action yaratishda xatolik: {}", e.getMessage());
+                    }
+
+                    return savedTruck;
+                }
+            }
+
         } catch (Exception e) {
-            log.error("Error creating/updating truck from API: {}", e.getMessage());
-            logService.save(new LogEntity(5L, carNumber, "API dan truck yaratish/yangilashda xatolik: " + e.getMessage()));
+            log.error("Error creating/updating truck from API for carNumber {}: {}", carNumber, e.getMessage(), e);
             return null;
         }
     }
+
+
+    /**
+     * Oxirgi (eng so'nggi yaratilgan) productni olish
+     */
+    private ProductsEntity getLastProduct() {
+        try {
+            Optional<ProductsEntity> lastProduct = productRepository.findFirstByOrderByCreatedAtDesc();
+            if (lastProduct.isPresent()) {
+                log.debug("Oxirgi product topildi: {} (ID: {})", lastProduct.get().getName(), lastProduct.get().getId());
+                return lastProduct.get();
+            } else {
+                log.warn("Hech qanday product mavjud emas (oxirgi product)");
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("Oxirgi productni olishda xatolik: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Birinchi (eng eski yaratilgan) productni olish
+     */
+    private ProductsEntity getFirstProduct() {
+        try {
+            Optional<ProductsEntity> firstProduct = productRepository.findFirstByOrderByCreatedAtAsc();
+            if (firstProduct.isPresent()) {
+                log.debug("Birinchi product topildi: {} (ID: {})", firstProduct.get().getName(), firstProduct.get().getId());
+                return firstProduct.get();
+            } else {
+                log.warn("Hech qanday product mavjud emas (birinchi product)");
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("Birinchi productni olishda xatolik: {}", e.getMessage());
+            return null;
+        }
+    }
+//    @Transactional
+//    public TruckEntity createOrUpdateFromApi(String carNumber, String ownerPinfl, String driverName,
+//                                             String productName, Double quantity, String model) {
+//        try {
+//            TruckEntity existingTruck = truckRepository.findByTruckNumber(carNumber);
+//
+//            if (existingTruck != null) {
+//                // Update existing truck
+//                existingTruck.setOwnerPinfl(ownerPinfl);
+//                existingTruck.setDriverName(driverName);
+//                existingTruck.setProducts(productRepository.findByName(productName));
+//                existingTruck.setQuantity(quantity);
+//                existingTruck.setModel(model);
+//
+//                log.info("Truck ma'lumotlari yangilandi: {}", carNumber);
+//                return truckRepository.save(existingTruck);
+//            } else {
+//                // Create new truck
+//                TruckEntity newTruck = new TruckEntity();
+//                newTruck.setTruckNumber(carNumber);
+//                newTruck.setOwnerPinfl(ownerPinfl);
+//                newTruck.setDriverName(driverName);
+//                existingTruck.setProducts(productRepository.findByName(productName));
+//                newTruck.setQuantity(quantity);
+//                newTruck.setModel(model);
+//                newTruck.setCreatedAt(LocalDateTime.now());
+//                newTruck.setIsDeleted(false);
+//
+//                // First save the truck without actions
+//                TruckEntity savedTruck = truckRepository.save(newTruck);
+//
+//                // Now create and save the action with proper relationship
+//                TruckActionEntity defaultAction = new TruckActionEntity();
+//                defaultAction.setAction(TruckAction.NO_ACTION);
+//                defaultAction.setActionStatus(ActionStatus.NONE);
+//                // Set the relationship (assuming you have a truck field in TruckActionEntity)
+//                // defaultAction.setTruck(savedTruck);
+//
+//                TruckActionEntity savedAction = truckActionRepository.save(defaultAction);
+//
+//                // Update the truck with the saved action
+//                savedTruck.setTruckActions(List.of(savedAction));
+//                return truckRepository.save(savedTruck);
+//            }
+//        } catch (Exception e) {
+//            log.error("Error creating/updating truck from API: {}", e.getMessage());
+//            System.out.println("Truck saqlashda xatolik: " + carNumber);
+//            return null;
+//        }
+//    }
     /**
      * Truck raqami avtorizatsiya qilinganligini tekshirish
      */
@@ -947,7 +1157,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                 log.info("Truck ma'lumotlari topildi: {} - Driver: {}, Product: {}, Model: {}, Quantity: {}",
                         truckNumber,
                         existingTruck.getDriverName(),
-                        existingTruck.getProductName(),
+                        existingTruck.getProducts().getName(),
                         existingTruck.getModel(),
                         existingTruck.getQuantity());
             } else {

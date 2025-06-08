@@ -63,7 +63,7 @@ public class SendDataService {
         GetAllLocalServerIds body = restTemplate.postForObject(
                 "https://api-scale.mycoal.uz/getAllController/getAllLocalAndServerIds",
                 AllSendResponse.builder()
-//                        .attachmentDto(notSentAttachData)
+                        .attachmentDto(notSentAttachData)
                         .webViewDto(notSentTruckData)
                         .build(), GetAllLocalServerIds.class
         );

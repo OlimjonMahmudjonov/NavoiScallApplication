@@ -19,4 +19,16 @@ public interface ProductRepository extends JpaRepository<ProductsEntity, Long> {
     ProductsEntity findFirstByIsSelectedTrueAndIsDeletedFalse();
 
     List<ProductsEntity> findTop10ByIdOnServer(Long id);
+
+    ProductsEntity findByName(String name);
+
+    Optional<ProductsEntity> findByNameIgnoreCase(String trim);
+
+    // Yangi methodlar - fallback logic uchun
+    Optional<ProductsEntity> findFirstByOrderByCreatedAtDesc();  // Oxirgi product
+    Optional<ProductsEntity> findFirstByOrderByCreatedAtAsc();   // Birinchi product
+
+    // Yoki ID bo'yicha eng katta/kichik
+    Optional<ProductsEntity> findFirstByOrderByIdDesc();  // Oxirgi ID
+    Optional<ProductsEntity> findFirstByOrderByIdAsc();   // Birinchi ID
 }

@@ -20,8 +20,9 @@ public class TruckActionEntity extends BaseEntity {
     private Double weight = 0.0;
 
     @Enumerated(EnumType.STRING)
-    @ColumnDefault("TruckAction.NO_ACTION")
+    @Column(columnDefinition = "varchar(255) default 'NO_ACTION'")  // String qiymat
     private TruckAction action = TruckAction.NO_ACTION;
+
 
     @Enumerated(EnumType.STRING)
     private ActionStatus actionStatus = ActionStatus.NEW;

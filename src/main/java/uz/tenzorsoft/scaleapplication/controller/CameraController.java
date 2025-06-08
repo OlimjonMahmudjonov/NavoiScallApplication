@@ -71,7 +71,7 @@ public class CameraController implements BaseController {
             System.out.println("truckPosition " + truckPosition + " currentUser.getId(): " + currentUser.getId() + " isWaiting: " + isWaiting);
 //            System.out.println("truckExitPosition " + truckExitPosition + " currentUser.getId(): " + currentUser.getId() + " isWaiting: " + isExitWaiting);
 
-            if (multipartRequest.getFileMap().size() < 3 || truckPosition != -1 || isWaiting) {
+            if (multipartRequest.getFileMap().size() < 3 && truckPosition != -1 && isWaiting) {
                 System.out.println("NOT_MATCH");
                 return ResponseEntity.ok("NOT_MATCH");
             }
@@ -99,24 +99,25 @@ public class CameraController implements BaseController {
 
                         if (truckNumber == null || truckNumber.trim().isEmpty() || truckNumber.equalsIgnoreCase("unknown")) {
                             showAlert(Alert.AlertType.ERROR, "Xatolik", "Moshina raqami aniqlanmadi");
-                            return ResponseEntity.ok("-NOT_MATCH");
+                            return ResponseEntity.ok("-NOT_MATCH"); // isWaiting hali true qilinmagan
                         }
 
                         // API dan kelgan ma'lumotlar bilan taqqoslash
                         if (!isAuthorizedTruck(truckNumber)) {
                             log.warn("Truck not found in API data: {}", truckNumber);
                             logService.save(new LogEntity(5L, truckNumber, "API da topilmadi: " + truckNumber));
-                            showAlert(Alert.AlertType.WARNING, "Ogohlantirish", "Bu mashina  rasmiylashtirilmagan : " + truckNumber);
-                            return ResponseEntity.ok("NOT_AUTHORIZED");
+                            showAlert(Alert.AlertType.WARNING, "Ogohlantirish", "Bu mashina rasmiylashtirilmagan : " + truckNumber);
+                            return ResponseEntity.ok("NOT_AUTHORIZED"); // isWaiting hali true qilinmagan
                         }
 
                         if (!truckNumber.isEmpty()) {
-                            isWaiting = true;
-                            System.out.println("waiting for " + truckNumber);
+                            isWaiting = true; // ← FAQAT SHU YERDA TRUE QILAMIZ (number topilganda)
+                            System.out.println("Tarozi waiting for " + truckNumber);
 
                             if (!truckService.isValidTruckNumber(truckNumber)) {
                                 log.warn("Truck number does not match: {}", truckNumber);
                                 truckNumber = "";
+                                isWaiting = false; // ← XATOLIK: false qilamiz
                                 return ResponseEntity.ok("NOT_MATCH");
                             }
 
@@ -124,17 +125,18 @@ public class CameraController implements BaseController {
                                 if (!truckService.isEntranceAvailableForCamera1(truckNumber)) {
                                     logService.save(new LogEntity(5L, truckNumber, "00001: (CameraController) Chiqishi topilmadi" + truckNumber));
                                     System.err.println("Chiqishi topilmadi" + truckNumber);
-                                    isWaiting = false;
-                                    return ResponseEntity.ok("Entrance exception");
-                                }
-                            } else {
-                                if (!truckService.isEntranceAvailableForCamera2(truckNumber)) {
-                                    logService.save(new LogEntity(5L, truckNumber, "00002: (CameraController) Kirishi topilmadi" + truckNumber));
-                                    System.err.println("Kirishi topilmadi" + truckNumber);
-                                    isWaiting = false;
+                                    isWaiting = false; // ← XATOLIK: false qilamiz
                                     return ResponseEntity.ok("Entrance exception");
                                 }
                             }
+//                            else {
+//                                if (!truckService.isEntranceAvailableForCamera2(truckNumber)) {
+//                                    logService.save(new LogEntity(5L, truckNumber, "00002: (CameraController) Kirishi topilmadi" + truckNumber));
+//                                    System.err.println("Kirishi topilmadi" + truckNumber);
+//                                    isWaiting = false; // ← XATOLIK: false qilamiz
+//                                    return ResponseEntity.ok("Entrance exception");
+//                                }
+//                            }
                         }
                     }
 
@@ -144,16 +146,18 @@ public class CameraController implements BaseController {
                             logService.save(new LogEntity(5L, truckNumber, "00004: (CameraController) Unable to save file"));
                             log.warn("See logs for error cause. Unable to save file: {}", fileName);
                             showAlert(Alert.AlertType.ERROR, "Xatolik", "Rasmni saqlashda xatolik");
+                            isWaiting = false; // ← XATOLIK: false qilamiz
                             return ResponseEntity.ok("Unable to save file");
                         }
 
                         if (cameraId == 1) {
                             System.out.println("saving image " + cameraId);
                             currentTruck.getAttaches().add(new AttachIdWithStatus(attachResponse.getId(), AttachStatus.ENTRANCE_PHOTO));
-                        } else if (cameraId == 2) {
-                            System.out.println("saving image 2");
-                            currentTruck.getAttaches().add(new AttachIdWithStatus(attachResponse.getId(), AttachStatus.EXIT_PHOTO));
                         }
+//                        else if (cameraId == 2) {
+//                            System.out.println("saving image 2");
+//                            currentTruck.getAttaches().add(new AttachIdWithStatus(attachResponse.getId(), AttachStatus.EXIT_PHOTO));
+//                        }
                     }
                 } catch (Exception e) {
                     logService.save(new LogEntity(5L, truckNumber, "00006: (CameraController) " + e.getMessage()));
@@ -161,16 +165,18 @@ public class CameraController implements BaseController {
                     log.error(e.getMessage(), e);
                     showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
                     System.out.println(e.getMessage());
+                    isWaiting = false; // ← XATOLIK: false qilamiz
                     return ResponseEntity.status(200).body("Failed to save file: " + file.getOriginalFilename());
                 }
             }
 
             System.out.println("Camera id: " + cameraId + " truckNumber=" + truckNumber);
             currentTruck.setTruckNumber(truckNumber);
-            currentExitTruck.setTruckNumber(truckExitNumber);
+//            currentExitTruck.setTruckNumber(truckExitNumber);
 
             if (truckNumber == null || truckNumber.trim().isEmpty() || truckNumber.equalsIgnoreCase("unknown")) {
                 showAlert(Alert.AlertType.ERROR, "Xatolik", "Moshina raqami aniqlanmadi");
+                isWaiting = false; // ← XATOLIK: false qilamiz
                 return ResponseEntity.ok("_NOT_MATCH");
             }
 
@@ -179,52 +185,53 @@ public class CameraController implements BaseController {
                     if (buttonController.openGate1(0)) {
                         currentTruck.setEnteredStatus(TruckAction.ENTRANCE);
                         firstGateEntranceTime = System.currentTimeMillis();
-
-                        // API dan kelgan ma'lumotlarni truck entityga qo'shish
-                        updateTruckWithApiData(currentTruck, truckNumber);
-
+//                        updateTruckWithApiData(currentTruck, truckNumber);
                         truckService.saveTruck(currentTruck, cameraId, attachResponse);
                         tableController.addLastRecord();
-                        System.out.println("Opening gate 1 for  truck: " + truckNumber);
+                        System.out.println("Opening gate 1 for truck: " + truckNumber);
+//                        isWaiting = false; // ← MUVAFFAQIYATLI YAKUNLANDI: false qilamiz
                     } else {
                         System.err.println("Unable to open gate 1");
                         showAlert(Alert.AlertType.ERROR, "Error", "Unable to open gate 1");
                         currentTruck = new TruckResponse();
+                        isWaiting = false; // ← XATOLIK: false qilamiz
                     }
                 }
-                if (cameraId == 2) {
-                    if (buttonController.openExitGate1(0)) {
-                        currentExitTruck.setEnteredStatus(TruckAction.EXIT);
-                        firstExitGateEntranceTime = System.currentTimeMillis();
-
-                        // API dan kelgan ma'lumotlarni truck entityga qo'shish
-                        updateTruckWithApiData(currentExitTruck, truckExitNumber);
-
-                        truckService.saveTruck(currentExitTruck, cameraId, attachResponse);
-                        tableController.addLastRecord();
-                        System.out.println("Opening Exit gate 1 for authorized truck: " + truckExitNumber);
-                    } else {
-                        System.err.println("Unable to open gate 1");
-                        showAlert(Alert.AlertType.ERROR, "Error", "Unable to open gate 1");
-                        currentExitTruck = new TruckResponse();
-                    }
-                }
+//                if (cameraId == 2) {
+//                    if (buttonController.openExitGate1(0)) {
+//                        currentExitTruck.setEnteredStatus(TruckAction.EXIT);
+//                        firstExitGateEntranceTime = System.currentTimeMillis();
+//                        updateTruckWithApiData(currentExitTruck, truckExitNumber);
+//                        truckService.saveTruck(currentExitTruck, cameraId, attachResponse);
+//                        tableController.addLastRecord();
+//                        System.out.println("Opening Exit gate 1 for authorized truck: " + truckExitNumber);
+////                        isWaiting = false; // ← MUVAFFAQIYATLI YAKUNLANDI: false qilamiz
+//                    } else {
+//                        System.err.println("Unable to open gate 1");
+//                        showAlert(Alert.AlertType.ERROR, "Error", "Unable to open gate 1");
+//                        currentExitTruck = new TruckResponse();
+//                        isWaiting = false; // ← XATOLIK: false qilamiz
+//                    }
+//                }
             } catch (Exception e) {
                 logService.save(new LogEntity(5L, truckNumber, "00047: (" + getClass().getName() + ") " + e.getMessage()));
                 showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
                 e.printStackTrace();
+                isWaiting = false; // ← XATOLIK: false qilamiz
                 return ResponseEntity.status(200).body("Error occurred: " + e.getMessage());
             }
 
             return ResponseEntity.ok("Files uploaded and saved successfully.");
         }
+
+        // Camera 2 uchun ham xuddi shunday mantiq
         if (request instanceof MultipartHttpServletRequest multipartRequest && cameraId == 2) {
             System.out.println("Request is processing " + cameraId);
             System.out.println("Camera id: " + cameraId);
             System.out.println("multipartRequest.getFileMap().size() = " + multipartRequest.getFileMap().size());
             System.out.println("truckExitPosition " + truckExitPosition + " currentUser.getId(): " + currentUser.getId() + " isExitWaiting: " + isExitWaiting);
 
-            if (multipartRequest.getFileMap().size() < 3 || truckExitPosition != -1 || isExitWaiting) {
+            if (multipartRequest.getFileMap().size() < 3 && truckExitPosition != -1 && isExitWaiting) {
                 System.out.println("NOT_MATCH");
                 return ResponseEntity.ok("NOT_MATCH");
             }
@@ -246,54 +253,30 @@ public class CameraController implements BaseController {
                     if (fileName.equals("anpr.xml")) {
                         truckExitNumber = extractNumberFromXmlFile(file);
                         System.out.println("truckNumber = " + truckExitNumber);
-//                        truckExitNumber = extractNumberFromXmlFile(file);
-//                        System.out.println("truckNumber = " + truckNumber);
-//                        System.out.println("truckExitNumber = " + truckExitNumber);
 
                         if (truckExitNumber == null || truckExitNumber.trim().isEmpty() || truckExitNumber.equalsIgnoreCase("unknown")) {
                             showAlert(Alert.AlertType.ERROR, "Xatolik", "Moshina raqami aniqlanmadi");
-                            return ResponseEntity.ok("-NOT_MATCH");
+                            return ResponseEntity.ok("-NOT_MATCH"); // isExitWaiting hali true qilinmagan
                         }
 
-//                        API dan kelgan ma'lumotlar bilan taqqoslash
-//                        if (!isAuthorizedTruck(truckExitNumber)) {
-//                            log.warn("Truck not found in API data: {}", truckExitNumber);
-//                            logService.save(new LogEntity(5L, truckExitNumber, "API da topilmadi: " + truckExitNumber));
-//                            showAlert(Alert.AlertType.WARNING, "Ogohlantirish", "Bu mashina  rasmiylashtirilmagan : " + truckExitNumber);
-//                            return ResponseEntity.ok("NOT_AUTHORIZED");
-//                        }
-//                        if (!isTruckEntered(truckExitNumber)) {
-//                            log.warn("Truck not Entered: {}", truckNumber);
-//                            logService.save(new LogEntity(5L, truckNumber, "Truck not Entered: " + truckNumber));
-//                            return ResponseEntity.ok("-NOT_MATCH");
-//                        }
-
                         if (!truckExitNumber.isEmpty()) {
-                            isExitWaiting = true;
+                            isExitWaiting = true; // ← FAQAT SHU YERDA TRUE QILAMIZ (number topilganda)
                             System.out.println("waiting for " + truckExitNumber);
 
                             if (!truckService.isValidTruckNumber(truckExitNumber)) {
                                 log.warn("Truck number does not match: {}", truckExitNumber);
                                 truckExitNumber = "";
-                                isExitWaiting = false;
+                                isExitWaiting = false; // ← XATOLIK: false qilamiz
                                 return ResponseEntity.ok("NOT_MATCH");
                             }
 
-//                            if (!truckService.isEntranceAvailableForCamera1(truckExitNumber)) {
-//                                logService.save(new LogEntity(5L, truckExitNumber, "00001: (CameraController) Chiqishi topilmadi" + truckExitNumber));
-//                                System.err.println("Chiqishi topilmadi" + truckNumber);
-//                                isExitWaiting = false;
+//                            if (!truckService.isEntranceAvailableForCamera2(truckExitNumber)) {
+//                                logService.save(new LogEntity(5L, truckExitNumber, "00002: (CameraController) Kirishi topilmadi" + truckExitNumber));
+//                                System.err.println("Kirishi topilmadi" + truckExitNumber);
+//                                isExitWaiting = false; // ← XATOLIK: false qilamiz
 //                                return ResponseEntity.ok("Entrance exception");
 //                            }
-
-                            if (!truckService.isEntranceAvailableForCamera2(truckExitNumber)) {
-                                logService.save(new LogEntity(5L, truckExitNumber, "00002: (CameraController) Kirishi topilmadi" + truckExitNumber));
-                                System.err.println("Kirishi topilmadi" + truckExitNumber);
-                                isExitWaiting = false;
-                                return ResponseEntity.ok("Entrance exception");
-                            }
                         }
-
                     }
 
                     if (fileName.contains("detectionPicture")) {
@@ -302,17 +285,12 @@ public class CameraController implements BaseController {
                             logService.save(new LogEntity(5L, truckExitNumber, "00004: (CameraController) Unable to save file"));
                             log.warn("See logs for error cause. Unable to save file: {}", fileName);
                             showAlert(Alert.AlertType.ERROR, "Xatolik", "Rasmni saqlashda xatolik");
-                            isExitWaiting = false;
+                            isExitWaiting = false; // ← XATOLIK: false qilamiz
                             return ResponseEntity.ok("Unable to save file");
                         }
 
-//                        if (cameraId == 1) {
-//                            System.out.println("saving image " + cameraId);
-//                            currentTruck.getAttaches().add(new AttachIdWithStatus(attachResponse.getId(), AttachStatus.ENTRANCE_PHOTO));
-//                        } else if (cameraId == 2) {
                         System.out.println("saving image 2");
                         currentExitTruck.getAttaches().add(new AttachIdWithStatus(attachResponse.getId(), AttachStatus.EXIT_PHOTO));
-//                        }
                     }
                 } catch (Exception e) {
                     logService.save(new LogEntity(5L, truckExitNumber, "00006: (CameraController) " + e.getMessage()));
@@ -320,68 +298,52 @@ public class CameraController implements BaseController {
                     log.error(e.getMessage(), e);
                     showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
                     System.out.println(e.getMessage());
+                    isExitWaiting = false; // ← XATOLIK: false qilamiz
                     return ResponseEntity.status(200).body("Failed to save file: " + file.getOriginalFilename());
                 }
             }
 
             System.out.println("Camera id: " + cameraId + " truckNumber=" + truckExitNumber);
-//            currentTruck.setTruckNumber(truckExitNumber);
             currentExitTruck.setTruckNumber(truckExitNumber);
 
             if (truckExitNumber == null || truckExitNumber.trim().isEmpty() || truckExitNumber.equalsIgnoreCase("unknown")) {
                 showAlert(Alert.AlertType.ERROR, "Xatolik", "Moshina raqami aniqlanmadi");
-                isExitWaiting = false;
+                isExitWaiting = false; // ← XATOLIK: false qilamiz
                 return ResponseEntity.ok("_NOT_MATCH");
             }
 
             try {
-//                if (cameraId == 2) {
-//                    if (buttonController.openGate1(0)) {
-//                        currentTruck.setEnteredStatus(TruckAction.ENTRANCE);
-//                        firstGateEntranceTime = System.currentTimeMillis();
-//
-//                        // API dan kelgan ma'lumotlarni truck entityga qo'shish
-//                        updateTruckWithApiData(currentTruck, truckNumber);
-//
-//                        truckService.saveTruck(currentTruck, cameraId, attachResponse);
-//                        tableController.addLastRecord();
-//                        System.out.println("Opening gate 1 for  truck: " + truckNumber);
-//                    } else {
-//                        System.err.println("Unable to open gate 1");
-//                        showAlert(Alert.AlertType.ERROR, "Error", "Unable to open gate 1");
-//                        currentTruck = new TruckResponse();
-//                    }
-//                }
                 if (cameraId == 2) {
                     if (buttonController.openExitGate1(0)) {
                         currentExitTruck.setEnteredStatus(TruckAction.EXIT);
                         firstExitGateEntranceTime = System.currentTimeMillis();
-                        // API dan kelgan ma'lumotlarni truck entityga qo'shish
                         updateTruckWithApiData(currentExitTruck, truckExitNumber);
                         truckService.saveTruck(currentExitTruck, cameraId, attachResponse);
                         tableController.addLastRecord();
                         System.out.println("Opening Exit gate 1 for authorized truck: " + truckExitNumber);
+//                        isExitWaiting = false; // ← MUVAFFAQIYATLI YAKUNLANDI: false qilamiz
                     } else {
                         System.err.println("Unable to open gate 1");
                         showAlert(Alert.AlertType.ERROR, "Error", "Unable to open gate 1");
                         currentExitTruck = new TruckResponse();
+                        isExitWaiting = false; // ← XATOLIK: false qilamiz
                     }
                 }
-            } catch (
-                    Exception e) {
+            } catch (Exception e) {
                 logService.save(new LogEntity(5L, truckExitNumber, "00047: (" + getClass().getName() + ") " + e.getMessage()));
                 showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
                 e.printStackTrace();
+                isExitWaiting = false; // ← XATOLIK: false qilamiz
                 return ResponseEntity.status(200).body("Error occurred: " + e.getMessage());
             }
 
             return ResponseEntity.ok("Files uploaded and saved successfully.");
         }
+
         log.warn("Request is not a multipart request");
         showAlert(Alert.AlertType.ERROR, "Error", "Request is not a multipart request");
         return ResponseEntity.ok().body("Request is not a multipart request");
     }
-
     /**
      * API dan kelgan ma'lumotlar bilan truck raqamini tekshirish
      */
@@ -406,7 +368,7 @@ public class CameraController implements BaseController {
                 // API dan kelgan qo'shimcha ma'lumotlarni TruckResponse ga qo'shish
                 // Bu yerda siz TruckResponse da yangi fieldlar qo'shishingiz kerak bo'ladi
                 log.info("Truck ma'lumotlari topildi: {} - Driver: {}, Product: {}",
-                        truckNumber, existingTruck.getDriverName(), existingTruck.getProductName());
+                        truckNumber, existingTruck.getDriverName(), existingTruck.getProducts().getName());
             }
         } catch (Exception e) {
             log.error("Error updating truck with API data: {}", e.getMessage());

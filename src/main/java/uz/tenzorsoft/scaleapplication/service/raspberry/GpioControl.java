@@ -49,7 +49,9 @@ public class GpioControl {
             statusPinsInitialization(pi4jIn);
             setStatusListeners();
         } catch (Exception e) {
-            System.out.println("mana hato");
+            System.err.println("GPIO pin " + pi4jIn + " da xatolik: " + e.getMessage());
+            System.err.println("GPIO pin " + pi4jOut + " da xatolik: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -82,11 +84,11 @@ public class GpioControl {
     public boolean controlPin(int pin, PinState state) {
         System.out.println("pin = " + pin + " -> " + state);
         if (!outputPins.containsKey(pin)) {
-//            System.out.println("Pin number not found " + pin);
-//            resetPin(pin);
-//            if (!outputPins.containsKey(pin)){
+            System.out.println("Pin number not found " + pin);
+            resetPin(pin);
+            if (!outputPins.containsKey(pin)){
             throw new RuntimeException("Pin number not found " + pin + " again");
-//            }
+            }
         }
 
         DigitalOutput output = outputPins.get(pin);
@@ -100,7 +102,7 @@ public class GpioControl {
                 return true;
             }
         } catch (Exception e) {
-            System.out.println("mana hato");
+            System.out.println("control pinsda  hato");
         }
         return false;
     }
@@ -166,8 +168,8 @@ public class GpioControl {
         sensorExit3Connection = false;
         gateExit1Connection = false;
         gateExit2Connection = false;
-//        if (pi4jOut != null) pi4jOut.shutdown();
-//        if (pi4jIn != null) pi4jIn.shutdown();
+        if (pi4jOut != null) pi4jOut.shutdown();
+        if (pi4jIn != null) pi4jIn.shutdown();
     }
 
     //    public void shutdownCompletely() {
