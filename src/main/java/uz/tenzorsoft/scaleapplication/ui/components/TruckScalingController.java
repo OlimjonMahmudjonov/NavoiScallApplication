@@ -310,7 +310,7 @@ public class TruckScalingController {
                                 setExitRescaleAttributes();
                             }
                         }
-                    }), 60000);
+                    }), 10000);
 
                 }
                 Timer timer = new Timer();

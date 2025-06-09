@@ -42,8 +42,6 @@ public class TruckEntity extends BaseEntity {
     @Column(name = "driver_name")
     private String driverName;
 
-    @Column(name = "product_name")
-    private String productName;
 
     @Column(name = "model")
     private String model;

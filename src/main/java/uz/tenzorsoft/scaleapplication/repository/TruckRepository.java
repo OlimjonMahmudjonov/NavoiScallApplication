@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import uz.tenzorsoft.scaleapplication.domain.entity.ProductsEntity;
 import uz.tenzorsoft.scaleapplication.domain.entity.TruckEntity;
 import uz.tenzorsoft.scaleapplication.domain.entity.TruckPhotosEntity;
 import uz.tenzorsoft.scaleapplication.domain.enumerators.ActionStatus;
@@ -19,7 +20,7 @@ import java.util.Optional;
 public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
 
 
-//    List<TruckEntity> findTop10ByIsSentToCloud(boolean isSent);
+    //    List<TruckEntity> findTop10ByIsSentToCloud(boolean isSent);
     @Query(value = "SELECT * FROM trucks WHERE is_sent_to_cloud = :isSent ", nativeQuery = true)
     List<TruckEntity> findTop10ByIsSentToCloud(@Param("isSent") boolean isSent);
 
@@ -72,7 +73,6 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
             Boolean isDeleted);
 
 
-
     Optional<TruckEntity> findByTruckNumberAndIsFinished(String truckNumber, boolean isFinished);
 
     boolean existsByTruckNumberAndNextEntranceTimeIsBeforeAndIsFinishedFalse(String truckNumber, LocalDateTime localDateTime);
@@ -97,15 +97,22 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
 
 
     @Query("""
-    SELECT ta.action, COUNT(ta)
-    FROM truck_actions ta
-    WHERE ta.actionStatus = :status AND ta.createdAt BETWEEN :fromDate AND :toDate
-    GROUP BY ta.action
-""")
+                SELECT ta.action, COUNT(ta)
+                FROM truck_actions ta
+                WHERE ta.actionStatus = :status AND ta.createdAt BETWEEN :fromDate AND :toDate
+                GROUP BY ta.action
+            """)
     List<Object[]> findTruckCountsByDateAndStatus(@Param("fromDate") LocalDateTime fromDate,
                                                   @Param("toDate") LocalDateTime toDate,
                                                   @Param("status") ActionStatus status);
 
 
     TruckEntity findByTruckNumber(String carNumber);
+
+    // Duplicate muammosi uchun
+    List<TruckEntity> findAllByTruckNumberAndIsDeletedFalse(String truckNumber);
+
+    // Birinchisini olish
+    Optional<TruckEntity> findFirstByTruckNumberAndIsDeletedFalseOrderByCreatedAtDesc(String truckNumber);
 }
+
