@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,5 +15,6 @@ public class CarInfoDto {
     private Double quantity;
     private String driverName;
     private String productName;
+    private Timestamp enterDate;
     private String model;
 }

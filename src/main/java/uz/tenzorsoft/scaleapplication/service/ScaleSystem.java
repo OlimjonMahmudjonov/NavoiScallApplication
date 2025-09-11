@@ -33,7 +33,7 @@ public class ScaleSystem {
     public static Integer COIL_CLOSE_GATE_2 = 8;
     public static Integer COIL_SENSOR_1 = 14;
     public static Integer COIL_SENSOR_2 = 15;
-    public static Integer COIL_SENSOR_3 = 16;
+    public static Integer COIL_SENSOR_3 = 18;
     public static String GOOGLE_DNS = "8.8.8.8";
 
     public static Integer RASP_GREEN_LIGHT_EXIT_1 = 10;

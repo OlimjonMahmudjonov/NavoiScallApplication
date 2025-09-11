@@ -27,6 +27,7 @@ import uz.tenzorsoft.scaleapplication.domain.entity.TruckEntity;
 import uz.tenzorsoft.scaleapplication.domain.enumerators.PinState;
 import uz.tenzorsoft.scaleapplication.domain.enumerators.TruckAction;
 import uz.tenzorsoft.scaleapplication.service.ConfigUtilsService;
+import uz.tenzorsoft.scaleapplication.service.ControllerService;
 import uz.tenzorsoft.scaleapplication.service.LogService;
 import uz.tenzorsoft.scaleapplication.service.PrintCheck;
 import uz.tenzorsoft.scaleapplication.service.raspberry.GpioControl;
@@ -96,6 +97,8 @@ public class MainController implements BaseController {
     private ScaleController scaleController;
     @Autowired
     private RaspberryService raspberryService;
+    @Autowired
+    private ControllerService controllerService;
 
 
 //    public void showAlert(Alert.AlertType alertType, String headerText, String message) {
@@ -171,6 +174,7 @@ public class MainController implements BaseController {
             if (osName.contains("linux")) {
                 isRaspberryUsing = true;
                 gpioControl.initialize();
+//                controllerService.connect();
             } else {
                 if (isRaspberryUsing) gpioControl.initialize();
             }
@@ -191,7 +195,8 @@ public class MainController implements BaseController {
         }
 
         connectionsController.updateConnections();
-        connectionsController.showConnections();
+//        gpioControl.getSensorStatuses();
+//        connectionsController.showConnections();
 //        System.out.println("Ma'lumot jo'natadigan metod ishga tushmoqda: sendNotSentData()");
 //        dataSendController.sendNotSentData();
         truckScalingController.start();

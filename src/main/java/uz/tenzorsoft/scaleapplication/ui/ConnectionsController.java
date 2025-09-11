@@ -9,6 +9,7 @@ import uz.tenzorsoft.scaleapplication.domain.Instances;
 import uz.tenzorsoft.scaleapplication.domain.entity.LogEntity;
 import uz.tenzorsoft.scaleapplication.service.ControllerService;
 import uz.tenzorsoft.scaleapplication.service.LogService;
+import uz.tenzorsoft.scaleapplication.service.raspberry.GpioControl;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.ExecutorService;
@@ -26,6 +27,7 @@ public class ConnectionsController implements BaseController {
 
     private final ExecutorService executors;
     private final ControllerService controllerService;
+    private final GpioControl gpioControl;
     private final LogService logService;
     @FXML
     private ImageView camera1, camera2, camera3, gate1, gate2, sensor1, sensor2, sensor3, cameraExit1, cameraExit2, cameraExit3, gateExit1, gateExit2, sensorExit1, sensorExit2, sensorExit3;
@@ -57,30 +59,58 @@ public class ConnectionsController implements BaseController {
         executors.execute(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    if (!isTesting && !isRaspberryUsing) {
-                        gate1Connection = controllerService.checkConnection(RASP_CLOSE_GATE_1);
-                        gate2Connection = controllerService.checkConnection(RASP_CLOSE_GATE_2);
-                        sensor1Connection = controllerService.checkConnection(RASP_SENSOR_1);
-                        sensor2Connection = controllerService.checkConnection(RASP_SENSOR_2);
-                        sensor3Connection = controllerService.checkConnection(RASP_SENSOR_3);
+                        if (!isTesting && isRaspberryUsing) {
+//                        System.out.println("SENSORLAR YANGILANDI");
+                            gate1Connection = controllerService.checkConnection(RASP_CLOSE_GATE_1);
+                            gate2Connection = controllerService.checkConnection(RASP_CLOSE_GATE_2);
 
-                        gateExit1Connection = controllerService.checkConnection(RASP_CLOSE_GATE_EXIT_1);
-                        gateExit2Connection = controllerService.checkConnection(RASP_CLOSE_GATE_EXIT_2);
-                        sensorExit1Connection = controllerService.checkConnection(RASP_SENSOR_EXIT_1);
-                        sensorExit2Connection = controllerService.checkConnection(RASP_SENSOR_EXIT_2);
-                        sensorExit3Connection = controllerService.checkConnection(RASP_SENSOR_EXIT_3);
-                    }
-                    camera1Connection = controllerService.checkConnection(CAMERA_1);
-//                    System.out.println("camera1Connection: " + camera1Connection);
-                    camera2Connection = controllerService.checkConnection(CAMERA_2);
-//                    System.out.println("camera2Connection: " + camera2Connection);
-                    camera3Connection = controllerService.checkConnection(CAMERA_3);
-                    camera4Connection = controllerService.checkConnection(CAMERA_4);
-                    cameraRezerv1Connection = controllerService.checkConnection(CAMERA_REZERV1);
-                    cameraRezerv2Connection = controllerService.checkConnection(CAMERA_REZERV2);
-//                    System.out.println("camera3Connection: " + camera3Connection);
-                    isConnectedToInternet = controllerService.checkInternetConnection(GOOGLE_DNS);
-                    Thread.sleep(500);
+                            sensor1Connection = controllerService.checkConnection(RASP_SENSOR_1);
+                            sensor2Connection = controllerService.checkConnection(RASP_SENSOR_2);
+                            sensor3Connection = controllerService.checkConnection(RASP_SENSOR_3);
+
+
+                            gateExit1Connection = controllerService.checkConnection(RASP_CLOSE_GATE_EXIT_1);
+                            gateExit2Connection = controllerService.checkConnection(RASP_CLOSE_GATE_EXIT_2);
+                            sensorExit1Connection = controllerService.checkConnectionUsingGPIO(RASP_SENSOR_EXIT_1);
+                            sensorExit2Connection = controllerService.checkConnectionUsingGPIO(RASP_SENSOR_EXIT_2);
+                            sensorExit3Connection = controllerService.checkConnectionUsingGPIO(RASP_SENSOR_EXIT_3);
+//                        gpioControl.getSensorStatuses();
+                        }
+                        camera1Connection = controllerService.checkConnection(CAMERA_1);
+                        System.out.println("camera1Connection: " + camera1Connection);
+                        camera2Connection = controllerService.checkConnection(CAMERA_2);
+                        System.out.println("camera2Connection: " + camera2Connection);
+                        camera3Connection = controllerService.checkConnection(CAMERA_3);
+                        camera4Connection = controllerService.checkConnection(CAMERA_4);
+                        cameraRezerv1Connection = controllerService.checkConnection(CAMERA_REZERV1);
+                        cameraRezerv2Connection = controllerService.checkConnection(CAMERA_REZERV2);
+                        System.out.println("camera3Connection: " + camera3Connection);
+                        isConnectedToInternet = controllerService.checkInternetConnection(GOOGLE_DNS);
+
+
+                        sensor1.setImage(sensor1Connection ? greenLight : redLight);
+                        sensor2.setImage(sensor2Connection ? greenLight : redLight);
+                        sensor3.setImage(sensor3Connection ? greenLight : redLight);
+
+                        sensorExit1.setImage(sensorExit1Connection ? greenLight : redLight);
+                        sensorExit2.setImage(sensorExit2Connection ? greenLight : redLight);
+                        sensorExit3.setImage(sensorExit3Connection ? greenLight : redLight);
+
+                        camera1.setImage(camera1Connection ? greenLight : redLight);
+                        camera2.setImage(camera2Connection ? greenLight : redLight);
+                        camera3.setImage(cameraRezerv1Connection ? greenLight : redLight);
+                        cameraExit1.setImage(camera3Connection ? greenLight : redLight);
+                        cameraExit2.setImage(camera4Connection ? greenLight : redLight);
+                        cameraExit3.setImage(cameraRezerv2Connection ? greenLight : redLight);
+
+//                    controller.setImage(isConnected ? greenLight : redLight);
+                        gate1.setImage(gate1Connection ? greenLight : redLight);
+                        gate2.setImage(gate2Connection ? greenLight : redLight);
+
+                        gateExit1.setImage(gateExit1Connection ? greenLight : redLight);
+                        gateExit2.setImage(gateExit2Connection ? greenLight : redLight);
+
+                        Thread.sleep(500);
                 } catch (InterruptedException e) {
                     //showAlert(Alert.AlertType.ERROR, "Xatolik", e.getMessage());
                     logService.save(new LogEntity(5L, Instances.truckNumber, "00030: (" + getClass().getName() + ") " + e.getMessage()));

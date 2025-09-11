@@ -4,6 +4,7 @@ import com.ghgande.j2mod.modbus.ModbusException;
 import com.ghgande.j2mod.modbus.io.ModbusTCPTransaction;
 import com.ghgande.j2mod.modbus.msg.*;
 import com.ghgande.j2mod.modbus.net.TCPMasterConnection;
+import com.pi4j.Pi4J;
 import javafx.scene.control.Alert;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,12 +28,23 @@ public class ControllerService {
     public void connect() throws Exception {
 //        if (!isAvailableToConnect) return;
 
+        if (CONTROLLER_IP == null){
+            System.out.println("Controller ip is nullllllllllllllllllllllllllllllllllllllllllllllllllllll");
+        }else {
+            System.out.println("Controller ip is not nullllllllllllllllllllllllllllllllllllllllllllllllllllll");
+        }
+        if (CONTROLLER_PORT == null){
+            System.out.println("Controller port is nullllllllllllllllllllllllllllllllllllllllllllllllllll");
+        }else {
+            System.out.println("Controller port is not nullllllllllllllllllllllllllllllllllllllllllllllllllll");
+        }
         address = InetAddress.getByName(CONTROLLER_IP);
         connection = new TCPMasterConnection(address);
         connection.setTimeout(3000);
         connection.setPort(CONTROLLER_PORT);
         connection.connect();
         isConnected = true;
+        System.out.println("CONTROLLERGA ULANILDIIIII");
         scalePort.openPort();
     }
 
@@ -195,10 +207,46 @@ public class ControllerService {
     }
 
     public boolean checkConnection(Integer coilAddress) throws Exception {
+        if (connection == null){
+            if (CONTROLLER_IP == null){
+                System.out.println("Controller ip is null");
+            }else {
+                System.out.println("Controller ip is not null");
+            }
+            if (CONTROLLER_PORT == null){
+                System.out.println("Controller port is null");
+            }else {
+                System.out.println("Controller port is not null");
+            }
+            address = InetAddress.getByName(CONTROLLER_IP);
+            connection = new TCPMasterConnection(address);
+            connection.setTimeout(3000);
+            connection.setPort(CONTROLLER_PORT);
+            connection.connect();
+            isConnected = true;
+            System.out.println("CONTROLLERGA ULANILDI");
+            scalePort.openPort();
+        }
         if (isConnected) {
             return readCoil(coilAddress) == 1;
         }
+        System.out.println("Controllerga ulanib bo`lmadi");
         return false;
+    }
+
+    public boolean checkConnectionUsingGPIO(Integer coilAddress) throws Exception {
+        if (isConnected) {
+            return readGPIO(coilAddress) == 1;
+        }
+        return false;
+    }
+
+    private int readGPIO(int pinNumber) {
+        var pi4j = Pi4J.newAutoContext();
+        var gpio = pi4j.din().create(pinNumber);
+        int result = gpio.isHigh() ? 1 : 0;
+        pi4j.shutdown();
+        return result;
     }
 
     public boolean checkConnection(String ipAddress) throws IOException {
@@ -231,6 +279,84 @@ public class ControllerService {
         }
     }
 
+//    private int readCoil(Integer coilAddress) throws Exception {
+//        System.out.println("=== DEBUG readCoil START ===");
+//        System.out.println("Coil Address: " + coilAddress);
+//
+//        // Check connection first
+//        if (connection == null) {
+//            System.err.println("ERROR: connection is null!");
+//            return -1;
+//        }
+//
+//        if (!connection.isConnected()) {
+//            System.err.println("ERROR: connection is not connected!");
+//            System.out.println("Attempting to reconnect...");
+//            try {
+//                connect(); // Your connect method
+//            } catch (Exception e) {
+//                System.err.println("Reconnect failed: " + e.getMessage());
+//                return -1;
+//            }
+//        }
+//
+//        System.out.println("Connection status: " + connection.isConnected());
+//
+//        try {
+//            // Create request
+//            ReadCoilsRequest request = new ReadCoilsRequest(coilAddress, 1);
+//            System.out.println("Created ReadCoilsRequest for address: " + coilAddress);
+//
+//            // Create new transaction each time (recommended practice)
+//            transaction = new ModbusTCPTransaction(connection);
+//            transaction.setRequest(request);
+//
+//            transaction.execute();
+//
+//            ModbusResponse response = transaction.getResponse();
+//
+//            if (response == null) {
+//                System.err.println("ERROR: No response received from transaction for coil: " + coilAddress);
+//                return -1;
+//            }
+//
+//            if (response instanceof ExceptionResponse exceptionResponse) {
+//                System.err.println("ERROR: Modbus Exception Response!");
+//                System.err.println("Exception Code: " + exceptionResponse.getExceptionCode());
+//                System.err.println("Exception Message: " + exceptionResponse.getMessage());
+//                return -1;
+//            }
+//
+//            if (response instanceof ReadCoilsResponse readResponse) {
+//                System.out.println("SUCCESS: Got ReadCoilsResponse");
+//
+//                // Check if we have coils
+//                if (readResponse.getCoils() == null) {
+//                    System.err.println("ERROR: Coils in response are null!");
+//                    return -1;
+//                }
+//
+//                System.out.println("Number of coils in response: " + readResponse.getBitCount());
+//
+//                boolean coilState = readResponse.getCoils().getBit(0);
+//                System.out.println("Coil " + coilAddress + " state: " + coilState);
+//                System.out.println("=== DEBUG readCoil END (SUCCESS) ===");
+//
+//                return coilState ? 1 : 0;
+//            } else {
+//                System.err.println("ERROR: Unexpected response type: " + response.getClass().getName());
+//                System.err.println("Response toString: " + response.toString());
+//                return -1;
+//            }
+//
+//        } catch (Exception e) {
+//            System.err.println("EXCEPTION in readCoil: " + e.getClass().getSimpleName());
+//            System.err.println("Exception message: " + e.getMessage());
+//            e.printStackTrace();
+//            throw e;
+//        }
+//    }
+
     private int readCoil(Integer coilAddress) throws Exception {
         ReadCoilsRequest request = new ReadCoilsRequest(coilAddress, 1);
         if (transaction == null) transaction = new ModbusTCPTransaction(connection);
@@ -246,7 +372,33 @@ public class ControllerService {
             System.err.println("Received an exception response: " + ((ExceptionResponse) response).getExceptionCode());
             return -1;
         } else if (response instanceof ReadCoilsResponse readResponse) {
-            // Process readResponse, for example:
+//             Process readResponse, for example:
+            System.out.println(coilAddress + "YANGILANDIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII");
+            return readResponse.getCoils().getBit(0) ? 1 : 0;  // Example: return 1 if coil is true, 0 if false
+        } else {
+            System.out.println("Unexpected response type: " + response.getClass().getName());
+            return -1;
+        }
+
+    }
+
+    public static int readCoil1(Integer coilAddress) throws Exception {
+        ReadCoilsRequest request = new ReadCoilsRequest(coilAddress, 1);
+        if (transaction == null) transaction = new ModbusTCPTransaction(connection);
+        transaction.setRequest(request);
+        transaction.execute();
+
+        ModbusResponse response = transaction.getResponse();
+
+        if (response == null) {
+            System.err.println("No response received from transaction.");
+            return -1;
+        } else if (response instanceof ExceptionResponse) {
+            System.err.println("Received an exception response: " + ((ExceptionResponse) response).getExceptionCode());
+            return -1;
+        } else if (response instanceof ReadCoilsResponse readResponse) {
+//             Process readResponse, for example:
+            System.out.println(coilAddress + "YANGILANDIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII");
             return readResponse.getCoils().getBit(0) ? 1 : 0;  // Example: return 1 if coil is true, 0 if false
         } else {
             System.out.println("Unexpected response type: " + response.getClass().getName());

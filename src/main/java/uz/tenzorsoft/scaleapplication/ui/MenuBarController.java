@@ -438,7 +438,7 @@ public class MenuBarController implements BaseController {
             gpioControl.getSensorStatuses();
 
             connectionsController.updateConnections();
-            connectionsController.showConnections();
+//            connectionsController.showConnections();
 
             popupStage.close();
         });

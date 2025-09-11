@@ -81,7 +81,7 @@ public class ConfigUtilsService {
 
     private Configurations createDefaultConfigurations() {
         Configurations config = new Configurations();
-        config.setControllerIp("192.168.1.5");
+        config.setControllerIp("192.168.7.244");
         config.setControllerPort(Modbus.DEFAULT_PORT);
         config.setControllerConnectTimeout(2000);
         config.setCloseGate1Timeout(8000);

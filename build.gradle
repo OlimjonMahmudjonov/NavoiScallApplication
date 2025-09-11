@@ -87,6 +87,14 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+tasks.named('bootJar') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.withType(Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 application {
     mainClass = 'uz.tenzorsoft.scaleapplication.ScaleApplication' // Update with your main class name
 }
