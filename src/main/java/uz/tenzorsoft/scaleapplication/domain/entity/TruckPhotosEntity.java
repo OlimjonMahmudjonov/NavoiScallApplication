@@ -20,4 +20,12 @@ public class TruckPhotosEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private AttachStatus attachStatus;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "truck_id")
+    private TruckEntity truck;
+
+    public TruckPhotosEntity(AttachEntity truckPhoto, AttachStatus attachStatus) {
+        this.truckPhoto = truckPhoto;
+        this.attachStatus = attachStatus;
+    }
 }

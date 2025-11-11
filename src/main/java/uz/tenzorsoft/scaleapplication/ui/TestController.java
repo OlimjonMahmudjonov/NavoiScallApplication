@@ -9,9 +9,7 @@ import javafx.scene.layout.Pane;
 import lombok.RequiredArgsConstructor;
 import org.controlsfx.control.ToggleSwitch;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uz.tenzorsoft.scaleapplication.domain.Instances;
@@ -27,6 +25,7 @@ import uz.tenzorsoft.scaleapplication.service.TruckService;
 import uz.tenzorsoft.scaleapplication.service.raspberry.GpioControl;
 import uz.tenzorsoft.scaleapplication.ui.components.TruckScalingController;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
@@ -149,17 +148,34 @@ public class TestController implements BaseController {
                 return;
             }
             AttachResponse response = attachService.getCameraImgTesting();
-            Long attachId = response.getId();
-            currentTruck.getAttaches().add(new AttachIdWithStatus(attachId, AttachStatus.ENTRANCE_PHOTO));
-            currentTruck.setTruckNumber(truckNumber);
-            currentTruck.setEnteredStatus(TruckAction.ENTRANCE);
-            truckService.saveTruck(currentTruck, 1, response);
-            gate1Switch.setSelected(true);
-            tableController.addLastRecord();
-            truckPosition = 0;
-            firstGateEntranceTime = System.currentTimeMillis();
-            System.out.println("Saving truck number: " + truckNumber + " from Camera 1");
-            truckNumberFieldCamera1.clear(); // Clear the text field after saving
+
+            if (response != null) {
+                Long attachId = response.getId();
+                currentTruck.getAttaches().add(new AttachIdWithStatus(attachId, AttachStatus.ENTRANCE_PHOTO));
+
+                currentTruck.setTruckNumber(truckNumber);
+                currentTruck.setEnteredStatus(TruckAction.ENTRANCE);
+
+                // TO'G'RI: bitta AttachResponse → List<AttachResponse>
+                truckService.saveTruck(currentTruck, 1, List.of(response));
+
+                gate1Switch.setSelected(true);
+                tableController.addLastRecord();
+                truckPosition = 0;
+                firstGateEntranceTime = System.currentTimeMillis();
+
+                System.out.println("Saving truck number: " + truckNumber + " from Camera 1");
+                truckNumberFieldCamera1.clear();
+
+                // Ixtiyoriy: muvaffaqiyat xabari
+                // showAlert(Alert.AlertType.INFORMATION, "Muvaffaqiyat", "Mashina kiritildi: " + truckNumber);
+
+            } else {
+                // Agar rasm olinmasa — xato log va ogohlantirish
+                logService.save(new LogEntity(5L, truckNumber,
+                        "00026: Kirish fotosurati olinmadi (response null)"));
+                showAlert(Alert.AlertType.ERROR, "Xato", "Kirish uchun rasm olinmadi!");
+            }
         }
     }
 
@@ -179,14 +195,29 @@ public class TestController implements BaseController {
                 return;
             }
             AttachResponse response = attachService.getCameraImgTesting();
-            Long attachId = response.getId();
-            currentTruck.getAttaches().add(new AttachIdWithStatus(attachId, AttachStatus.EXIT_PHOTO));
-            currentTruck.setTruckNumber(Instances.truckNumber);
-            currentTruck.setExitedStatus(TruckAction.EXIT);
-            truckService.saveTruck(currentTruck, 2, response);
-            gate2Switch.setSelected(true);
-            truckPosition = 7;
-            truckNumberFieldCamera2.clear();
+
+            if (response != null) {
+                Long attachId = response.getId();
+                currentTruck.getAttaches().add(new AttachIdWithStatus(attachId, AttachStatus.EXIT_PHOTO));
+
+                currentTruck.setTruckNumber(Instances.truckNumber);
+                currentTruck.setExitedStatus(TruckAction.EXIT);
+
+                // TO'G'RI: bitta AttachResponse → List<AttachResponse> ga o'girilmoqda
+                List<AttachResponse> attachments = List.of(response);
+                truckService.saveTruck(currentTruck, 2, attachments);
+
+                gate2Switch.setSelected(true);
+                truckPosition = 7;
+                truckNumberFieldCamera2.clear();
+
+                System.out.println("Chiqish muvaffaqiyatli saqlandi: " + Instances.truckNumber);
+            } else {
+                // Agar rasm olinmasa, xato yozamiz
+                logService.save(new LogEntity(5L, Instances.truckNumber,
+                        "00025: Chiqish fotosurati olinmadi (null response)"));
+                showAlert(Alert.AlertType.WARNING, "Xato", "Chiqish fotosurati olinmadi!");
+            }
         }
     }
 

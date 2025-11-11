@@ -33,6 +33,7 @@ public class StatusEntity {
     private boolean camera1 = false;
     private boolean camera2 = false;
     private boolean camera3 = false;
+    private  boolean camera4 = false;
     private boolean sensor1 = false;
     private boolean sensor2 = false;
     private boolean sensor3 = false;

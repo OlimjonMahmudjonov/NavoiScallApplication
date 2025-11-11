@@ -99,7 +99,7 @@ public class SendDataService {
         try {
             StatusResponse statusResponse = new StatusResponse(
                     isConnected, gate1Connection, gate2Connection, kppgate1Connection, kppgate2Connection, camera1Connection, camera2Connection,
-                    camera3Connection, sensor1Connection, sensor2Connection, sensor3Connection, currentUser.getInternalScaleId()
+                    camera3Connection, camera4Connection, sensor1Connection, sensor2Connection, sensor3Connection, currentUser.getInternalScaleId()
             );
 
             RestTemplate restTemplate = new RestTemplate();

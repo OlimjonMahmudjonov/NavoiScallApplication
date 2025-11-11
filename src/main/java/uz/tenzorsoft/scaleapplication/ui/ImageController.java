@@ -61,14 +61,8 @@ public class ImageController implements BaseController {
         images.add(imageView4);
         images.add(imageViewIn);
         images.add(imageViewOut);
-
-//        double imageRatio = 0.95;
-//        for (ImageView imageView : images) {
-//            imageView.fitWidthProperty().bind(imageContainer.widthProperty());
-//            imageView.fitHeightProperty().bind(imageContainer.heightProperty());
-//            imageView.setPreserveRatio(true);
-//        }
     }
+
 
     public void showImages(TableViewData data) {
         Image defaultImage = new Image("/images/no-image.jpg");

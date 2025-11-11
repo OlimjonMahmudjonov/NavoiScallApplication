@@ -2,146 +2,133 @@ package uz.tenzorsoft.scaleapplication.ui;
 
 import javafx.scene.control.Alert;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import uz.tenzorsoft.scaleapplication.domain.entity.LogEntity;
 import uz.tenzorsoft.scaleapplication.domain.response.AttachResponse;
 import uz.tenzorsoft.scaleapplication.service.AttachService;
 import uz.tenzorsoft.scaleapplication.service.LogService;
+import uz.tenzorsoft.scaleapplication.service.TruckPhotoService;
 
-import java.util.Arrays;
-import java.util.Base64;
+import java.io.IOException;
 
 import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
-import static uz.tenzorsoft.scaleapplication.domain.Settings.CAMERA_2;
+import static uz.tenzorsoft.scaleapplication.domain.Settings.CAMERA_1;
 
 @Component
 @RequiredArgsConstructor
 public class CameraViewController implements BaseController {
+
     private final AttachService attachService;
     private final LogService logService;
-
-
-//    @FXML
-//    private ImageView camera1;
-//
-//    @FXML
-//    private ImageView camera2;
-//
-//    @FXML
-//    private ImageView camera3;
-//
-
-    private void loadCameraMenu() {
-
-    }
-
-//    public AttachResponse takePicture(String cameraIpAddress) {
-//        String username = "admin";
-//        String password = "Joe@252544";
-//        String auth = username + ":" + password;
-//        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
-//
-//        RestTemplate restTemplate = new RestTemplate();
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.set("Authorization", "Basic " + encodedAuth);
-//
-//        try {
-//            if (isTesting) {
-//                if (cameraIpAddress.equals(CAMERA_2)) return attachService.getTestingImages();
-//                return attachService.getCameraImgTesting();
-//            }
-//            String url = "http://" + cameraIpAddress + "/ISAPI/Streaming/channels/1/picture";
-//            HttpEntity<String> entity = new HttpEntity<>(headers);
-//            ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
-//            if (response.getStatusCode() == HttpStatus.OK) {
-//                byte[] fileBytes = response.getBody();
-//                if (fileBytes != null && currentTruck.getTruckNumber() != null) {
-//                    return attachService.saveToSystem(fileBytes);
-//                }
-//            } else {
-//                System.out.println("Failed to get snapshot, status: " + response.getStatusCode());
-//            }
-//        } catch (Exception e) {
-//            showAlert(Alert.AlertType.ERROR, "Error while taking picture", e.getMessage());
-//            logService.save(new LogEntity(5L, truckNumber, "00029: (" + getClass().getName() + ") " +e.getMessage()));
-//        }
-//        return null;
-//    }
+    private final TruckPhotoService truckPhotoService;
 
     public AttachResponse takePicture(String cameraIpAddress) {
-        System.out.println("Kamera IP: " + cameraIpAddress);
+        System.out.println("Saving truck number: " + truckNumber + " from Camera 1");
+
         String username = "admin";
-        String password = "Joe@252544";
-        String auth = username + ":" + password;
-        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
+        String password = "Sanjar_0215";
 
-        RestTemplate restTemplate = new RestTemplate();
+        BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(
+                new AuthScope(cameraIpAddress, 80),
+                new UsernamePasswordCredentials(username, password.toCharArray())
+        );
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Basic " + encodedAuth);
-        headers.set("Connection", "close");
-        System.out.println("Authorization " + encodedAuth);
+        try (CloseableHttpClient httpClient = HttpClients.custom()
+                .setDefaultCredentialsProvider(credsProvider)
+                .build()) {
 
+            HttpComponentsClientHttpRequestFactory requestFactory =
+                    new HttpComponentsClientHttpRequestFactory(httpClient);
+            RestTemplate restTemplate = new RestTemplate(requestFactory);
 
-        int maxRetries = 3;
-        int retryDelay = 1000;
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Connection", "close");
 
-        for (int attempt = 1; attempt <= maxRetries; attempt++) {
-            System.out.println("Retrying " + attempt);
-            try {
+            int maxRetries = 3;
+            int retryDelay = 1000;
 
-                if (isTesting) {
-                    if (cameraIpAddress.equals(CAMERA_2)) return attachService.getTestingImages();
-                    return attachService.getCameraImgTesting();
-                }
-
-                String url = "http://" + cameraIpAddress + "/ISAPI/Streaming/channels/2/picture";
-              //  String url = "http://" + cameraIpAddress + "/ISAPI/Traffic/channels/1/picture";
-                HttpEntity<String> entity = new HttpEntity<>(headers);
-
-                ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
-
-                System.out.println("Kamera Response: " + response);
-                System.out.println("Kamera Status: " + response.getStatusCode());
-
-                if (response.getStatusCode() == HttpStatus.OK) {
-                    byte[] fileBytes = response.getBody();
-                    System.out.println("Current Truck: " + currentTruck);
-//                    System.out.println("FileBytes: " + Arrays.toString(fileBytes));
-                    System.out.println("Truck number: " + currentTruck.getTruckNumber());
-                    if (fileBytes != null && currentTruck.getTruckNumber() != null) {
-                        return attachService.saveToSystem(fileBytes);
+            for (int attempt = 1; attempt <= maxRetries; attempt++) {
+                System.out.println("Urinish: " + attempt);
+                try {
+                    if (isTesting) {
+                        if (cameraIpAddress.equals(CAMERA_1)) {
+                            return attachService.getTestingImages();
+                        }
+                        logService.save(new LogEntity(5L, truckNumber, "TEST REJIMI: Kamera so'rovi o'tkazib yuborildi"));
+                        return attachService.getCameraImgTesting();
                     }
-                    System.out.println("File Bytes Null bo'lgani uchun muammo: FileBytes: " + (fileBytes == null ? null : "malumot bor:") + " Truck Number: " + currentTruck.getTruckNumber());
-                } else {
-                    System.out.println("Rasmga ololmadi ...");
-                    logService.save(new LogEntity(5L, truckNumber, "Failed to get snapshot, status: " + response.getStatusCode()));
+
+                    String url = "http://" + cameraIpAddress + "/ISAPI/Streaming/channels/1/picture";
+                    HttpEntity<String> entity = new HttpEntity<>(headers);
+
+                    ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
+
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        byte[] fileBytes = response.getBody();
+                        if (fileBytes == null || fileBytes.length == 0) {
+                            logService.save(new LogEntity(5L, truckNumber, "00028: Kamera bo'sh rasm yubordi"));
+                            continue;
+                        }
+
+                        if (currentTruck == null || currentTruck.getTruckNumber() == null || currentTruck.getTruckNumber().trim().isEmpty()) {
+                            logService.save(new LogEntity(5L, truckNumber, "00028: Truck raqami yo'q yoki bo'sh"));
+                            continue;
+                        }
+
+                        AttachResponse saved = attachService.saveToSystem(fileBytes);
+                        if (saved != null && saved.getPath() != null && saved.getId() != null) {
+                            logService.save(new LogEntity(5L, currentTruck.getTruckNumber(),
+                                    "Rasm S3 ga yuklandi: " + saved.getPath() + ", AttachID: " + saved.getId()));
+                            truckPhotoService.addEntrancePhoto(currentTruck.getId(), saved.getId());
+                            System.out.println("Rasm S3 ga yuklandi: " + saved.getPath());
+                            return saved;
+                        } else {
+                            logService.save(new LogEntity(5L, truckNumber, "00028: Attach saqlanmadi yoki ID yo'q: " + (saved == null ? "null" : "ID=null")));
+                        }
+                    } else {
+                        logService.save(new LogEntity(5L, truckNumber, "00028: Kamera javobi: " + response.getStatusCode()));
+                    }
+
+                } catch (HttpClientErrorException.Unauthorized ex) {
+                    logService.save(new LogEntity(5L, truckNumber, "00028: 401 Unauthorized - Kamera login/parol xato"));
+                    if (attempt == maxRetries) {
+                        showAlert(Alert.AlertType.ERROR, "Autentifikatsiya xatosi", "Kamera login/parol noto'g'ri: " + cameraIpAddress);
+                    }
+                } catch (Exception e) {
+                    logService.save(new LogEntity(5L, truckNumber, "00028: Urinish " + attempt + " xato: " + e.getMessage()));
+                    if (attempt == maxRetries) {
+                        showAlert(Alert.AlertType.ERROR, "Kamera xatosi", "Rasm olishda xatolik: " + e.getMessage());
+                        return null;
+                    }
                 }
-            } catch (Exception e) {
-                logService.save(new LogEntity(5L, truckNumber,
-                        "Attempt " + attempt + " failed: " + e.getMessage()));
-
-
-//                if (attempt == maxRetries) {
-//                    showAlert(Alert.AlertType.ERROR, "Error while taking picture",
-//                            "Failed after " + maxRetries + " attempts: " + e.getMessage());
-//                    throw new RuntimeException("Failed to take picture after " + maxRetries + " attempts", e);
-//                }close
-
 
                 try {
                     Thread.sleep(retryDelay);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException("Retry interrupted", ie);
+                    break;
                 }
             }
+        } catch (IOException e) {
+            logService.save(new LogEntity(5L, truckNumber, "00028: HttpClient yopishda xato: " + e.getMessage()));
+            showAlert(Alert.AlertType.ERROR, "Kamera xatosi", "Ulanish yopildi: " + e.getMessage());
         }
 
-        System.out.println("Null return ishlayapti: ");
+        logService.save(new LogEntity(5L, truckNumber, "00028: Barcha urinishlar muvaffaqiyatsiz"));
+        showAlert(Alert.AlertType.WARNING, "Kamera ogohlantirish", "Rasm olinmadi: " + cameraIpAddress);
         return null;
     }
 }

@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import uz.tenzorsoft.scaleapplication.domain.entity.ProductsEntity;
 import uz.tenzorsoft.scaleapplication.domain.entity.TruckEntity;
 import uz.tenzorsoft.scaleapplication.domain.entity.TruckPhotosEntity;
 import uz.tenzorsoft.scaleapplication.domain.enumerators.ActionStatus;
@@ -19,16 +18,12 @@ import java.util.Optional;
 @Repository
 public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
 
-
-    //    List<TruckEntity> findTop10ByIsSentToCloud(boolean isSent);
+    // === SIZNING HOZIRGI METODLARINGIZ (o'zgartirilmagan) ===
     @Query(value = "SELECT * FROM trucks WHERE is_sent_to_cloud = :isSent ", nativeQuery = true)
     List<TruckEntity> findTop10ByIsSentToCloud(@Param("isSent") boolean isSent);
 
-
     List<TruckEntity> findByIsSentToMyCoalAndIsFinished(boolean isSent, boolean isFinished);
-
     List<TruckEntity> findByIsSentToMyCoalAndIsFinishedAndIsDeleted(boolean isSent, boolean isFinished, boolean isNotDeleted);
-
     Optional<TruckEntity> findTopByOrderByIdDesc();
 
     @Query("SELECT t FROM trucks t " +
@@ -45,17 +40,11 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
     Optional<TruckEntity> findTruckWithEntranceNoExit(@Param("truckNumber") String truckNumber);
 
     Optional<TruckEntity> findByTruckPhotosContains(TruckPhotosEntity truckPhotos);
-
     Optional<TruckEntity> findByTruckNumberAndIsFinished(String truckNumber, Boolean isFinished);
-
     List<TruckEntity> findByTruckNumberOrderByCreatedAtDesc(String truckNumber);
-
     List<TruckEntity> findByTruckNumberAndIsFinishedAndIsDeletedOrderByCreatedAt(String truckNumber, Boolean finished, Boolean deleted);
-
     boolean existsByTruckNumberAndNextEntranceTimeIsBeforeAndIsFinishedTrue(String truckNumber, LocalDateTime localDateTime);
-
     boolean existsByTruckNumberAndTruckActions_ActionAndIsFinishedFalse(String truckNumber, TruckAction action);
-
     List<TruckEntity> findByTruckNumberAndIsFinishedAndIsDeletedOrderByCreatedAtDesc(String truckNumber, boolean isFinished, boolean isDeleted);
 
     @Query("SELECT t FROM trucks t " +
@@ -72,21 +61,13 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
             Boolean isFinished,
             Boolean isDeleted);
 
-
     Optional<TruckEntity> findByTruckNumberAndIsFinished(String truckNumber, boolean isFinished);
-
     boolean existsByTruckNumberAndNextEntranceTimeIsBeforeAndIsFinishedFalse(String truckNumber, LocalDateTime localDateTime);
-
     boolean existsByTruckNumberAndIsDeleted(String truckNumber, boolean isDeleted);
-
     boolean existsByIsFinishedFalseAndIsDeletedFalse();
-
     boolean existsByTruckNumberAndIsFinishedAndIsDeleted(String truckNumber, boolean isFinished, boolean isDeleted);
-
     List<TruckEntity> findAllByIsDeletedFalseAndCreatedAtBetweenOrderByCreatedAtDesc(LocalDateTime start, LocalDateTime end);
-
     List<TruckEntity> findByIsFinishedAndIsDeleted(Boolean isFinished, boolean deleted);
-
     List<TruckEntity> findAllByIsDeleted(boolean isDeleted, Sort sort);
 
     @Query("SELECT ta.action, COUNT(t.truckNumber), CAST(ta.createdAt AS date) " +
@@ -94,7 +75,6 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
             "WHERE CAST(ta.createdAt AS date) BETWEEN :startDate AND :endDate " +
             "GROUP BY ta.action, CAST(ta.createdAt AS date)")
     List<Object[]> findTruckCountsByDate(LocalDate startDate, LocalDate endDate);
-
 
     @Query("""
                 SELECT ta.action, COUNT(ta)
@@ -106,13 +86,78 @@ public interface TruckRepository extends JpaRepository<TruckEntity, Long> {
                                                   @Param("toDate") LocalDateTime toDate,
                                                   @Param("status") ActionStatus status);
 
-
     TruckEntity findByTruckNumber(String carNumber);
-
-    // Duplicate muammosi uchun
     List<TruckEntity> findAllByTruckNumberAndIsDeletedFalse(String truckNumber);
-
-    // Birinchisini olish
     Optional<TruckEntity> findFirstByTruckNumberAndIsDeletedFalseOrderByCreatedAtDesc(String truckNumber);
-}
 
+    // ======================================================================
+    // YANGI METODLAR: JOIN FETCH bilan (LazyInitializationException yo'q!)
+    // ======================================================================
+
+    /**
+     * CHIQISH (exit) uchun: truckPhotos ni JOIN FETCH bilan olish
+     */
+    @Query("""
+            SELECT t FROM trucks t
+            LEFT JOIN FETCH t.truckPhotos
+            WHERE t.truckNumber = :truckNumber
+              AND t.isFinished = false
+            """)
+    Optional<TruckEntity> findActiveTruckWithPhotos(@Param("truckNumber") String truckNumber);
+
+    /**
+     * Action status bo'yicha qidirish + truckPhotos va truckActions ni yuklash
+     */
+    @Query("""
+        SELECT DISTINCT t FROM trucks t
+        LEFT JOIN FETCH t.truckPhotos
+        LEFT JOIN t.truckActions a
+        WHERE t.truckNumber = :truckNumber
+          AND a.action IN :actions
+          AND t.isFinished = false
+        """)
+    List<TruckEntity> findByTruckNumberAndActionStatusWithPhotos(
+            @Param("truckNumber") String truckNumber,
+            @Param("actions") List<TruckAction> actions
+    );
+
+    /**
+     * ID bo'yicha truckPhotos ni yuklash
+     */
+    @Query("""
+        SELECT t FROM trucks t
+        LEFT JOIN FETCH t.truckPhotos
+        WHERE t.id = :id
+        """)
+    Optional<TruckEntity> findByIdWithPhotos(@Param("id") Long id);
+
+    /**
+     * Barcha faol yuk mashinalarini photos bilan olish (masalan, UI uchun)
+     */
+    @Query("""
+        SELECT t FROM trucks t
+        LEFT JOIN FETCH t.truckPhotos
+        WHERE t.isFinished = false
+        ORDER BY t.createdAt DESC
+        """)
+    List<TruckEntity> findAllActiveWithPhotos();
+
+
+    ///  qayta ko`rib qo`yish yana  bir  bor ::::
+    @Query("""
+    SELECT t
+    FROM trucks t
+    JOIN FETCH t.truckPhotos
+    JOIN t.truckActions a
+    WHERE t.truckNumber = :truckNumber
+      AND t.isFinished = false
+      AND a.actionStatus = uz.tenzorsoft.scaleapplication.domain.enumerators.ActionStatus.COMPLETE
+      AND (
+            a.action = uz.tenzorsoft.scaleapplication.domain.enumerators.TruckAction.ENTRANCE
+         OR a.action = uz.tenzorsoft.scaleapplication.domain.enumerators.TruckAction.MANUAL_ENTRANCE
+      )
+""")
+    List<TruckEntity> findEnteredTrucksReadyForExit(String truckNumber);
+
+
+}

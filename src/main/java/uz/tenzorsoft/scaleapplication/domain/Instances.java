@@ -3,25 +3,35 @@ package uz.tenzorsoft.scaleapplication.domain;
 import com.pi4j.io.gpio.digital.DigitalInput;
 import com.pi4j.io.gpio.digital.DigitalOutput;
 import uz.tenzorsoft.scaleapplication.domain.entity.UserEntity;
+import uz.tenzorsoft.scaleapplication.domain.response.AttachIdWithStatus;
 import uz.tenzorsoft.scaleapplication.domain.response.TruckResponse;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.*;
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_GREEN_LIGHT_EXIT_2;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class Instances<T> {
     public static UserEntity currentUser = new UserEntity();
+
+    // MUHIM: attaches listini initsializatsiya qilamiz!
     public static TruckResponse currentTruck = new TruckResponse();
     public static TruckResponse currentExitTruck = new TruckResponse();
 
+    static {
+        currentTruck.setAttaches(new ArrayList<AttachIdWithStatus>());
+        currentTruck.setTruckNumber("");  // agar TruckResponse da setTruckNumber yo'q bo'lsa — qo'shing!
+
+        currentExitTruck.setAttaches(new ArrayList<AttachIdWithStatus>());
+        currentExitTruck.setTruckNumber("");
+    }
+
     public static String truckNumber = "";
     public static String truckExitNumber = "";
-    public static String WEBSOCKET_URL = "wss://api-kimyosanoat.tenzorsoft.uz/be/ws";
-//    public static String WEBSOCKET_URL = "ws://192.168.68.134:8880/ws";
-    public static String SERVER_URL = "https://api-kimyosanoat.tenzorsoft.uz/be/api/v1";
-//    public static String SERVER_URL = "http://192.168.68.134:8880";
+    public static String WEBSOCKET_URL = "wss://api.uzkimyo.uz/be/ws";
+    public static String SERVER_URL = "https://api.uzkimyo.uz/be/api/v1";
 
     public static String directory = "";
     public static boolean isTesting = false;
@@ -62,12 +72,19 @@ public class Instances<T> {
     public static Map<Integer, DigitalOutput> outputPins = new HashMap<>();
     public static Map<Integer, DigitalInput> inputPins = new HashMap<>();
 
-    public static int[] CONTROL_PINS = {RASP_GREEN_LIGHT_1, RASP_GREEN_LIGHT_2, RASP_OPEN_GATE_1, RASP_CLOSE_GATE_1, RASP_OPEN_GATE_2, RASP_CLOSE_GATE_2,RASP_GREEN_LIGHT_EXIT_1, RASP_GREEN_LIGHT_EXIT_2, RASP_OPEN_GATE_EXIT_1, RASP_CLOSE_GATE_EXIT_1, RASP_OPEN_GATE_EXIT_2, RASP_CLOSE_GATE_EXIT_2,KPP_CLOSE_GATE_EXIT_1,KPP_OPEN_GATE_EXIT_1,KPP_OPEN_GATE_EXIT_2,KPP_CLOSE_GATE_EXIT_2};
-    public static int[] STATUS_PINS = {RASP_SENSOR_1, RASP_SENSOR_2, RASP_SENSOR_3,RASP_SENSOR_EXIT_1, RASP_SENSOR_EXIT_2, RASP_SENSOR_EXIT_3};
+    public static int[] CONTROL_PINS = {
+            RASP_GREEN_LIGHT_1, RASP_GREEN_LIGHT_2, RASP_OPEN_GATE_1, RASP_CLOSE_GATE_1,
+            RASP_OPEN_GATE_2, RASP_CLOSE_GATE_2, RASP_GREEN_LIGHT_EXIT_1, RASP_GREEN_LIGHT_EXIT_2,
+            RASP_OPEN_GATE_EXIT_1, RASP_CLOSE_GATE_EXIT_1, RASP_OPEN_GATE_EXIT_2, RASP_CLOSE_GATE_EXIT_2,
+            KPP_CLOSE_GATE_EXIT_1, KPP_OPEN_GATE_EXIT_1, KPP_OPEN_GATE_EXIT_2, KPP_CLOSE_GATE_EXIT_2
+    };
+
+    public static int[] STATUS_PINS = {
+            RASP_SENSOR_1, RASP_SENSOR_2, RASP_SENSOR_3,
+            RASP_SENSOR_EXIT_1, RASP_SENSOR_EXIT_2, RASP_SENSOR_EXIT_3
+    };
 
     public static Configurations configurations;
-
-
 
     public static void reinitializeAll() {
         isConnected = false;
@@ -83,4 +100,22 @@ public class Instances<T> {
         return obj;
     }
 
+    // YANGI: Trucklarni tozalash uchun metodlar (ixtiyoriy, lekin juda foydali)
+    public static void resetEntranceTruck() {
+        truckNumber = "";
+        isWaiting = false;
+        firstGateEntranceTime = 0;
+        currentTruck = new TruckResponse();
+        currentTruck.setAttaches(new ArrayList<>());
+        currentTruck.setTruckNumber("");
+    }
+
+    public static void resetExitTruck() {
+        truckExitNumber = "";
+        isExitWaiting = false;
+        firstExitGateEntranceTime = 0;
+        currentExitTruck = new TruckResponse();
+        currentExitTruck.setAttaches(new ArrayList<>());
+        currentExitTruck.setTruckNumber("");
+    }
 }

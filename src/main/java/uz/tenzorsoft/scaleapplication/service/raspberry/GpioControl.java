@@ -87,7 +87,7 @@ public class GpioControl {
             System.out.println("Pin number not found " + pin);
             resetPin(pin);
             if (!outputPins.containsKey(pin)){
-            throw new RuntimeException("Pin number not found " + pin + " again");
+                throw new RuntimeException("Pin number not found " + pin + " again");
             }
         }
 

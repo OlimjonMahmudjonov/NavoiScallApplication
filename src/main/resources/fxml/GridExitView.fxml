@@ -66,14 +66,14 @@
                             </image>
                         </ImageView>
                     </VBox>
-                    <VBox alignment="CENTER">
+                  <!--  <VBox alignment="CENTER">
                         <Label alignment="CENTER" text="3" style="-fx-font-size: 14px;"/>
                         <ImageView fx:id="cameraExit3" fitHeight="23.0" fitWidth="23.0">
                             <image>
                                 <Image url="@../images/green_light.png"/>
                             </image>
                         </ImageView>
-                    </VBox>
+                    </VBox>-->
                 </HBox>
                 <HBox prefWidth="90.0" alignment="CENTER" spacing="10"
                       style="-fx-border-color: black; -fx-border-width: 1">

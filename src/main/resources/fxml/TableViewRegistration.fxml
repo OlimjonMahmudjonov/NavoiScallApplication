@@ -1,21 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
+<VBox spacing="10" style="-fx-background-color: #f4f4f4; -fx-padding: 15;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uz.tenzorsoft.scaleapplication.ui.TableRegistrationController">
 
+    <HBox alignment="CENTER_RIGHT" spacing="10" HBox.hgrow="ALWAYS">
+        <Label style="-fx-font-weight: bold;" text="Qidiruv: 🔎 " />
+        <TextField fx:id="searchField" prefWidth="320" promptText="Mashina raqami yoki PNFL..." />
+        <Button onAction="#clearSearch" text="Tozalash:🗑" />
+    </HBox>
 
-<TableView fx:id="tableData" editable="true" prefHeight="694.0" minWidth="700" prefWidth="1180.0"
-           style="-fx-background-color: #f0f0f0;"
-           xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="uz.tenzorsoft.scaleapplication.ui.TableRegistrationController">
-    <columns>
-        <!-- Agar id kerak bo‘lmasa, olib tashlashingiz mumkin -->
-        <TableColumn fx:id="carNumberCol" prefWidth="200.0" text="Moshina" style="-fx-alignment: CENTER;" />
-        <TableColumn fx:id="ownerPinflCol" prefWidth="200.0" text="Egasini PNFL" style="-fx-alignment: CENTER;" />
-        <TableColumn fx:id="quantityCol" prefWidth="200.0" text="Miqdor" style="-fx-alignment: CENTER;" />
-        <TableColumn fx:id="driverNameCol" prefWidth="200.0" text="Haydovchi" style="-fx-alignment: CENTER;" />
-        <TableColumn fx:id="productNameCol" prefWidth="200.0" text="Mahsulot" style="-fx-alignment: CENTER;" />
-    </columns>
-</TableView>
+    <VBox spacing="10" VBox.vgrow="ALWAYS">
+        <TableView fx:id="tableData" prefHeight="620" VBox.vgrow="ALWAYS">
+            <placeholder>
+                <Label style="-fx-text-fill: gray; -fx-font-size: 16;" text="Ma'lumotlar yuklanmoqda.. 📥   ." />
+            </placeholder>
+            <columns>
+                <TableColumn fx:id="carNumberCol" prefWidth="168.00003069639206" style="-fx-alignment: CENTER;" text="Moshina" />
+                <TableColumn fx:id="ownerPinflCol" prefWidth="232.7999725341797" sortType="DESCENDING" style="-fx-alignment: CENTER;" text="Egasini PNFL" />
+                <TableColumn fx:id="quantityCol" minWidth="6.4000244140625" prefWidth="160.79995727539062" style="-fx-alignment: CENTER;" text="Miqdor" />
+                <TableColumn fx:id="driverNameCol" prefWidth="227.20001220703125" text="Haydovchi" />
+                <TableColumn fx:id="productNameCol" prefWidth="235.99993896484375" text="Mahsulot" />
+            </columns>
+        </TableView>
 
+        <HBox alignment="CENTER" spacing="15" style="-fx-background-color: #e0e0e0; -fx-padding: 10; -fx-background-radius: 8;">
+            <Button fx:id="prevButton" disable="true" onAction="#goToPreviousPage" text="Oldingi" />
+            <Label fx:id="pageLabel" style="-fx-font-weight: bold;" text="Sahifa 1 / 1" />
+            <Button fx:id="nextButton" onAction="#goToNextPage" text="Keyingi" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label style="-fx-font-weight: bold;" text="Jami:" />
+            <Label fx:id="totalLabel" text="0 ta" />
+        </HBox>
+    </VBox>
+</VBox>

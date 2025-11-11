@@ -248,7 +248,6 @@ public class ButtonController implements BaseController {
                 try {
                     attachResponse = cameraViewController.takePicture(CAMERA_1);
 
-
                     Long attachId = null;
                     if (attachResponse != null) {
                         attachId = attachResponse.getId();
@@ -258,8 +257,13 @@ public class ButtonController implements BaseController {
                     logService.save(new LogEntity(5L, truckNumber, "00019-1: (" + getClass().getName() + ") " + e.getMessage()));
                     e.printStackTrace();
                 }
+
                 currentTruck.setEnteredStatus(TruckAction.MANUAL_ENTRANCE);
-                truckService.saveTruck(currentTruck, 1, attachResponse);
+
+// TO'G'RI USUL:
+                List<AttachResponse> attachments = attachResponse != null ? List.of(attachResponse) : List.of();
+                truckService.saveTruck(currentTruck, 1, attachments);
+
                 tableController.addLastRecord();
 
                 isWaiting = false;
@@ -502,7 +506,10 @@ public class ButtonController implements BaseController {
                 }
 
                 currentTruck.setExitedStatus(TruckAction.MANUAL_EXIT);
-                truckService.saveTruck(currentTruck, 2, attachResponse);
+
+                List<AttachResponse> exitAttachments = attachResponse != null ? List.of(attachResponse) : List.of();
+                truckService.saveTruck(currentTruck, 2, exitAttachments);
+
                 secondGateEntranceTime = System.currentTimeMillis();
                 openGate2(7);
                 isWaiting = false;

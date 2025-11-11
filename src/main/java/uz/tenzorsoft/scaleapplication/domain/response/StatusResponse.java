@@ -18,6 +18,7 @@ public class StatusResponse {
     private Boolean camera1;
     private Boolean camera2;
     private Boolean camera3;
+    private Boolean camera4;
     private Boolean sensor1;
     private Boolean sensor2;
     private Boolean sensor3;

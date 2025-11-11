@@ -26,10 +26,15 @@ public class TruckEntity extends BaseEntity {
     @OneToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
     private List<TruckActionEntity> truckActions = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "truck",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
     private List<TruckPhotosEntity> truckPhotos = new ArrayList<>();
-    private LocalDateTime nextEntranceTime = LocalDateTime.now();
 
+    private LocalDateTime nextEntranceTime = LocalDateTime.now();
     private Boolean isFinished = false;
 
     private Boolean isSentToMyCoal = false;

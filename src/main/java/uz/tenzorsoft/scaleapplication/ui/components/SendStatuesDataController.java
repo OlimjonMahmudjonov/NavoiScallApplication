@@ -48,6 +48,7 @@ public class SendStatuesDataController {
                             || lastStatuses.isCamera1() != camera1Connection
                             || lastStatuses.isCamera2() != camera2Connection
                             || lastStatuses.isCamera3() != camera3Connection
+                            || lastStatuses.isCamera4() != camera4Connection
                     ) {
                         StatusEntity status = new StatusEntity();
                         lastStatuses.setController(isConnected);
@@ -76,10 +77,12 @@ public class SendStatuesDataController {
                         lastStatuses.setCamera1(camera1Connection);
                         lastStatuses.setCamera2(camera2Connection);
                         lastStatuses.setCamera3(camera3Connection);
+                        lastStatuses.setCamera4(camera4Connection);
 
                         status.setCamera1(camera1Connection);
                         status.setCamera2(camera2Connection);
                         status.setCamera3(camera3Connection);
+                        status.setCamera4(camera4Connection);
 
                         lastStatuses.setSensor1(sensor1Connection);
                         lastStatuses.setSensor2(sensor2Connection);

@@ -1,260 +1,258 @@
 package uz.tenzorsoft.scaleapplication.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uz.tenzorsoft.scaleapplication.domain.dto.CarInfoDto;
-import uz.tenzorsoft.scaleapplication.domain.entity.TruckEntity;
+import uz.tenzorsoft.scaleapplication.sentDataNavoi.PageResponse;
 import uz.tenzorsoft.scaleapplication.service.TruckService;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 public class TableRegistrationController implements BaseController {
 
-    @Autowired
-    private TruckService truckService;
+    private final TruckService truckService;
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final ExecutorService executor = Executors.newFixedThreadPool(3);
 
-    private final ExecutorService executors = Executors.newFixedThreadPool(2);
-    private static final ObjectMapper mapper = new ObjectMapper(); // Reuse ObjectMapper
-    private static final int MAX_RESPONSE_SIZE = 10 * 1024 * 1024; // 10MB limit
+    @Value("${spring.url}") private String baseUrl;
+    @Value("${spring.token}") private String token;
+
+    private static final String API_PATH = "/navoiyazot-transfers/get-car-number";
+    private static final int PAGE_SIZE = 29;
+    private static final DateTimeFormatter DATE_PARSER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+
+    @FXML private TableView<CarInfoDto> tableData;
+    @FXML private TableColumn<CarInfoDto, String> carNumberCol;
+    @FXML private TableColumn<CarInfoDto, String> ownerPinflCol;
+    @FXML private TableColumn<CarInfoDto, Double> quantityCol;
+    @FXML private TableColumn<CarInfoDto, String> driverNameCol;
+    @FXML private TableColumn<CarInfoDto, String> productNameCol;
+
+    @FXML private TextField searchField;
+    @FXML private Button prevButton;
+    @FXML private Button nextButton;
+    @FXML private Label pageLabel;
+    @FXML private Label totalLabel;
+
+    // ASOSIY SOURCE LIST — bu yerda ma'lumotlar saqlanadi
+    private final ObservableList<CarInfoDto> sourceList = FXCollections.observableArrayList();
+    private FilteredList<CarInfoDto> filteredData;
+    private int currentPage = 0;
+    private int totalPages = 0;
 
     @FXML
-    private TableView<CarInfoDto> tableData;
+    public void initialize() {
+        setupTableColumns();
+        setupPlaceholder();
+        setupSearch();
+        loadAllDataFromApi();
+    }
 
-    @FXML
-    private TableColumn<CarInfoDto, String> carNumberCol;
+    private void setupTableColumns() {
+        carNumberCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getCarNumber()));
+        ownerPinflCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getOwnerPinfl()));
+        quantityCol.setCellValueFactory(d -> new javafx.beans.property.SimpleDoubleProperty(d.getValue().getQuantity()).asObject());
+        driverNameCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getDriverName()));
+        productNameCol.setCellValueFactory(d -> new javafx.beans.property.SimpleStringProperty(d.getValue().getProductName()));
+    }
 
-    @FXML
-    private TableColumn<CarInfoDto, String> ownerPinflCol;
+    private void setupPlaceholder() {
+        tableData.setPlaceholder(new Label("Ma'lumotlar yuklanmoqda..."));
+    }
 
-    @FXML
-    private TableColumn<CarInfoDto, Double> quantityCol;
+    private void setupSearch() {
+        filteredData = new FilteredList<>(sourceList, p -> true);
 
-    @FXML
-    private TableColumn<CarInfoDto, String> driverNameCol;
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+            filteredData.setPredicate(car -> {
+                if (newVal == null || newVal.isBlank()) return true;
+                String lower = newVal.toLowerCase().trim();
 
-    @FXML
-    private TableColumn<CarInfoDto, String> productNameCol;
+                return (car.getCarNumber() != null && car.getCarNumber().toLowerCase().contains(lower)) ||
+                        (car.getOwnerPinfl() != null && car.getOwnerPinfl().contains(newVal.trim()));
+            });
+            currentPage = 0;
+            updatePage();
+        });
 
-    private void loadDataFromApi() {
-        executors.submit(() -> {
-            HttpURLConnection connection = null;
+        SortedList<CarInfoDto> sortedData = new SortedList<>(filteredData);
+        sortedData.comparatorProperty().bind(tableData.comparatorProperty());
+        tableData.setItems(sortedData);
+    }
+
+    @FXML private void clearSearch() {
+        searchField.clear();
+        currentPage = 0;
+        updatePage();
+    }
+
+    @FXML private void goToPreviousPage() {
+        if (currentPage > 0) {
+            currentPage--;
+            updatePage();
+        }
+    }
+
+    @FXML private void goToNextPage() {
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            updatePage();
+        }
+    }
+
+    private void updatePage() {
+        int totalItems = filteredData.size();
+        totalPages = totalItems == 0 ? 1 : (int) Math.ceil((double) totalItems / PAGE_SIZE);
+
+        int from = currentPage * PAGE_SIZE;
+        int to = Math.min(from + PAGE_SIZE, totalItems);
+
+        ObservableList<CarInfoDto> pageData = totalItems == 0
+                ? FXCollections.observableArrayList()
+                : FXCollections.observableArrayList(filteredData.subList(from, to));
+
+        tableData.setItems(pageData);
+        tableData.setPlaceholder(totalItems == 0 ? new Label("Hech nima topilmadi") : new Label(""));
+
+        pageLabel.setText("Sahifa " + (currentPage + 1) + " / " + totalPages);
+        totalLabel.setText(totalItems + " ta");
+
+        prevButton.setDisable(currentPage == 0);
+        nextButton.setDisable(currentPage >= totalPages - 1 || totalItems == 0);
+    }
+
+    private void loadAllDataFromApi() {
+        executor.submit(() -> {
+            List<CarInfoDto> cars = new ArrayList<>();
+            int page = 0;
+            int size = 50;
+
             try {
-                System.out.println("🔄 API dan ma'lumot yuklash boshlandi...");
+                while (true) {
+                    String url = baseUrl + API_PATH + "?page=" + page + "&size=" + size;
+                    System.out.println("Yuklanmoqda: " + url);
+                    String json = fetchJson(url);
+                    if (json == null || json.contains("Not Found")) break;
 
-                URL url = new URL("https://api-kimyosanoat.tenzorsoft.uz/be/api/v1/navoiyazot-transfers/get-car-number?number=200");
-                connection = (HttpURLConnection) url.openConnection();
+                    PageResponse response = mapper.readValue(json, PageResponse.class);
+                    if (response.getContent() == null || response.getContent().isEmpty()) break;
 
-                // Set timeouts to prevent hanging
-                connection.setConnectTimeout(10000); // 10 seconds
-                connection.setReadTimeout(30000);    // 30 seconds
+                    cars.addAll(response.getContent());
+                    saveToDatabase(response.getContent());
 
-                connection.setRequestMethod("GET");
-                connection.setRequestProperty("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJrcHAxX3VzZXIiLCJpYXQiOjE3NTA2NjAxMjYsImV4cCI6MjM4MTM4MDEyNn0.yVLoZFIJDkAxNRFZiIY1vn50WcDwrl9JTF8q8ph0ieg");
-                connection.setRequestProperty("Accept", "application/json");
-
-                connection.connect();
-
-                int code = connection.getResponseCode();
-                System.out.println("📡 HTTP Response Code: " + code);
-
-                if (code == 200) {
-                    // Check content length to avoid large responses
-                    int contentLength = connection.getContentLength();
-                    if (contentLength > MAX_RESPONSE_SIZE) {
-                        throw new RuntimeException("Response too large: " + contentLength + " bytes");
-                    }
-
-                    String json = null;
-                    try (InputStream inputStream = connection.getInputStream();
-                         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"))) {
-
-                        // Read with size limit
-                        StringBuilder jsonBuilder = new StringBuilder();
-                        String line;
-                        int totalSize = 0;
-
-                        while ((line = reader.readLine()) != null) {
-                            totalSize += line.length();
-                            if (totalSize > MAX_RESPONSE_SIZE) {
-                                throw new RuntimeException("Response too large during reading");
-                            }
-                            jsonBuilder.append(line);
-                        }
-
-                        json = jsonBuilder.toString();
-                        System.out.println("📄 JSON response size: " + json.length() + " characters");
-                    }
-
-                    // Parse JSON with better error handling
-                    List<CarInfoDto> cars = parseJsonSafely(json);
-
-                    if (cars != null && !cars.isEmpty()) {
-                        System.out.println("✅ " + cars.size() + " ta avtomobil ma'lumoti parse qilindi");
-
-                        // Save to database
-                        saveCarInfoToDatabase(cars);
-
-                        // Update UI
-                        ObservableList<CarInfoDto> data = FXCollections.observableArrayList(cars);
-                        Platform.runLater(() -> {
-                            tableData.setItems(data);
-                            System.out.println("📊 Table yangilandi: " + cars.size() + " ta yozuv");
-                        });
-                    } else {
-                        System.err.println("❌ Parse qilingan ma'lumot bo'sh yoki null");
-                    }
-                } else {
-                    System.err.println("❌ HTTP Error Code: " + code);
-                    // Read error response
-                    try (InputStream errorStream = connection.getErrorStream();
-                         BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream))) {
-                        String errorResponse = errorReader.lines().collect(Collectors.joining());
-                        System.err.println("Error response: " + errorResponse);
-                    } catch (Exception e) {
-                        System.err.println("Could not read error response: " + e.getMessage());
-                    }
+                    if (response.isLast()) break;
+                    page++;
                 }
 
-            } catch (OutOfMemoryError e) {
-                System.err.println("💥 MEMORY ERROR in loadDataFromApi: " + e.getMessage());
-                // Force garbage collection
-                System.gc();
-                Platform.runLater(() -> {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Xotira yetishmovchiligi");
-                    alert.setHeaderText("API ma'lumotlari juda katta");
-                    alert.setContentText("Xotira yetishmadi. Dasturni qayta ishga tushiring.");
-                    alert.showAndWait();
+                // YANGI MA'LUMOTLAR ENG YUQORIGA!
+                cars.sort((c1, c2) -> {
+                    LocalDateTime dt1 = parseEnterDate(c1.getEnterDate());
+                    LocalDateTime dt2 = parseEnterDate(c2.getEnterDate());
+                    if (dt1 == null && dt2 == null) return 0;
+                    if (dt1 == null) return 1;
+                    if (dt2 == null) return -1;
+                    return dt2.compareTo(dt1);
                 });
+
+                Platform.runLater(() -> {
+                    sourceList.clear();
+                    sourceList.addAll(cars);
+
+                    currentPage = 0;
+                    updatePage();
+                    showAlert(Alert.AlertType.INFORMATION, "Muvaffaqiyat",
+                            cars.size() + " ta mashina yuklandi!\nYANGI ma’lumotlar ENG YUQORIDA");
+                });
+
             } catch (Exception e) {
-                System.err.println("❌ API dan ma'lumot yuklashda xatolik: " + e.getMessage());
                 e.printStackTrace();
-                Platform.runLater(() -> {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("API Xatolik");
-                    alert.setHeaderText("Ma'lumot yuklashda muammo");
-                    alert.setContentText("API dan ma'lumot yuklab bo'lmadi: " + e.getMessage());
-                    alert.showAndWait();
-                });
-            } finally {
-                if (connection != null) {
-                    connection.disconnect();
-                }
+                Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Xatolik", e.getMessage()));
             }
         });
     }
 
-    private List<CarInfoDto> parseJsonSafely(String json) {
-        if (json == null || json.trim().isEmpty()) {
-            System.err.println("❌ JSON bo'sh yoki null");
-            return new ArrayList<>();
-        }
-
+    private LocalDateTime parseEnterDate(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) return null;
         try {
-            // Force garbage collection before parsing
-            System.gc();
-
-            System.out.println("🔄 JSON parse qilish boshlandi...");
-
-            // Use TypeReference instead of array deserialization (more memory efficient)
-            TypeReference<List<CarInfoDto>> typeRef = new TypeReference<List<CarInfoDto>>() {};
-            List<CarInfoDto> cars = mapper.readValue(json, typeRef);
-
-            System.out.println("✅ JSON muvaffaqiyatli parse qilindi: " + cars.size() + " ta element");
-            return cars;
-
-        } catch (OutOfMemoryError e) {
-            System.err.println("💥 JSON parse qilishda xotira tugadi: " + e.getMessage());
-            System.gc(); // Force cleanup
-            throw e;
+            String cleaned = dateStr.replace("T", " ").substring(0, 23);
+            return LocalDateTime.parse(cleaned, DATE_PARSER);
         } catch (Exception e) {
-            System.err.println("❌ JSON parse qilishda xatolik: " + e.getMessage());
-            System.err.println("JSON snippet: " + json.substring(0, Math.min(200, json.length())) + "...");
-            e.printStackTrace();
-            return new ArrayList<>();
+            return null;
         }
     }
 
-    private void saveCarInfoToDatabase(List<CarInfoDto> carInfoList) {
+    private String fetchJson(String urlStr) {
+        HttpURLConnection conn = null;
         try {
-            System.out.println("💾 Bazaga saqlash boshlandi: " + carInfoList.size() + " ta yozuv");
+            URL url = new URL(urlStr);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(30000);
 
-            int saved = 0;
-            int failed = 0;
+            int code = conn.getResponseCode();
+            if (code != 200) return null;
 
-            for (CarInfoDto carInfo : carInfoList) {
-                try {
-                    TruckEntity savedTruck = truckService.createOrUpdateFromApi(
-                            carInfo.getCarNumber(),
-                            carInfo.getOwnerPinfl(),
-                            carInfo.getDriverName(),
-                            carInfo.getProductName(),
-                            carInfo.getQuantity(),
-                            carInfo.getModel()
-                    );
-
-                    if (savedTruck != null) {
-                        saved++;
-                        if (saved % 10 == 0) { // Log every 10th save
-                            System.out.println("📝 Saqlandi: " + saved + "/" + carInfoList.size());
-                        }
-                    } else {
-                        failed++;
-                        System.err.println("❌ Saqlashda xatolik: " + carInfo.getCarNumber());
-                    }
-                } catch (Exception e) {
-                    failed++;
-                    System.err.println("❌ " + carInfo.getCarNumber() + " saqlashda xatolik: " + e.getMessage());
-                }
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"))) {
+                return br.lines().collect(java.util.stream.Collectors.joining());
             }
-
-            System.out.println("✅ Bazaga saqlash tugadi: " + saved + " muvaffaqiyatli, " + failed + " xatolik");
-
         } catch (Exception e) {
-            System.err.println("💥 Bazaga saqlashda umumiy xatolik: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Fetch xato: " + e.getMessage());
+            return null;
+        } finally {
+            if (conn != null) conn.disconnect();
         }
     }
 
-    @FXML
-    public void initialize() {
-        System.out.println("🚀 TableRegistrationController initialize qilindi");
-
-        carNumberCol.setCellValueFactory(new PropertyValueFactory<>("carNumber"));
-        ownerPinflCol.setCellValueFactory(new PropertyValueFactory<>("ownerPinfl"));
-        quantityCol.setCellValueFactory(new PropertyValueFactory<>("quantity"));
-        driverNameCol.setCellValueFactory(new PropertyValueFactory<>("driverName"));
-        productNameCol.setCellValueFactory(new PropertyValueFactory<>("productName"));
-
-        loadDataFromApi();
+    private void saveToDatabase(List<CarInfoDto> list) {
+        for (CarInfoDto dto : list) {
+            try {
+                truckService.createOrUpdateFromApi(
+                        dto.getCarNumber(),
+                        dto.getOwnerPinfl(),
+                        dto.getDriverName(),
+                        dto.getProductName(),
+                        dto.getQuantity(),
+                        dto.getModel()
+                );
+            } catch (Exception ignored) {}
+        }
     }
 
-    // Cleanup method
+    @Override
+    public void showAlert(Alert.AlertType type, String title, String msg) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(type);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(msg);
+            alert.showAndWait();
+        });
+    }
+
     public void shutdown() {
-        if (executors != null && !executors.isShutdown()) {
-            executors.shutdownNow();
-            System.out.println("🔄 ExecutorService to'xtatildi");
-        }
+        executor.shutdownNow();
     }
 }
