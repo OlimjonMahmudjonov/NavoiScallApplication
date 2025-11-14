@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Weight_OutDto {
     private Long navoiyAzotTransferId;
-    private Double neto;
-    private LocalDateTime netoTime;
+    private Double brutto;
+    private LocalDateTime bruttoTime;
     private Long localId;
     private Long scaleId;
 }

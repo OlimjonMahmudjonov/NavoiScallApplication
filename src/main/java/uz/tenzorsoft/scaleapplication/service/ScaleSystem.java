@@ -9,7 +9,7 @@ import uz.tenzorsoft.scaleapplication.domain.Settings;
 import java.net.InetAddress;
 
 
-public class ScaleSystem {
+public class   ScaleSystem {
     /*--------------------------------------------------------------
                             Raspberry pins
     --------------------------------------------------------------*/

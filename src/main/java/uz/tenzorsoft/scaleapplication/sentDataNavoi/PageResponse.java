@@ -7,7 +7,7 @@ import uz.tenzorsoft.scaleapplication.domain.dto.CarInfoDto;
 
 import java.util.List;
 @Data
-@JsonIgnoreProperties(ignoreUnknown = true) // <--- Bu eng muhimi!
+@JsonIgnoreProperties(ignoreUnknown = true) //
 public class PageResponse {
 
     @JsonProperty("content")

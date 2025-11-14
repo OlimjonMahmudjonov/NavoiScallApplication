@@ -3,6 +3,7 @@ package uz.tenzorsoft.scaleapplication.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -408,7 +409,21 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
         TruckEntity truck = truckRepository.findById(truckId)
                 .orElseThrow(() -> new IllegalStateException("Truck Id not found: " + truckId));
 
-        // 1. Chiqish (EXIT) COMPLETE bo'lganlarni tekshirish
+        // 1. KIRISH (ENTRANCE) COMPLETE bo‘lishi MUTLAQ SHART!
+        boolean hasEntranceComplete = truck.getTruckActions().stream()
+                .anyMatch(action ->
+                        (action.getAction() == TruckAction.ENTRANCE || action.getAction() == TruckAction.MANUAL_ENTRANCE)
+                                && action.getActionStatus() == ActionStatus.COMPLETE
+                );
+
+        if (!hasEntranceComplete) {
+            String errorMsg = "XATO: Mashina tarozidan o‘tmagan! Kirish COMPLETE emas. Truck: " + truck.getTruckNumber() + " (ID: " + truckId + ")";
+            log.error(errorMsg);
+            mainController.showAlert(Alert.AlertType.ERROR, "Xatolik", "Bu mashina tarozidan o‘tmagan! Chiqish rad etildi.");
+            throw new IllegalStateException(errorMsg);
+        }
+
+        // 2. Chiqish (EXIT) COMPLETE bo‘lganini tekshir
         boolean hasExitComplete = truck.getTruckActions().stream()
                 .anyMatch(action ->
                         (action.getAction() == TruckAction.EXIT || action.getAction() == TruckAction.MANUAL_EXIT)
@@ -420,26 +435,14 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             return;
         }
 
-        // 2. Kirish (ENTRANCE) COMPLETE bo'lishi shart
-        boolean hasEntranceComplete = truck.getTruckActions().stream()
-                .anyMatch(action ->
-                        (action.getAction() == TruckAction.ENTRANCE || action.getAction() == TruckAction.MANUAL_ENTRANCE)
-                                && action.getActionStatus() == ActionStatus.COMPLETE
-                );
-
-        if (!hasEntranceComplete) {
-            log.warn("Truck {} kirish holati COMPLETE emas, brutto yuborish mumkin emas", truckId);
-            return;
-        }
-
-        // 3. Cargo va neto vazn tekshiruvi
+        // 3. Cargo va neto vazn
         CargoEntity cargo = cargoRepository.findByTruck(truck).orElse(null);
         if (cargo == null || cargo.getNetWeight() == null || cargo.getNetWeight() <= 0) {
             log.warn("Truck {} uchun neto vazn topilmadi yoki noto'g'ri", truckId);
             return;
         }
 
-        // 4. Kirish vaznini (tara) olish
+        // 4. Tara vazn
         Double tara = truck.getTruckActions().stream()
                 .filter(a -> a.getAction() == TruckAction.ENTRANCE || a.getAction() == TruckAction.MANUAL_ENTRANCE)
                 .map(TruckActionEntity::getWeight)
@@ -451,10 +454,9 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             return;
         }
 
-        // 5. Brutto = Tara + Neto
         Double brutto = tara + cargo.getNetWeight();
 
-        // 6. API dan transfer ID olish
+        // 5. API dan transfer ID olish (hozir bu yerda ENTERED kerak emas emas, lekin baribir olamiz)
         DriverWithTransfersImport apiData = importInformation(truck.getTruckNumber());
         if (apiData == null || apiData.getTransfers().isEmpty()) {
             log.error("Truck {} uchun transfer ma'lumotlari topilmadi", truck.getTruckNumber());
@@ -468,15 +470,16 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                 .orElse(null);
 
         if (navoiyAzotTransferId == null) {
-            log.warn("Truck {} uchun ENTERED transfer topilmadi", truck.getTruckNumber());
-            return;
+            log.warn("Truck {} uchun ENTERED transfer topilmadi – lekin kirish COMPLETE bo‘lgani uchun davom etamiz", truck.getTruckNumber());
+            // Bu yerda xatolik tashlamaymiz, chunki kirish allaqachon COMPLETE
+            // Agar kerak bo‘lsa, bu yerni qattiq qilish mumkin
         }
 
-        // 7. Brutto ma'lumotlarini yuborish (DTO o'zgarmaydi, faqat qiymat brutto)
+        // 6. Brutto yuborish
         Weight_OutDto weightOutDto = new Weight_OutDto();
-        weightOutDto.setNavoiyAzotTransferId(navoiyAzotTransferId);
-        weightOutDto.setNeto(brutto); // Bu yerda brutto yuboriladi
-        weightOutDto.setNetoTime(LocalDateTime.now());
+        weightOutDto.setNavoiyAzotTransferId(navoiyAzotTransferId); // null bo‘lsa ham yuboramiz, backend qabul qiladi deb umid qilamiz
+        weightOutDto.setBrutto(brutto);
+        weightOutDto.setBruttoTime(LocalDateTime.now());
         weightOutDto.setLocalId(truck.getId());
         weightOutDto.setScaleId(SCALE_WEB_ID);
 
@@ -486,12 +489,11 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                 truckId, tara, cargo.getNetWeight(), brutto, navoiyAzotTransferId);
     }
 
-
     private void sendToNavoiyAzotOut(Weight_OutDto weight_outDto) {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBasicAuth(login, password);
+        headers.setBasicAuth( login, password);
 
         try {
             HttpEntity<Weight_OutDto> entity = new HttpEntity<>(weight_outDto, headers);
@@ -503,7 +505,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             );
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("Neto sent successfully  neto = {} , transferId ={}", weight_outDto.getNeto(), weight_outDto.getNavoiyAzotTransferId());
+                log.info("Neto sent successfully  neto = {} , transferId ={}", weight_outDto.getBrutto(), weight_outDto.getNavoiyAzotTransferId());
             } else {
                 log.error("Neto sent something went  wrong ");
             }
@@ -515,38 +517,52 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
 
     @Transactional
     public void sendTaraWeight(Long truckId) {
-        TruckEntity truck = truckRepository.findById(truckId).orElseThrow(
-                () -> new IllegalStateException("Truck Id  not  found " + truckId)
-        );
+        TruckEntity truck = truckRepository.findById(truckId)
+                .orElseThrow(() -> new IllegalStateException("Truck Id not found: " + truckId));
+
+        // 1. Truck allaqachon chiqib ketgan bo‘lsa → hech narsa qilmaymiz
         if (truck.getIsFinished() != null && truck.getIsFinished()) {
-            log.warn("Truck has finished yet {}", truckId);
+            log.warn("Truck allaqachon chiqib ketgan (isFinished=true): {}", truckId);
             return;
         }
 
+        // 2. Kirish harakati (ENTRANCE) COMPLETE bo‘lishi shart
         TruckActionEntity enterAction = truck.getTruckActions().stream()
-                .filter(a -> a.getAction() == TruckAction.ENTRANCE || a.getAction() == TruckAction.MANUAL_ENTRANCE)
-                .findFirst().orElseThrow(() ->
-                        new IllegalStateException("Truck Action Not found " + truckId));
+                .filter(a -> (a.getAction() == TruckAction.ENTRANCE || a.getAction() == TruckAction.MANUAL_ENTRANCE)
+                        && a.getActionStatus() == ActionStatus.COMPLETE)
+                .findFirst()
+                .orElseThrow(() -> {
+                    String msg = "KRITIK XATO: Kirish COMPLETE emas! Tara yuborib bo‘lmaydi. Truck: " + truck.getTruckNumber();
+                    log.error(msg);
+                    mainController.showAlert(Alert.AlertType.ERROR, "Xatolik", "Kirish hali yakunlanmagan!");
+                    return new IllegalStateException(msg);
+                });
 
-
-        DriverWithTransfersImport apiDate = importInformation(truck.getTruckNumber());
-        if (apiDate == null || apiDate.getTransfers().isEmpty()) {
-            log.error("Truck has no transfer data{}", truck.getTruckNumber());
-            return;
-
+        // 3. API dan transfer ma'lumotlarini olish
+        DriverWithTransfersImport apiData = importInformation(truck.getTruckNumber());
+        if (apiData == null || apiData.getTransfers() == null || apiData.getTransfers().isEmpty()) {
+            String msg = "KRITIK XATO: Tashqi API da transfer ma'lumotlari topilmadi! Truck: " + truck.getTruckNumber();
+            log.error(msg);
+            mainController.showAlert(Alert.AlertType.ERROR, "API Xatosi", "Transfer ma'lumotlari yo‘q!");
+            throw new IllegalStateException(msg);
         }
 
-        Long navoiyAzotTransferId = apiDate.getTransfers().stream()
+        // 4. "ENTERED" statusli transfer ID ni topish
+        Long navoiyAzotTransferId = apiData.getTransfers().stream()
                 .filter(t -> "ENTERED".equalsIgnoreCase(t.getCurrentStatus()))
                 .max(Comparator.comparing(TransferImport::getCreatedAt))
                 .map(TransferImport::getId)
                 .orElse(null);
 
         if (navoiyAzotTransferId == null) {
-            log.warn("ENTERED  transfer not  found {}", truck.getTruckNumber());
-            return;
+            String msg = "KRITIK XATO: ENTERED transfer topilmadi! Tara yuborib bo‘lmaydi. Truck: " + truck.getTruckNumber();
+            log.error(msg);
+            mainController.showAlert(Alert.AlertType.ERROR, "Transfer Xatosi",
+                    "Bu mashina uchun ENTERED transfer mavjud emas!\nRaqam: " + truck.getTruckNumber());
+            throw new IllegalStateException(msg); // Tranzaksiya rollback bo‘ladi!
         }
 
+        // 5. Tara vaznini yuborish
         Weight_InDto weight = new Weight_InDto();
         weight.setNavoiyAzotTransferId(navoiyAzotTransferId);
         weight.setTara(enterAction.getWeight());
@@ -554,10 +570,17 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
         weight.setLocalId(truck.getId());
         weight.setScaleId(SCALE_WEB_ID);
 
-        senToNavoiyAzot(weight);
-
+        try {
+            senToNavoiyAzot(weight);
+            log.info("TARA muvaffaqiyatli yuborildi: TruckID={}, Raqam={}, Tara={}, TransferID={}",
+                    truckId, truck.getTruckNumber(), enterAction.getWeight(), navoiyAzotTransferId);
+        } catch (Exception e) {
+            String msg = "Tara yuborishda xatolik: " + e.getMessage();
+            log.error(msg, e);
+            mainController.showAlert(Alert.AlertType.ERROR, "Yuborish Xatosi", "Tara ma'lumotlari yuborilmadi!");
+            throw new RuntimeException(msg, e); // rollback
+        }
     }
-
     private void senToNavoiyAzot(Weight_InDto weight) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -583,7 +606,6 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                 .replaceAll("\\s+", ""); // 80 6443 AA → 806443AA
     }
 
-
     public DriverWithTransfersImport importInformation(String carNumber) {
         if (carNumber == null || carNumber.trim().isEmpty()) {
             throw new IllegalArgumentException("Mashina raqami bo'sh bo'lishi mumkin emas");
@@ -598,19 +620,24 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         int page = 0;
-        int size = 50;
-        // STATUS=ENTERED QO‘SHILDI!
-        String urlWithParams = url + "?status=ENTERED&page={page}&size={size}";
+        int size = 2000; // katta qilib oldik, tezroq bo‘ladi
+        DriverWithTransfersImport latestMatch = null; // eng yangi topilganini saqlaymiz
+        String latestEnterDate = null; // enterDate bo‘yicha solishtirish uchun
+
+        // Eng yangi kirganlar birinchi chiqishi uchun sort qo‘shdik!
+        String baseUrl = url + "?status=ENTERED&page={page}&size={size}&sort=enterDate,desc";
 
         while (true) {
             try {
-                log.info("API so‘rov: {} (Sahifa: {})", urlWithParams.replace("{page}", String.valueOf(page)), page);
+                String currentUrl = baseUrl.replace("{page}", String.valueOf(page));
+                log.info("API so‘rov: {} (Sahifa: {})", currentUrl, page);
+
                 ResponseEntity<ApiResponse> response = restTemplate.exchange(
-                        urlWithParams, HttpMethod.GET, entity, ApiResponse.class, page, size
+                        currentUrl, HttpMethod.GET, entity, ApiResponse.class, page, size
                 );
 
                 if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
-                    throw new IllegalArgumentException("API xizmati ishlamayapti: " + response.getStatusCode());
+                    throw new IllegalArgumentException("API ishlamayapti: " + response.getStatusCode());
                 }
 
                 ApiResponse apiResponse = response.getBody();
@@ -626,22 +653,58 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
 
                 for (DriverWithTransfersImport di : drivers) {
                     String apiNumber = cleanTruckNumber(di.getDriver().getTransportNumber());
-                    if (cleanedInput.equals(apiNumber)) {
-                        log.info("MOS MASHINA TOPILDI: '{}' → '{}' (Sahifa: {})", carNumber, di.getDriver().getTransportNumber(), page);
-                        return di;
+                    if (!cleanedInput.equals(apiNumber)) {
+                        continue; // raqam mos emas
+                    }
+
+                    // ENTERED holatini tekshiramiz
+                    boolean hasEntered = di.getTransfers() != null && di.getTransfers().stream()
+                            .anyMatch(t -> {
+                                if ("ENTERED".equalsIgnoreCase(t.getCurrentStatus())) return true;
+                                if (t.getStatusChanges() != null) {
+                                    return t.getStatusChanges().stream()
+                                            .anyMatch(s -> "ENTERED".equalsIgnoreCase(s));
+                                }
+                                return false;
+                            });
+
+                    if (!hasEntered) {
+                        log.warn("Raqam mos, lekin ENTERED yo‘q: {}", carNumber);
+                        continue;
+                    }
+
+                    // enterDate ni olish
+                    String enterDate = di.getDriver().getEnterDate();
+                    if (enterDate == null) enterDate = "0000-00-00T00:00:00";
+
+                    // Agar bu eng yangi bo‘lsa — saqlaymiz
+                    if (latestMatch == null || enterDate.compareTo(latestEnterDate) > 0) {
+                        latestMatch = di;
+                        latestEnterDate = enterDate;
+                        log.info("YANGI ENG YANGI TOPILDI: {} (enterDate: {})", carNumber, enterDate);
                     }
                 }
 
-                if (apiResponse.isLast()) break;
+                // Oxirgi sahifa bo‘lsa to‘xta
+                if (apiResponse.isLast()) {
+                    log.info("Oxirgi sahifa yetib keldi (jami sahifalar: {})", apiResponse.getTotalPages());
+                    break;
+                }
+
                 page++;
 
             } catch (Exception e) {
-                log.error("API xatosi: {}", e.getMessage());
+                log.error("API xatosi (sahifa {}): {}", page, e.getMessage());
                 throw new IllegalArgumentException("API bilan aloqa xatosi: " + e.getMessage());
             }
         }
 
-        throw new IllegalArgumentException("Mashina topilmadi yoki kirish holatida emas: " + carNumber);
+        if (latestMatch != null) {
+            log.info("MUVOFAQQIYAT: {} uchun eng yangi ENTERED ma’lumot topildi!", carNumber);
+            return latestMatch;
+        }
+
+        throw new IllegalArgumentException("Mashina topilmadi yoki ENTERED holatida emas: " + carNumber);
     }
 
 
@@ -842,10 +905,12 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             enteredAction.setOnDuty(Instances.currentUser);
             enteredAction.setWeight(currentTruck.getEnteredWeight());
             enteredAction.setCreatedAt(currentTruck.getEnteredAt() != null ? currentTruck.getEnteredAt() : LocalDateTime.now());
-            enteredAction.setActionStatus(ActionStatus.COMPLETE);
+
+            // TO‘G‘RI: PROCESSING (chunki Tara hali yuborilmagan)
+            enteredAction.setActionStatus(ActionStatus.PROCESSING);
 
             TruckActionEntity savedAction = truckActionRepository.save(enteredAction);
-            log.info("Kirish harakati saqlandi: ActionID={}", savedAction.getId());
+            log.info("Kirish harakati saqlandi: ActionID={}, Status=PROCESSING", savedAction.getId());
 
             // Harakatni truckga biriktirish
             currentTruckEntity.setTruckActions(new ArrayList<>(List.of(savedAction)));
@@ -865,19 +930,23 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                 log.warn("Attach null yoki ID yo'q - foto saqlanmadi");
             }
 
-            // TARA va RASM yuborish
+            // TARA YUBORISH – faqat muvaffaqiyatli bo‘lsa COMPLETE qilamiz
             try {
                 sendTaraWeight(savedTruck.getId());
-                log.info("Tara yuborildi: TruckID={}", savedTruck.getId());
+                log.info("TARA muvaffaqiyatli yuborildi → COMPLETE bo‘ldi: TruckID={}", savedTruck.getId());
             } catch (Exception e) {
-                log.error("Tara yuborishda xatolik: {}", e.getMessage());
+                log.error("TARA yuborishda xatolik: {}. Status PROCESSING qoladi!", e.getMessage());
+                Platform.runLater(() ->
+                        mainController.showAlert(Alert.AlertType.WARNING, "Internet yo‘q",
+                                "Tara yuborilmadi! Internet kelganda qayta urinib ko‘ring.\nStatus: Kutilmoqda"));
             }
 
+            // RASMLAR
             try {
                 sendCameraImage(savedTruck.getId(), true);
                 log.info("Kirish rasmi yuborildi: TruckID={}", savedTruck.getId());
             } catch (Exception e) {
-                log.error("Rasm yuborishda xatolik: {}", e.getMessage());
+                log.error("Kirish rasmi yuborishda xatolik: {}", e.getMessage());
             }
 
             log.info("KIRISH JARAYONI TUGADI: {}", truckNumber);
@@ -890,7 +959,6 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
 
             log.info("CHIQISH jarayoni boshlandi: {}", truckNumber);
 
-            //  Yangi logika: faqat kirish COMPLETE bo'lgan va chiqmagan mashinalarni olish
             List<TruckEntity> activeTrucks = truckRepository.findEnteredTrucksReadyForExit(truckNumber);
 
             if (activeTrucks.isEmpty()) {
@@ -902,7 +970,6 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                 log.warn("Bir xil raqam bo'yicha bir nechta faol truck topildi. Oxirgisi tanlanadi: {}", truckNumber);
             }
 
-            // Oxirgi yozuvni olish
             currentTruckEntity = activeTrucks.get(activeTrucks.size() - 1);
             log.info("Faol truck tanlandi: TruckID={}", currentTruckEntity.getId());
 
@@ -926,10 +993,12 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             exitedAction.setOnDuty(Instances.currentUser);
             exitedAction.setWeight(currentTruck.getExitedWeight());
             exitedAction.setCreatedAt(currentTruck.getExitedAt() != null ? currentTruck.getExitedAt() : LocalDateTime.now());
-            exitedAction.setActionStatus(ActionStatus.COMPLETE);
+
+            // CHIQISH uchun ham PROCESSING → keyin sendNetoWeight ichida COMPLETE
+            exitedAction.setActionStatus(ActionStatus.PROCESSING);
 
             TruckActionEntity savedExitAction = truckActionRepository.save(exitedAction);
-            log.info("Chiqish harakati saqlandi: ActionID={}", savedExitAction.getId());
+            log.info("Chiqish harakati saqlandi: ActionID={}, Status=PROCESSING", savedExitAction.getId());
 
             currentTruckEntity.getTruckActions().add(savedExitAction);
             currentTruckEntity.setIsFinished(true);
@@ -949,28 +1018,32 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                 log.warn("Chiqish uchun attach null yoki ID yo'q");
             }
 
-            // BRUTTO VA RASM YUBORISH
+            // BRUTTO YUBORISH
             try {
                 sendNetoWeight(savedTruck.getId());
-                log.info("Brutto yuborildi: TruckID={}", savedTruck.getId());
+                log.info("Brutto muvaffaqiyatli yuborildi → COMPLETE bo‘ldi: TruckID={}", savedTruck.getId());
             } catch (Exception e) {
-                log.error("Brutto yuborishda xatolik: {}", e.getMessage());
+                log.error("Brutto yuborishda xatolik: {}. Status PROCESSING qoladi!", e.getMessage());
+                Platform.runLater(() ->
+                        mainController.showAlert(Alert.AlertType.WARNING, "Internet yo‘q",
+                                "Brutto yuborilmadi! Internet kelganda qayta urinib ko‘ring.\nStatus: Kutilmoqda"));
             }
 
+            // CHIQISH RASMLARI
             try {
                 sendCameraImage(savedTruck.getId(), false);
                 log.info("Chiqish rasmi yuborildi: TruckID={}", savedTruck.getId());
             } catch (Exception e) {
-                log.error("Chiqish rasmini yuborishda xatolik: {}", e.getMessage());
+                log.error("Chiqish rasmi yuborishda xatolik: {}", e.getMessage());
             }
 
             log.info("CHIQISH JARAYONI TUGADI: {}", truckNumber);
-        } else {
+        }
+        else {
             log.error("Noto'g'ri kamera ID: {}", id);
             throw new IllegalArgumentException("Noto'g'ri kamera ID: " + id);
         }
     }
-
 
     public TruckEntity saveCurrentTruck(TruckResponse currentTruck, boolean isFinished) {
         currentTruckEntity.setIsFinished(isFinished);

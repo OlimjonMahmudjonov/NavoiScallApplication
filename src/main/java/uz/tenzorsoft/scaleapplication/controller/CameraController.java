@@ -40,7 +40,7 @@ import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.truckPosition;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 @Slf4j
-public class CameraController implements BaseController {
+public class    CameraController implements BaseController {
 
     private final AttachService attachService;
     private final TruckService truckService;
@@ -186,18 +186,70 @@ public class CameraController implements BaseController {
     /** --- API orqali ruxsatni tekshirish --- */
     private boolean isAuthorizedTruck(String truckNumber) {
         String clean = truckNumber.replaceAll("\\s+", "").toUpperCase();
-        String url = apiUrl + "?status=ENTERED&size=2000";
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        try {
-            ResponseEntity<ApiResponse> resp = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), ApiResponse.class);
-            if (resp.getBody() == null || resp.getBody().getContent() == null) return false;
 
-            return resp.getBody().getContent().stream()
-                    .anyMatch(item -> item.getDriver().getTransportNumber()
-                            .replaceAll("\\s+", "").equalsIgnoreCase(clean));
+        int page = 0;
+        int size = 2000;
+
+        try {
+            while (true) { // cheksiz emas, ichida to‘xtaydi
+                String url = apiUrl + "?status=ENTERED&page=" + page + "&size=" + size;
+
+                ResponseEntity<ApiResponse> resp = restTemplate.exchange(
+                        url, HttpMethod.GET, new HttpEntity<>(headers), ApiResponse.class
+                );
+
+                ApiResponse body = resp.getBody();
+                if (body == null || body.getContent() == null || body.getContent().isEmpty()) {
+                    log.warn("Sahifa {} bo‘sh yoki null", page);
+                    break;
+                }
+
+                // Shu sahifadagi barcha mashinalarni tekshir
+                boolean found = body.getContent().stream()
+                        .anyMatch(item -> {
+                            String apiNumber = item.getDriver().getTransportNumber()
+                                    .replaceAll("\\s+", "").toUpperCase();
+                            if (!clean.equals(apiNumber)) {
+                                return false;
+                            }
+
+                            return item.getTransfers() != null && item.getTransfers().stream()
+                                    .anyMatch(transfer -> {
+                                        if ("ENTERED".equalsIgnoreCase(transfer.getCurrentStatus())) {
+                                            return true;
+                                        }
+                                        if (transfer.getStatusChanges() != null) {
+                                            return transfer.getStatusChanges().stream()
+                                                    .anyMatch(s -> "ENTERED".equalsIgnoreCase(s));
+                                        }
+                                        return false;
+                                    });
+                        });
+
+                if (found) {
+                    log.info("Mashina topildi: {} (sahifa {})", truckNumber, page);
+                    return true; // Topildi → darrov ruxsat ber!
+                }
+
+                // Agar bu oxirgi sahifa bo‘lsa → to‘xta
+                if (body.isLast() || body.getNumber() >= body.getTotalPages() - 1) {
+                    log.info("Oxirgi sahifa yetib keldi (jami sahifalar: {})", body.getTotalPages());
+                    break;
+                }
+
+                // Keyingi sahifaga o‘t
+                page++;
+                log.info("Keyingi sahifa tekshirilmoqda: {}", page);
+            }
+
+            // Hech qayerda topilmadi
+            log.warn("Ruxsat rad etildi: {} – ENTERED status topilmadi", truckNumber);
+            return false;
+
         } catch (Exception e) {
             log.error("API bilan aloqa xatosi: {}", e.getMessage(), e);
             return false;
