@@ -114,8 +114,8 @@ public class ConfigUtilsService {
         config.setDatabaseName("postgres");
         config.setUsername("postgres");
         config.setPassword("postgres");
-        config.setCamera1("192.168.1.66");
-        config.setCamera2("192.168.1.67");
+        config.setCamera1("192.168.1.64");
+        config.setCamera2("192.168.1.65");
         config.setCamera3("192.168.1.66");
         config.setCamera4("192.168.1.67");
         config.setCameraRezerv1("");

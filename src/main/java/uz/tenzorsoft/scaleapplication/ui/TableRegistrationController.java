@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uz.tenzorsoft.scaleapplication.domain.dto.CarInfoDto;
 import uz.tenzorsoft.scaleapplication.sentDataNavoi.PageResponse;
+import uz.tenzorsoft.scaleapplication.sentDataNavoi.RefreshToken;
 import uz.tenzorsoft.scaleapplication.service.TruckService;
 
 import java.io.BufferedReader;
@@ -33,12 +34,13 @@ public class TableRegistrationController implements BaseController {
     private final TruckService truckService;
     private final ObjectMapper mapper = new ObjectMapper();
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
+    private final RefreshToken refreshToken;
 
     @Value("${spring.url}") private String baseUrl;
-    @Value("${spring.token}") private String token;
+
 
     private static final String API_PATH = "/navoiyazot-transfers/get-car-number";
-    private static final int PAGE_SIZE = 29;
+    private static final int PAGE_SIZE = 33;
     private static final DateTimeFormatter DATE_PARSER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     @FXML private TableView<CarInfoDto> tableData;
@@ -207,7 +209,7 @@ public class TableRegistrationController implements BaseController {
             URL url = new URL(urlStr);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
-            conn.setRequestProperty("Authorization", "Bearer " + token);
+            conn.setRequestProperty("Authorization", "Bearer " + refreshToken.getNewToken());
             conn.setRequestProperty("Accept", "application/json");
             conn.setConnectTimeout(15000);
             conn.setReadTimeout(30000);

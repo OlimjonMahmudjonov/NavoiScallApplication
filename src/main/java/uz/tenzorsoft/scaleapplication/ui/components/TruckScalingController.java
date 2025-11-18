@@ -344,7 +344,7 @@ public class TruckScalingController {
 
                         if (isScaled2 && weigh2 > 0.0 && !isCargoPhotoTaken2 && cargoConfirmationExitStatus == 1) {
                             try {
-                                AttachResponse response = cameraViewController.takePicture(CAMERA_3);
+                                AttachResponse response = cameraViewController.takePicture(CAMERA_4);
                                 if (response != null) {
                                     truckService.saveTruckAttaches(currentExitTruck, response, AttachStatus.EXIT_CARGO_PHOTO);
                                 }

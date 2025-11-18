@@ -1,5 +1,6 @@
 package uz.tenzorsoft.scaleapplication.sentDataNavoi;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,5 +16,6 @@ public class DriverImport {
     private String transportNumber;
     private String transportModel;
     private String phone;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
     private String enterDate;
 }

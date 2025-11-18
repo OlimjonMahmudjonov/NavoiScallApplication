@@ -83,8 +83,8 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
     @Autowired
     private S3Service s3Service;
 
-    @Value("${spring.url}/navoiyazot-transfers/drivers-with-transfers")
-    private String url;
+    @Value("${spring.url}/navoiyazot-transfers/drivers-with-transfers-current-status")
+    private String apiUrl;
 
     @Value("${spring.url}/basic/weight/save-in-weight")
     private String url_in;
@@ -96,14 +96,12 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
     private String image_url;
 
 
-    @Value("${spring.basic-auth.login}")
+    @Value("${spring.username}")
     private String login;
 
-    @Value("${spring.basic-auth.password}")
+    @Value("${spring.password}")
     private String password;
 
-    @Value("${spring.token}")
-    private String token;
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
@@ -583,72 +581,87 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                 .replaceAll("\\s+", ""); // 80 6443 AA → 806443AA
     }
 
+/// todo  qayta ko`rish
+public DriverWithTransfersImport importInformation(String carNumber) {
+    if (carNumber == null || carNumber.trim().isEmpty()) {
+        throw new IllegalArgumentException("Mashina raqami bo'sh bo'lishi mumkin emas");
+    }
 
-    public DriverWithTransfersImport importInformation(String carNumber) {
-        if (carNumber == null || carNumber.trim().isEmpty()) {
-            throw new IllegalArgumentException("Mashina raqami bo'sh bo'lishi mumkin emas");
-        }
+    String cleaned = cleanTruckNumber(carNumber);
+    log.info("Qidiruv boshlandi: {}", carNumber);
 
-        String cleanedInput = cleanTruckNumber(carNumber);
-        log.info("Qidirilayotgan mashina (tozalangan): {}", cleanedInput);
+    String token = refreshToken.getNewToken();
+    HttpHeaders headers = new HttpHeaders();
+    headers.set("Authorization", "Bearer " + token);
+    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+    int page = 0;
+    final int size = 2000;
 
-        int page = 0;
-        int size = 50;
-        // STATUS=ENTERED QO‘SHILDI!
-        String urlWithParams = url + "?status=ENTERED&page={page}&size={size}";
-
+    try {
         while (true) {
-            try {
-                log.info("API so‘rov: {} (Sahifa: {})", urlWithParams.replace("{page}", String.valueOf(page)), page);
-                ResponseEntity<ApiResponse> response = restTemplate.exchange(
-                        urlWithParams, HttpMethod.GET, entity, ApiResponse.class, page, size
-                );
+            String url = apiUrl + "?status=ENTERED&page=" + page + "&size=" + size;
 
-                if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
-                    throw new IllegalArgumentException("API xizmati ishlamayapti: " + response.getStatusCode());
-                }
+            ResponseEntity<ApiResponse> response = restTemplate.exchange(
+                    url, HttpMethod.GET, new HttpEntity<>(headers), ApiResponse.class
+            );
 
-                ApiResponse apiResponse = response.getBody();
-                List<DriverWithTransfersImport> drivers = apiResponse.getContent();
+            ApiResponse body = response.getBody();
+            if (body == null || body.getContent() == null || body.getContent().isEmpty()) {
+                if (body == null || body.isLast()) break;
+                page++;
+                continue;
+            }
 
-                if (drivers == null || drivers.isEmpty()) {
-                    if (apiResponse.isLast()) break;
-                    page++;
+            for (DriverWithTransfersImport item : body.getContent()) {
+                if (item.getDriver() == null || item.getDriver().getTransportNumber() == null) {
                     continue;
                 }
 
-                log.info("Sahifa {}: {} ta mashina topildi", page, drivers.size());
-
-                for (DriverWithTransfersImport di : drivers) {
-                    String apiNumber = cleanTruckNumber(di.getDriver().getTransportNumber());
-                    if (cleanedInput.equals(apiNumber)) {
-                        log.info("MOS MASHINA TOPILDI: '{}' → '{}' (Sahifa: {})", carNumber, di.getDriver().getTransportNumber(), page);
-                        return di;
-                    }
+                String apiNumber = cleanTruckNumber(item.getDriver().getTransportNumber());
+                if (!cleaned.equals(apiNumber)) {
+                    continue;
                 }
 
-                if (apiResponse.isLast()) break;
-                page++;
+                // ENTERED borligini tekshirish
+                boolean hasEntered = item.getTransfers() != null && item.getTransfers().stream()
+                        .anyMatch(t -> {
+                            if ("ENTERED".equalsIgnoreCase(t.getCurrentStatus())) return true;
+                            if (t.getStatusChanges() != null) {
+                                return t.getStatusChanges().stream()
+                                        .anyMatch(s -> "ENTERED".equalsIgnoreCase(s));
+                            }
+                            return false;
+                        });
 
-            } catch (Exception e) {
-                log.error("API xatosi: {}", e.getMessage());
-                throw new IllegalArgumentException("API bilan aloqa xatosi: " + e.getMessage());
+                if (hasEntered) {
+                    log.info("TOPILDI (eng yangi, desc tartib): {} → {}", carNumber, item.getDriver().getEnterDate());
+                    return item; // BIRINCHI TOPILGANI = ENG YANGI
+                }
             }
+
+            // Keyingi sahifaga faqat topilmagan bo'lsa
+            if (body.isLast() || (body.getTotalPages() > 0 && page >= body.getTotalPages() - 1)) {
+                break;
+            }
+            page++;
         }
 
-        throw new IllegalArgumentException("Mashina topilmadi yoki kirish holatida emas: " + carNumber);
-    }
+        log.warn("Mashina topilmadi yoki ENTERED holatida emas: {}", carNumber);
+        return null;
 
+    } catch (Exception e) {
+        log.error("API xatosi (mashina: {}): {}", carNumber, e.getMessage(), e);
+        throw new RuntimeException("Ma'lumot olishda xato", e);
+    }
+}
 
     @Transactional
     public void sendCameraImage(Long truckId, boolean isEntrance) {
         TruckEntity truck = truckRepository.findById(truckId)
-                .orElseThrow(() -> new RuntimeException("Truck id " + truckId + " not found"));
+                .orElseThrow(() -> new RuntimeException("Truck topilmadi: " + truckId));
+
+        log.info("=== sendCameraImage BOSHLANDI | TruckID={}, isEntrance={} ===", truckId, isEntrance);
 
         // 1. Transfer ID olish
         DriverWithTransfersImport apiData = importInformation(truck.getTruckNumber());
@@ -668,65 +681,92 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             return;
         }
 
-        // 2. Rasmlarni olish
-        AttachStatus status = isEntrance ? AttachStatus.ENTRANCE_PHOTO : AttachStatus.EXIT_PHOTO;
-        List<TruckPhotosEntity> photos = truckPhotoRepository.findByAttachStatusAndTruckId(status, truckId);
-        if (photos.isEmpty()) {
-            log.warn("Rasm topilmadi: TruckID = {}, Status = {}", truckId, status);
+        log.info("Transfer ID topildi: {}", transferId);
+
+        // 2. ANPR rasmlarni olish (CAMERA_1 yoki CAMERA_3)
+        AttachStatus anprStatus = isEntrance ? AttachStatus.ENTRANCE_PHOTO : AttachStatus.EXIT_PHOTO;
+        List<TruckPhotosEntity> anprPhotos = truckPhotoRepository.findByAttachStatusAndTruckId(anprStatus, truckId);
+        log.info("ANPR rasmlari topildi: {} ta (status={})", anprPhotos.size(), anprStatus);
+
+        // 3. YUK rasmlarni olish (CAMERA_2 yoki CAMERA_4)
+        AttachStatus cargoStatus = isEntrance ? AttachStatus.ENTRANCE_CARGO_PHOTO : AttachStatus.EXIT_CARGO_PHOTO;
+        List<TruckPhotosEntity> cargoPhotos = truckPhotoRepository.findByAttachStatusAndTruckId(cargoStatus, truckId);
+        log.info("YUK rasmlari topildi: {} ta (status={})", cargoPhotos.size(), cargoStatus);
+
+        // 4. Barcha rasmlarni birlashtiramiz
+        List<TruckPhotosEntity> allPhotos = new ArrayList<>();
+        allPhotos.addAll(anprPhotos);   // CAMERA_1/3
+        allPhotos.addAll(cargoPhotos);  // CAMERA_2/4
+
+        if (allPhotos.isEmpty()) {
+            log.warn("Hech qanday rasm topilmadi: TruckID={}, isEntrance={}", truckId, isEntrance);
             return;
         }
 
-        // 3. Kamera nomlari
+        log.info("Jami rasmlar: {} ta", allPhotos.size());
+
+        // 5. Kamera nomlari
         String[] cameraNames = isEntrance
                 ? new String[]{"CAMERA1", "CAMERA2"}
                 : new String[]{"CAMERA3", "CAMERA4"};
 
         int sentCount = 0;
 
-        // 4. 2 tagacha rasm yuborish
-        for (int i = 0; i < Math.min(photos.size(), 2); i++) {
-            TruckPhotosEntity photoEntity = photos.get(i);
+        // 6. Maksimal 2 ta rasm yuborish
+        for (int i = 0; i < Math.min(allPhotos.size(), 2); i++) {
+            TruckPhotosEntity photoEntity = allPhotos.get(i);
             AttachEntity attach = photoEntity.getTruckPhoto();
-            if (attach == null) continue;
 
-            // YAXSHILANGAN: null-safe tekshirish
-            if (attach.getIsSentToCloud() != null && attach.getIsSentToCloud()) {
-                log.info("Rasm allaqachon yuborilgan: {}", cameraNames[i]);
+            if (attach == null) {
+                log.warn("AttachEntity null: PhotoID={}", photoEntity.getId());
                 continue;
             }
 
-            // 5. S3 URL mavjudmi?
-            String s3Url = attach.getPath();
-            if (s3Url == null || !s3Url.contains("s3.tenzorsoft.uz")) {
-                byte[] imageBytes = attachService.getBytesById(attach.getId());
-                if (imageBytes == null || imageBytes.length == 0) {
-                    log.warn("Rasm bo‘sh: AttachID = {}", attach.getId());
-                    continue;
-                }
-                s3Url = s3Service.uploadFile(imageBytes); // toza URL!
-                attach.setPath(s3Url);
-                attachRepository.save(attach);
-                log.info("Yangi S3 URL yaratildi: {}", s3Url);
+            // Agar allaqachon yuborilgan bo'lsa
+            if (attach.getIsSentToCloud() != null && attach.getIsSentToCloud()) {
+                log.info("Rasm allaqachon yuborilgan: AttachID={}, Camera={}", attach.getId(), cameraNames[i]);
+                sentCount++; // Hisoblash uchun
+                continue;
             }
 
-            // 6. DTO yaratish
+            // S3 URL olish/yaratish
+            String s3Url = attach.getPath();
+            if (s3Url == null || !s3Url.contains("s3.tenzorsoft.uz")) {
+                log.warn("S3 URL yo'q yoki noto'g'ri: AttachID={}, Path={}", attach.getId(), s3Url);
+
+                byte[] imageBytes = attachService.getBytesById(attach.getId());
+                if (imageBytes == null || imageBytes.length == 0) {
+                    log.error("Rasm bo'sh: AttachID={}", attach.getId());
+                    continue;
+                }
+
+                // S3 ga yuklash
+                s3Url = s3Service.uploadFile(imageBytes);
+                attach.setPath(s3Url);
+                attachRepository.save(attach);
+                log.info("Yangi S3 URL yaratildi: AttachID={}, URL={}", attach.getId(), s3Url);
+            }
+
+            // DTO yaratish
             ImageSendDTO dto = new ImageSendDTO();
             dto.setLocalId(truck.getId());
             dto.setNavoiyAzotTransferId(transferId);
             dto.setCameraName(cameraNames[i]);
             dto.setPictureUrl(s3Url);
 
-            // 7. API ga yuborish — XAVFSIZ!
+            log.info("API ga yuborilmoqda: Camera={}, URL={}", cameraNames[i], s3Url);
+
+            // API ga yuborish
             try {
                 sendSingleImage(dto);
-                log.info("API muvaffaqiyatli: {} → {}", cameraNames[i], truck.getTruckNumber());
+                log.info(" API muvaffaqiyatli: {} → {}", cameraNames[i], truck.getTruckNumber());
                 sentCount++;
             } catch (Exception e) {
-                log.error("API ga yuborishda xato: {} | Xato: {}", cameraNames[i], e.getMessage());
-                // Xato bo‘lsa ham davom etamiz!
+                log.error(" API ga yuborishda xato: {} | Xato: {}", cameraNames[i], e.getMessage());
+                continue; // Keyingisiga o'tish
             }
 
-            // 8. Belgilash
+            // Belgilash
             attach.setIsSentToCloud(true);
             attachRepository.save(attach);
 
@@ -734,7 +774,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                     cameraNames[i], truck.getTruckNumber(), s3Url);
         }
 
-        log.info("{} rasmlari muvaffaqiyatli yuborildi: {} ta",
+        log.info("=== {} rasmlari yuborildi: {} ta ===",
                 isEntrance ? "KIRISH" : "CHIQISH", sentCount);
     }
 
@@ -812,22 +852,28 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
         // KIRISH (CAMERA 1)
         // ========================================
         if (id == 1) {
-
             log.info("KIRISH jarayoni boshlandi: {}", truckNumber);
 
+            // 1. AVVAL API TEKSHIRUVI
             DriverWithTransfersImport apiTruck = importInformation(truckNumber);
             if (apiTruck == null) {
-                log.error("Mashina API da topilmadi: {}", truckNumber);
-                throw new IllegalArgumentException("Mashina topilmadi yoki kirish holatida emas: " + truckNumber);
+                String errorMsg = "Mashina topilmadi yoki kirish holatida emas: " + truckNumber;
+                log.error("API XATO: {}", errorMsg);
+
+                //  UI ga ko'rsatish uchun RuntimeException
+                throw new IllegalStateException(errorMsg);
             }
 
+            //  2. MAHSULOT TEKSHIRUVI
             ProductsEntity selectedProduct = productService.getSelectedProduct();
             if (selectedProduct == null) {
                 log.error("Tanlangan mahsulot topilmadi");
                 throw new IllegalStateException("Tanlangan mahsulot topilmadi.");
             }
 
-            // Yangi truck entity yaratish
+            //  3. FAQAT AGAR BARCHA TEKSHIRUVLAR O'TSA - TRUCK YARATISH
+            log.info("API va mahsulot tekshiruvlari muvaffaqiyatli o'tdi");
+
             currentTruckEntity = new TruckEntity();
             currentTruckEntity.setProducts(selectedProduct);
             currentTruckEntity.setTruckNumber(truckNumber);
@@ -847,12 +893,11 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             TruckActionEntity savedAction = truckActionRepository.save(enteredAction);
             log.info("Kirish harakati saqlandi: ActionID={}", savedAction.getId());
 
-            // Harakatni truckga biriktirish
             currentTruckEntity.setTruckActions(new ArrayList<>(List.of(savedAction)));
 
             TruckEntity savedTruck = truckRepository.save(currentTruckEntity);
             currentTruck.setId(savedTruck.getId());
-            log.info("TRUCK SAQLANDI: TruckID={}, Raqam={}", savedTruck.getId(), truckNumber);
+            log.info("✓ TRUCK SAQLANDI: TruckID={}, Raqam={}", savedTruck.getId(), truckNumber);
 
             // FOTOLARNI SAQLASH
             for (AttachResponse attach : attachResponses) {
@@ -880,9 +925,8 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
                 log.error("Rasm yuborishda xatolik: {}", e.getMessage());
             }
 
-            log.info("KIRISH JARAYONI TUGADI: {}", truckNumber);
+            log.info("✓ KIRISH JARAYONI TUGADI: {}", truckNumber);
         }
-
         // ========================================
         // CHIQISH (CAMERA 2)
         // ========================================
@@ -1490,7 +1534,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
     /**
      * Truck raqami avtorizatsiya qilinganligini tekshirish
      */
-    public boolean isAuthorizedTruck(String truckNumber) {
+    /*public boolean isAuthorizedTruck(String truckNumber) {
         try {
             TruckEntity truck = truckRepository.findByTruckNumber(truckNumber);
             return truck != null;
@@ -1498,7 +1542,7 @@ public class TruckService implements BaseService<TruckEntity, TruckResponse, Tru
             log.error("Error checking truck authorization: {}", e.getMessage());
             return false;
         }
-    }
+    }*/
 
     /**
      * API dan truck ma'lumotlarini olish

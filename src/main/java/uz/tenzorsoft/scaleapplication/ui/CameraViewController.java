@@ -38,7 +38,7 @@ public class CameraViewController implements BaseController {
         System.out.println("Saving truck number: " + truckNumber + " from Camera 1");
 
         String username = "admin";
-        String password = "Sanjar_0215";
+        String password = "Joe@252544";
 
         BasicCredentialsProvider credsProvider = new BasicCredentialsProvider();
         credsProvider.setCredentials(

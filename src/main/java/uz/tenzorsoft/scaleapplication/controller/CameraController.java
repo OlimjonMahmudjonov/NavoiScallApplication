@@ -20,6 +20,7 @@ import uz.tenzorsoft.scaleapplication.domain.enumerators.TruckAction;
 import uz.tenzorsoft.scaleapplication.domain.response.AttachResponse;
 import uz.tenzorsoft.scaleapplication.domain.response.TruckResponse;
 import uz.tenzorsoft.scaleapplication.sentDataNavoi.ApiResponse;
+import uz.tenzorsoft.scaleapplication.sentDataNavoi.RefreshToken;
 import uz.tenzorsoft.scaleapplication.service.AttachService;
 import uz.tenzorsoft.scaleapplication.service.LogService;
 import uz.tenzorsoft.scaleapplication.service.TruckService;
@@ -46,11 +47,10 @@ public class CameraController implements BaseController {
     private final TruckService truckService;
     private final LogService logService;
     private final RestTemplate restTemplate;
+    private  final RefreshToken refreshToken;
 
-    @Value("${spring.url}/navoiyazot-transfers/drivers-with-transfers")
+    @Value("${spring.url}/navoiyazot-transfers/drivers-with-transfers-current-status")
     private String apiUrl;
-    @Value("${spring.token}")
-    private String token;
 
     @Autowired @Lazy
     private TableController tableController;
@@ -182,24 +182,77 @@ public class CameraController implements BaseController {
         }
         return null;
     }
+    private String cleanTruckNumber(String number) {
+        if (number == null) return "";
+        return number.replaceAll("\\s+", "").toUpperCase();
+    }
 
     /** --- API orqali ruxsatni tekshirish --- */
     private boolean isAuthorizedTruck(String truckNumber) {
-        String clean = truckNumber.replaceAll("\\s+", "").toUpperCase();
-        String url = apiUrl + "?status=ENTERED&size=2000";
+        if (truckNumber == null || truckNumber.trim().isEmpty()) {
+            return false;
+        }
+
+        String cleaned = cleanTruckNumber(truckNumber); // yoki: truckNumber.replaceAll("\\s+", "").toUpperCase()
+
+        String token;
+        try {
+            token = refreshToken.getNewToken();
+        } catch (Exception e) {
+            log.error("Token olishda xato (isAuthorizedTruck): {}", e.getMessage(), e);
+            return false;
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        try {
-            ResponseEntity<ApiResponse> resp = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), ApiResponse.class);
-            if (resp.getBody() == null || resp.getBody().getContent() == null) return false;
 
-            return resp.getBody().getContent().stream()
-                    .anyMatch(item -> item.getDriver().getTransportNumber()
-                            .replaceAll("\\s+", "").equalsIgnoreCase(clean));
+        int page = 0;
+        final int size = 2000;
+
+        try {
+            while (true) {
+                String url = apiUrl + "?status=ENTERED&page=" + page + "&size=" + size;
+
+                ResponseEntity<ApiResponse> response = restTemplate.exchange(
+                        url, HttpMethod.GET, new HttpEntity<>(headers), ApiResponse.class
+                );
+
+                ApiResponse body = response.getBody();
+                if (body == null || body.getContent() == null || body.getContent().isEmpty()) {
+                    if (body == null || body.isLast()) {
+                        break;
+                    }
+                    page++;
+                    continue;
+                }
+
+                // Shu sahifada mashinani qidiramiz
+                boolean found = body.getContent().stream()
+                        .filter(item -> item.getDriver() != null)
+                        .filter(item -> item.getDriver().getTransportNumber() != null)
+                        .anyMatch(item -> {
+                            String apiNumber = cleanTruckNumber(item.getDriver().getTransportNumber());
+                            return cleaned.equals(apiNumber);
+                        });
+
+                if (found) {
+                    log.info("RUXSAT BERILDI: {} (ENTERED, sahifa: {})", truckNumber, page);
+                    return true; // BIRINCHI TOPILGAN = ENG YANGI → DARROV QAYTARAMIZ
+                }
+
+                // Keyingi sahifaga faqat topilmagan bo'lsa
+                if (body.isLast() || (body.getTotalPages() > 0 && page >= body.getTotalPages() - 1)) {
+                    break;
+                }
+                page++;
+            }
+
+            log.info("RUXSAT BERILMADI: {} (ENTERED holatida topilmadi)", truckNumber);
+            return false;
+
         } catch (Exception e) {
-            log.error("API bilan aloqa xatosi: {}", e.getMessage(), e);
+            log.error("API xatosi (isAuthorizedTruck, mashina: {}): {}", truckNumber, e.getMessage(), e);
             return false;
         }
     }

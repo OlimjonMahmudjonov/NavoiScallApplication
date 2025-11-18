@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -15,4 +17,5 @@ public class TransferImport {
     private String currentStatus;
     private String productName;
     private Integer quantity;
+    private List<String> statusChanges;
 }
