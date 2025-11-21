@@ -24,8 +24,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 @Component
 @RequiredArgsConstructor
@@ -34,13 +33,13 @@ public class TableRegistrationController implements BaseController {
     private final TruckService truckService;
     private final ObjectMapper mapper = new ObjectMapper();
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
-    private final RefreshToken refreshToken;
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private  final RefreshToken refreshToken;
 
     @Value("${spring.url}") private String baseUrl;
 
-
     private static final String API_PATH = "/navoiyazot-transfers/get-car-number";
-    private static final int PAGE_SIZE = 33;
+    private static final int PAGE_SIZE = 29;
     private static final DateTimeFormatter DATE_PARSER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     @FXML private TableView<CarInfoDto> tableData;
@@ -56,18 +55,20 @@ public class TableRegistrationController implements BaseController {
     @FXML private Label pageLabel;
     @FXML private Label totalLabel;
 
-    // ASOSIY SOURCE LIST — bu yerda ma'lumotlar saqlanadi
     private final ObservableList<CarInfoDto> sourceList = FXCollections.observableArrayList();
     private FilteredList<CarInfoDto> filteredData;
     private int currentPage = 0;
     private int totalPages = 0;
+
+    private LocalDateTime lastRefresh = LocalDateTime.now();
 
     @FXML
     public void initialize() {
         setupTableColumns();
         setupPlaceholder();
         setupSearch();
-        loadAllDataFromApi();
+        refreshTableDelta();
+        scheduler.scheduleAtFixedRate(this::refreshTableDelta, 5, 5, TimeUnit.MINUTES);
     }
 
     private void setupTableColumns() {
@@ -89,7 +90,6 @@ public class TableRegistrationController implements BaseController {
             filteredData.setPredicate(car -> {
                 if (newVal == null || newVal.isBlank()) return true;
                 String lower = newVal.toLowerCase().trim();
-
                 return (car.getCarNumber() != null && car.getCarNumber().toLowerCase().contains(lower)) ||
                         (car.getOwnerPinfl() != null && car.getOwnerPinfl().contains(newVal.trim()));
             });
@@ -143,54 +143,65 @@ public class TableRegistrationController implements BaseController {
         nextButton.setDisable(currentPage >= totalPages - 1 || totalItems == 0);
     }
 
-    private void loadAllDataFromApi() {
+    private void refreshTableDelta() {
         executor.submit(() -> {
-            List<CarInfoDto> cars = new ArrayList<>();
-            int page = 0;
-            int size = 50;
-
             try {
-                while (true) {
-                    String url = baseUrl + API_PATH + "?page=" + page + "&size=" + size;
-                    System.out.println("Yuklanmoqda: " + url);
-                    String json = fetchJson(url);
-                    if (json == null || json.contains("Not Found")) break;
+                List<CarInfoDto> newCars = fetchNewDataSinceLastRefresh();
+                List<CarInfoDto> trulyNew = newCars.stream()
+                        .filter(c -> sourceList.stream()
+                                .noneMatch(existing -> existing.getCarNumber().equals(c.getCarNumber())
+                                        && existing.getEnterDate().equals(c.getEnterDate())))
+                        .toList();
 
-                    PageResponse response = mapper.readValue(json, PageResponse.class);
-                    if (response.getContent() == null || response.getContent().isEmpty()) break;
-
-                    cars.addAll(response.getContent());
-                    saveToDatabase(response.getContent());
-
-                    if (response.isLast()) break;
-                    page++;
+                if (!trulyNew.isEmpty()) {
+                    Platform.runLater(() -> {
+                        sourceList.addAll(0, trulyNew);
+                        updatePage();
+                        showAlert(Alert.AlertType.INFORMATION, "Yangi ma'lumot",
+                                trulyNew.size() + " ta yangi mashina qo‘shildi!");
+                    });
                 }
-
-                // YANGI MA'LUMOTLAR ENG YUQORIGA!
-                cars.sort((c1, c2) -> {
-                    LocalDateTime dt1 = parseEnterDate(c1.getEnterDate());
-                    LocalDateTime dt2 = parseEnterDate(c2.getEnterDate());
-                    if (dt1 == null && dt2 == null) return 0;
-                    if (dt1 == null) return 1;
-                    if (dt2 == null) return -1;
-                    return dt2.compareTo(dt1);
-                });
-
-                Platform.runLater(() -> {
-                    sourceList.clear();
-                    sourceList.addAll(cars);
-
-                    currentPage = 0;
-                    updatePage();
-                    showAlert(Alert.AlertType.INFORMATION, "Muvaffaqiyat",
-                            cars.size() + " ta mashina yuklandi!\nYANGI ma’lumotlar ENG YUQORIDA");
-                });
+                lastRefresh = LocalDateTime.now();
 
             } catch (Exception e) {
                 e.printStackTrace();
                 Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Xatolik", e.getMessage()));
             }
         });
+    }
+
+    private List<CarInfoDto> fetchNewDataSinceLastRefresh() throws Exception {
+        List<CarInfoDto> cars = new ArrayList<>();
+        int page = 0;
+        int size = 50;
+
+        while (true) {
+            String url = baseUrl + API_PATH + "?page=" + page + "&size=" + size
+                    + "&after=" + lastRefresh.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+            String json = fetchJson(url);
+            if (json == null || json.contains("Not Found")) break;
+
+            PageResponse response = mapper.readValue(json, PageResponse.class);
+            if (response.getContent() == null || response.getContent().isEmpty()) break;
+
+            cars.addAll(response.getContent());
+            saveToDatabase(response.getContent());
+
+            if (response.isLast()) break;
+            page++;
+        }
+
+        cars.sort((c1, c2) -> {
+            LocalDateTime dt1 = parseEnterDate(c1.getEnterDate());
+            LocalDateTime dt2 = parseEnterDate(c2.getEnterDate());
+            if (dt1 == null && dt2 == null) return 0;
+            if (dt1 == null) return 1;
+            if (dt2 == null) return -1;
+            return dt2.compareTo(dt1);
+        });
+
+        return cars;
     }
 
     private LocalDateTime parseEnterDate(String dateStr) {
@@ -256,5 +267,6 @@ public class TableRegistrationController implements BaseController {
 
     public void shutdown() {
         executor.shutdownNow();
+        scheduler.shutdownNow();
     }
 }

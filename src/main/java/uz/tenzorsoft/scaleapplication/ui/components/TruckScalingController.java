@@ -115,7 +115,7 @@ public class TruckScalingController {
             if (truckPosition == 1 && sensor1Connection && (!sensor2Connection || isOnScale)) {
                 // Save status as PROCESSING
                 imageController.setIncomePhoto(new Image("/images/in/1.1.png"));
-                truckService.saveTruckStatus(currentTruck.getEnteredStatus(), ActionStatus.COMPLETE);
+              ///  truckService.saveTruckStatus(currentTruck.getEnteredStatus(), ActionStatus.COMPLETE);
                 truckPosition = 2;
                 buttonController.closeGate1();
             }
@@ -158,44 +158,57 @@ public class TruckScalingController {
                             isScaled = true;
                         }
 
-                        if (isScaled && !isCargoPhotoTaken && weigh > 0) { // weigh > 0
+                        if (isScaled && !isCargoPhotoTaken && weigh > 0) {
                             try {
+                                log.info("Camera 2 dan rasm olinmoqda (S3 ga avtomatik yuklanadi)...");
+
+                                //  Bu metod allaqachon S3 ga yuklaydi!
                                 AttachResponse response = cameraViewController.takePicture(CAMERA_2);
-                                System.out.println("AttachResponse: " + response);
-                                if (response != null) {
+
+                                if (response != null && response.getId() != null) {
+                                    log.info("Camera 2 rasmi S3 ga yuklandi: AttachID={}, S3_URL={}",
+                                            response.getId(), response.getPath());
+
+                                    // TruckPhotosEntity yaratish
                                     truckService.saveTruckAttaches(currentTruck, response, AttachStatus.ENTRANCE_CARGO_PHOTO);
+                                    isCargoPhotoTaken = true;
+                                } else {
+                                    log.error(" Camera 2 rasmini olishda xatolik (response null yoki ID null)");
                                 }
-                                isCargoPhotoTaken = true;
+
                             } catch (Exception e) {
-                                System.out.println(e.getMessage());
+                                log.error(" Camera 2 xatolik: {}", e.getMessage(), e);
+                                logService.save(new LogEntity(5L, Instances.truckNumber,
+                                        "Camera 2 xatolik: " + e.getMessage()));
                             }
-//                                    saveOnScalePhoto(AttachStatus.ENTRANCE_CARGO_PHOTO);
 
                             if (isCargoPhotoTaken) {
                                 System.out.println("Opening gate 2");
-                                buttonController.openGate2(); // Open Gate 2
+                                buttonController.openGate2();
+
                                 if (weigh > 0) {
-                                currentTruck.setEnteredWeight(weigh);}
-                                else currentTruck.setEnteredWeight(5000.0);
+                                    currentTruck.setEnteredWeight(weigh);
+                                } else {
+                                    currentTruck.setEnteredWeight(5000.0);
+                                }
 
                                 log.info("Truck entered weigh: {}", currentTruck.getEnteredWeight());
                                 currentTruck.setEnteredAt(LocalDateTime.now());
                                 currentTruck.setEntranceConfirmedBy(currentUser.getPhoneNumber());
-                                //truckService.saveTruckStatus(currentTruck.getEnteredStatus(), ActionStatus.COMPLETE);
+                                truckService.saveTruckStatus(currentTruck.getEnteredStatus(), ActionStatus.COMPLETE);// o`zgartirldi  kod  yanai
                                 truckService.saveTruckEnteredActions(currentTruck);
                             }
-                            // Save status as COMPLETE
+
                             try {
                                 truckService.saveCurrentTruck(currentTruck, false);
                             } catch (Exception e) {
-                                logService.save(new LogEntity(5L, Instances.truckNumber, "00042: (" + getClass().getName() + ") " + e.getMessage()));
+                                logService.save(new LogEntity(5L, Instances.truckNumber,
+                                        "00042: (" + getClass().getName() + ") " + e.getMessage()));
                                 e.printStackTrace();
                             }
+
                             tableController.updateTableRow(truckService.getCurrentTruckEntity());
                             isTruckEntered = true;
-//                                } else {
-//                                    isScaled = false;
-//                                }
                         }
                     }
                 }), SCALE_TIMEOUT);
@@ -255,10 +268,6 @@ public class TruckScalingController {
                 truckExitPos = truckExitPosition;
             }
 
-//            System.out.println("Exit Gate 1 Connection old: " + gateExit1Connection);
-//            System.out.println("Exit TruckPosition: " + truckExitPosition);
-//            System.out.println("Exit Sensor 1 Connnection: " + sensorExit1Connection);
-
             if (!sensorExit1Connection && truckExitPosition == 0) {
                 imageController.setOutPhoto(new Image("/images/out/1.png"));
                 truckExitPosition = 1;
@@ -290,10 +299,11 @@ public class TruckScalingController {
             }
 
             if ((!sensorExit2Connection || isOnScale2) && (truckExitPosition == 2) &&
-                    (currentExitTruck.getEnteredStatus() == TruckAction.EXIT ||
-                            currentExitTruck.getEnteredStatus() == TruckAction.MANUAL_EXIT)) {
+                    (currentExitTruck.getExitedStatus() == TruckAction.EXIT ||
+                            currentExitTruck.getExitedStatus() == TruckAction.MANUAL_EXIT)) {
+
                 imageController.setOutPhoto(new Image("/images/out/2.png"));
-                System.out.println("Exit Scaling ---- isScaled = " + isScaled2 + " Status " + currentExitTruck.getEnteredStatus());
+                System.out.println("Exit Scaling ---- isScaled = " + isScaled2 + " Status " + currentExitTruck.getExitedStatus());
                 //todo
                 if (controlPane.getButton3().isDisable()) {
                     controlPane.getButton3().setDisable(false);
@@ -344,58 +354,68 @@ public class TruckScalingController {
 
                         if (isScaled2 && weigh2 > 0.0 && !isCargoPhotoTaken2 && cargoConfirmationExitStatus == 1) {
                             try {
+                                log.info(" Camera 4 dan rasm olinmoqda (S3 ga avtomatik yuklanadi)...");
+
+                                //  Bu metod allaqachon S3 ga yuklaydi!
                                 AttachResponse response = cameraViewController.takePicture(CAMERA_4);
-                                if (response != null) {
+
+                                if (response != null && response.getId() != null) {
+                                    log.info(" Camera 4 rasmi S3 ga yuklandi: AttachID={}, S3_URL={}",
+                                            response.getId(), response.getPath());
+
+                                    // TruckPhotosEntity yaratish
                                     truckService.saveTruckAttaches(currentExitTruck, response, AttachStatus.EXIT_CARGO_PHOTO);
+                                    isCargoPhotoTaken2 = true;
+                                } else {
+                                    log.error(" Camera 4 rasmini olishda xatolik (response null yoki ID null)");
                                 }
-                                isCargoPhotoTaken2 = true;
+
                             } catch (Exception e) {
-                                System.out.println(e.getMessage());
+                                log.error(" Camera 4 xatolik: {}", e.getMessage(), e);
+                                logService.save(new LogEntity(5L, Instances.truckExitNumber,
+                                        "Camera 4 xatolik: " + e.getMessage()));
                             }
-//                                    saveOnScalePhoto(AttachStatus.EXIT_CARGO_PHOTO);
 
                             if (isCargoPhotoTaken2) {
                                 currentExitTruck.setExitedWeight(weigh2);
-                                log.info("Truck weigh: {}", currentExitTruck.getExitedWeight());
+                                log.info("Truck weigh = : {}", currentExitTruck.getExitedWeight());
                                 currentExitTruck.setExitedAt(LocalDateTime.now());
-                                System.out.println("currentUser.getPhoneNumber() = " + currentUser.getPhoneNumber());
                                 isTruckExited2 = true;
                                 currentExitTruck.setExitConfirmedBy(currentUser.getPhoneNumber());
+                                truckService.saveTruckStatus(currentExitTruck.getExitedStatus(), ActionStatus.COMPLETE);
                                 truckService.saveTruckExitedAction(currentExitTruck);
-                                //truckService.saveTruckStatus(currentTruck.getExitedStatus(), ActionStatus.COMPLETE);
+
                                 TruckEntity truck = null;
                                 try {
                                     truck = truckService.saveCurrentExitTruck(currentExitTruck, true);
                                 } catch (Exception e) {
-                                    logService.save(new LogEntity(5L, Instances.truckNumber, "00043: (" + getClass().getName() + ") " + e.getMessage()));
+                                    logService.save(new LogEntity(5L, Instances.truckNumber,
+                                            "00043: (" + getClass().getName() + ") " + e.getMessage()));
                                     e.printStackTrace();
                                 }
+
                                 try {
                                     cargoService.saveCargo(truck);
                                 } catch (Exception e) {
-                                    logService.save(new LogEntity(5L, Instances.truckExitNumber, "00044: (" + getClass().getName() + ") " + e.getMessage()));
+                                    logService.save(new LogEntity(5L, Instances.truckExitNumber,
+                                            "00044: (" + getClass().getName() + ") " + e.getMessage()));
                                     e.printStackTrace();
                                 }
+
                                 try {
-//                                    Timer timer1 = new Timer();
-//                                    timer1.schedule(new TimerTask() {
-//                                        @Override
-//                                        public void run() {
-                                    if (!checkPrinted2){
+                                    if (!checkPrinted2) {
                                         printCheck.printReceipt(truckService.getCurrentExitTruckEntity());
                                         checkPrinted2 = true;
                                     }
                                     truckService.save(truckService.getCurrentExitTruckEntity());
-//                                        }
-//                                    }, 50);
                                 } catch (Exception e) {
-                                    logService.save(new LogEntity(5L, Instances.truckExitNumber, "00045: (" + getClass().getName() + ") " + e.getMessage()));
+                                    logService.save(new LogEntity(5L, Instances.truckExitNumber,
+                                            "00045: (" + getClass().getName() + ") " + e.getMessage()));
                                     e.printStackTrace();
-                                    System.out.println(e.getMessage());
                                 }
+
                                 tableController.updateTableRow(truckService.getCurrentExitTruckEntity());
                             }
-
                         }
                     }
                 }), SCALE_TIMEOUT);

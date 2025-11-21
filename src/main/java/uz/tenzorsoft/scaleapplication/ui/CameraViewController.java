@@ -25,17 +25,16 @@ import java.io.IOException;
 
 import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
 import static uz.tenzorsoft.scaleapplication.domain.Settings.CAMERA_1;
-
 @Component
 @RequiredArgsConstructor
 public class CameraViewController implements BaseController {
 
     private final AttachService attachService;
     private final LogService logService;
-    private final TruckPhotoService truckPhotoService;
+
 
     public AttachResponse takePicture(String cameraIpAddress) {
-        System.out.println("Saving truck number: " + truckNumber + " from Camera 1");
+        System.out.println("Saving truck number: " + truckNumber + " from Camera");
 
         String username = "admin";
         String password = "Joe@252544";
@@ -67,50 +66,66 @@ public class CameraViewController implements BaseController {
                         if (cameraIpAddress.equals(CAMERA_1)) {
                             return attachService.getTestingImages();
                         }
-                        logService.save(new LogEntity(5L, truckNumber, "TEST REJIMI: Kamera so'rovi o'tkazib yuborildi"));
+                        logService.save(new LogEntity(5L, truckNumber,
+                                "TEST REJIMI: Kamera so'rovi o'tkazib yuborildi"));
                         return attachService.getCameraImgTesting();
                     }
 
                     String url = "http://" + cameraIpAddress + "/ISAPI/Streaming/channels/1/picture";
                     HttpEntity<String> entity = new HttpEntity<>(headers);
 
-                    ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.GET, entity, byte[].class);
+                    ResponseEntity<byte[]> response = restTemplate.exchange(
+                            url, HttpMethod.GET, entity, byte[].class);
 
                     if (response.getStatusCode().is2xxSuccessful()) {
                         byte[] fileBytes = response.getBody();
                         if (fileBytes == null || fileBytes.length == 0) {
-                            logService.save(new LogEntity(5L, truckNumber, "00028: Kamera bo'sh rasm yubordi"));
+                            logService.save(new LogEntity(5L, truckNumber,
+                                    "00028: Kamera bo'sh rasm yubordi"));
                             continue;
                         }
 
-                        if (currentTruck == null || currentTruck.getTruckNumber() == null || currentTruck.getTruckNumber().trim().isEmpty()) {
-                            logService.save(new LogEntity(5L, truckNumber, "00028: Truck raqami yo'q yoki bo'sh"));
+                        if (currentTruck == null || currentTruck.getTruckNumber() == null ||
+                                currentTruck.getTruckNumber().trim().isEmpty()) {
+                            logService.save(new LogEntity(5L, truckNumber,
+                                    "00028: Truck raqami yo'q yoki bo'sh"));
                             continue;
                         }
 
+                        // ✅ FAQAT S3 ga yuklash va AttachResponse qaytarish
                         AttachResponse saved = attachService.saveToSystem(fileBytes);
+
                         if (saved != null && saved.getPath() != null && saved.getId() != null) {
                             logService.save(new LogEntity(5L, currentTruck.getTruckNumber(),
-                                    "Rasm S3 ga yuklandi: " + saved.getPath() + ", AttachID: " + saved.getId()));
-                            truckPhotoService.addEntrancePhoto(currentTruck.getId(), saved.getId());
+                                    "Rasm S3 ga yuklandi: " + saved.getPath() +
+                                            ", AttachID: " + saved.getId()));
+
+
                             System.out.println("Rasm S3 ga yuklandi: " + saved.getPath());
                             return saved;
                         } else {
-                            logService.save(new LogEntity(5L, truckNumber, "00028: Attach saqlanmadi yoki ID yo'q: " + (saved == null ? "null" : "ID=null")));
+                            logService.save(new LogEntity(5L, truckNumber,
+                                    "00028: Attach saqlanmadi yoki ID yo'q: " +
+                                            (saved == null ? "null" : "ID=null")));
                         }
                     } else {
-                        logService.save(new LogEntity(5L, truckNumber, "00028: Kamera javobi: " + response.getStatusCode()));
+                        logService.save(new LogEntity(5L, truckNumber,
+                                "00028: Kamera javobi: " + response.getStatusCode()));
                     }
 
                 } catch (HttpClientErrorException.Unauthorized ex) {
-                    logService.save(new LogEntity(5L, truckNumber, "00028: 401 Unauthorized - Kamera login/parol xato"));
+                    logService.save(new LogEntity(5L, truckNumber,
+                            "00028: 401 Unauthorized - Kamera login/parol xato"));
                     if (attempt == maxRetries) {
-                        showAlert(Alert.AlertType.ERROR, "Autentifikatsiya xatosi", "Kamera login/parol noto'g'ri: " + cameraIpAddress);
+                        showAlert(Alert.AlertType.ERROR, "Autentifikatsiya xatosi",
+                                "Kamera login/parol noto'g'ri: " + cameraIpAddress);
                     }
                 } catch (Exception e) {
-                    logService.save(new LogEntity(5L, truckNumber, "00028: Urinish " + attempt + " xato: " + e.getMessage()));
+                    logService.save(new LogEntity(5L, truckNumber,
+                            "00028: Urinish " + attempt + " xato: " + e.getMessage()));
                     if (attempt == maxRetries) {
-                        showAlert(Alert.AlertType.ERROR, "Kamera xatosi", "Rasm olishda xatolik: " + e.getMessage());
+                        showAlert(Alert.AlertType.ERROR, "Kamera xatosi",
+                                "Rasm olishda xatolik: " + e.getMessage());
                         return null;
                     }
                 }
@@ -123,12 +138,16 @@ public class CameraViewController implements BaseController {
                 }
             }
         } catch (IOException e) {
-            logService.save(new LogEntity(5L, truckNumber, "00028: HttpClient yopishda xato: " + e.getMessage()));
-            showAlert(Alert.AlertType.ERROR, "Kamera xatosi", "Ulanish yopildi: " + e.getMessage());
+            logService.save(new LogEntity(5L, truckNumber,
+                    "00028: HttpClient yopishda xato: " + e.getMessage()));
+            showAlert(Alert.AlertType.ERROR, "Kamera xatosi",
+                    "Ulanish yopildi: " + e.getMessage());
         }
 
-        logService.save(new LogEntity(5L, truckNumber, "00028: Barcha urinishlar muvaffaqiyatsiz"));
-        showAlert(Alert.AlertType.WARNING, "Kamera ogohlantirish", "Rasm olinmadi: " + cameraIpAddress);
+        logService.save(new LogEntity(5L, truckNumber,
+                "00028: Barcha urinishlar muvaffaqiyatsiz"));
+        showAlert(Alert.AlertType.WARNING, "Kamera ogohlantirish",
+                "Rasm olinmadi: " + cameraIpAddress);
         return null;
     }
 }

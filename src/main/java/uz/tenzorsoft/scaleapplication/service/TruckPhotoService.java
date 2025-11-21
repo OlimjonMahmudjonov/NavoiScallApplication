@@ -34,7 +34,7 @@ public class TruckPhotoService {
      */
     @Transactional
     public void addEntrancePhoto(Long truckId, Long attachId) {
-        log.info("📸 Kirish fotosini qo'shish: TruckID={}, AttachID={}", truckId, attachId);
+        log.info(" Kirish fotosini qo'shish: TruckID={}, AttachID={}", truckId, attachId);
 
         try {
             TruckEntity truck = truckRepository.findById(truckId)
@@ -50,11 +50,11 @@ public class TruckPhotoService {
 
             TruckPhotosEntity saved = truckPhotoRepository.save(photo);
 
-            log.info("✅ Kirish fotosi saqlandi: PhotoID={}, TruckID={}, AttachID={}, S3_URL={}",
+            log.info("Kirish fotosi saqlandi: PhotoID={}, TruckID={}, AttachID={}, S3_URL={}",
                     saved.getId(), truckId, attachId, attach.getPath());
 
         } catch (Exception e) {
-            log.error("❌ Kirish fotosini saqlashda xatolik: TruckID={}, AttachID={}, Error={}",
+            log.error(" Kirish fotosini saqlashda xatolik: TruckID={}, AttachID={}, Error={}",
                     truckId, attachId, e.getMessage(), e);
             throw new RuntimeException("Kirish fotosini saqlashda xatolik: " + e.getMessage(), e);
         }

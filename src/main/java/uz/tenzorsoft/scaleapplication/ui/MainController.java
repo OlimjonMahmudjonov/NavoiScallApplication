@@ -24,7 +24,6 @@ import uz.tenzorsoft.scaleapplication.domain.Settings;
 import uz.tenzorsoft.scaleapplication.domain.entity.LogEntity;
 import uz.tenzorsoft.scaleapplication.domain.entity.TruckActionEntity;
 import uz.tenzorsoft.scaleapplication.domain.entity.TruckEntity;
-import uz.tenzorsoft.scaleapplication.domain.enumerators.PinState;
 import uz.tenzorsoft.scaleapplication.domain.enumerators.TruckAction;
 import uz.tenzorsoft.scaleapplication.service.ConfigUtilsService;
 import uz.tenzorsoft.scaleapplication.service.ControllerService;
@@ -48,9 +47,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
 import static uz.tenzorsoft.scaleapplication.domain.Settings.*;
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.*;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_OPEN_GATE_EXIT_2;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_EXIT_2;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_SENSOR_EXIT_3;
 
 @Component
 @RequiredArgsConstructor

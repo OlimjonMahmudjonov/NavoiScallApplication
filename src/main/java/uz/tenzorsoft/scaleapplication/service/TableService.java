@@ -103,15 +103,6 @@ public class TableService {
         return dateTime.getDayOfMonth() + "." + dateTime.getMonthValue() + "." + dateTime.getYear();
     }
 
-//    private String getStatus(TruckEntity truckEntity) {
-//        StringBuilder status = new StringBuilder();
-//        for (TruckActionEntity action : truckEntity.getTruckActions()) {
-//            if (action.getActionStatus() != null) {
-//                status.append(action.getActionStatus().name()).append(",");
-//            }
-//        }
-//        return status.toString();
-//    }
 
     private String getTruckActionStatus(TruckEntity truckEntity, TruckAction truckAction) {
 

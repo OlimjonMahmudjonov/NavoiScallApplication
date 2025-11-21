@@ -33,9 +33,6 @@ import uz.tenzorsoft.scaleapplication.service.ConfigUtilsService;
 import uz.tenzorsoft.scaleapplication.service.ExcelService;
 import uz.tenzorsoft.scaleapplication.service.PrintCheck;
 import uz.tenzorsoft.scaleapplication.service.raspberry.GpioControl;
-//import uz.tenzorsoft.scaleapplication.domain.dto.KppAccessRequest;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +44,6 @@ import java.util.List;
 import static uz.tenzorsoft.scaleapplication.domain.Instances.*;
 import static uz.tenzorsoft.scaleapplication.domain.Settings.*;
 import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.*;
-import static uz.tenzorsoft.scaleapplication.service.ScaleSystem.RASP_CLOSE_GATE_EXIT_2;
 
 @Component
 @RequiredArgsConstructor
